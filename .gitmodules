@@ -1,0 +1,3 @@
+[submodule ".kilo/rules"]
+	path = .kilo/rules
+	url = https://github.com/PatrickJS/awesome-cursorrules.git
