@@ -186,3 +186,11 @@ node_modules/
 *.tar.gz
 *.zip
 *.7z
+
+# ──────────────── Docs & Agents (no-track) ────────────────
+*.md
+!/README.md
+docs/
+.agents/
+.opencode/
+opencode.json
