@@ -7,11 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.30" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\QuickBite.Domain\QuickBite.Domain.csproj" />
     <ProjectReference Include="..\QuickBite.Application\QuickBite.Application.csproj" />
     <ProjectReference Include="..\QuickBite.Infrastructure\QuickBite.Infrastructure.csproj" />
     <ProjectReference Include="..\QuickBite.Shared\QuickBite.Shared.csproj" />
