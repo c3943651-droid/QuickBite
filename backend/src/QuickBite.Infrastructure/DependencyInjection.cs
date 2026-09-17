@@ -3,10 +3,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
+using QuickBite.Application.Authentication;
+using QuickBite.Application.Configuration;
+using QuickBite.Application.Email;
 using QuickBite.Domain.Enums;
 using QuickBite.Domain.Repositories;
+using QuickBite.Infrastructure.Authentication;
+using QuickBite.Infrastructure.Email;
 using QuickBite.Infrastructure.Persistence;
 using QuickBite.Infrastructure.Persistence.Repositories;
+using Resend;
+using QuickBite.Application.Catalog;
+using QuickBite.Infrastructure.Images;
 
 namespace QuickBite.Infrastructure;
 
@@ -36,6 +44,31 @@ public static class DependencyInjection
                     npgsql => npgsql.EnableRetryOnFailure())
                 .UseSnakeCaseNamingConvention());
 
+        services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+        services.AddSingleton<ISecureTokenGenerator, Sha256SecureTokenGenerator>();
+
+        var jwtSettings = BuildJwtSettings(configuration);
+        services.AddSingleton(jwtSettings);
+        services.AddSingleton<IJwtTokenGenerator>(new JwtTokenGenerator(jwtSettings));
+
+        services.AddSingleton<EmailQueue>();
+        services.AddSingleton<IEmailService, QueuedEmailService>();
+
+        var emailSettings = BuildEmailSettings(configuration);
+        services.AddSingleton(emailSettings);
+        if (!string.IsNullOrWhiteSpace(emailSettings.ApiKey))
+        {
+            services.AddResend(options => options.ApiToken = emailSettings.ApiKey);
+            services.AddSingleton<IEmailSender, ResendEmailSender>();
+        }
+        else
+        {
+            services.AddSingleton<IEmailSender, LoggingEmailSender>();
+        }
+
+        services.AddHostedService<EmailDispatcher>();
+        services.AddSingleton<IImageService, CloudinaryImageService>();
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAddressRepository, AddressRepository>();
@@ -49,5 +82,30 @@ public static class DependencyInjection
         services.AddScoped<IConfigRepository, ConfigRepository>();
 
         return services;
+    }
+
+    private static JwtSettings BuildJwtSettings(IConfiguration configuration)
+    {
+        var section = configuration.GetSection(JwtSettings.SectionName);
+        return new JwtSettings
+        {
+            Secret = section["Secret"] ?? string.Empty,
+            Issuer = section["Issuer"] ?? string.Empty,
+            Audience = section["Audience"] ?? string.Empty,
+            AccessTokenExpirationMinutes = int.TryParse(section["AccessTokenExpirationMinutes"], out var minutes) ? minutes : 60,
+            RefreshTokenExpirationDays = int.TryParse(section["RefreshTokenExpirationDays"], out var days) ? days : 7
+        };
+    }
+
+    private static EmailSettings BuildEmailSettings(IConfiguration configuration)
+    {
+        var section = configuration.GetSection(EmailSettings.SectionName);
+        return new EmailSettings
+        {
+            ApiKey = section["ApiKey"] ?? string.Empty,
+            FromAddress = section["FromAddress"] ?? "onboarding@resend.dev",
+            FromName = section["FromName"] ?? "QuickBite",
+            ResetUrlBase = section["ResetUrlBase"] ?? "http://localhost:5010/reset-password"
+        };
     }
 }

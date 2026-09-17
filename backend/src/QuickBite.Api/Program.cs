@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuickBite.Api.Configuration;
+using QuickBite.Api.Filters;
 using QuickBite.Api.Middleware;
 using QuickBite.Application;
+using QuickBite.Application.Configuration;
 using QuickBite.Infrastructure;
 using Serilog;
+using System.Security.Claims;
 using System.Text;
 
 Log.Logger = new LoggerConfiguration()
@@ -52,6 +55,9 @@ try
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtSettings.Issuer,
                 ValidAudience = jwtSettings.Audience,
+                RoleClaimType = ClaimTypes.Role,
+                NameClaimType = ClaimTypes.NameIdentifier,
+                ClockSkew = TimeSpan.Zero,
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(jwtSettings.Secret.PadRight(32, '0')))
             };
@@ -81,7 +87,7 @@ try
     builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
     builder.Services.AddInMemoryRateLimiting();
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>());
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
@@ -135,6 +141,7 @@ try
 
     app.UseHttpsRedirection();
     app.UseHsts();
+    app.Use(async (ctx, next) => { ctx.Response.Headers.Append("X-Content-Type-Options", "nosniff"); ctx.Response.Headers.Append("X-Frame-Options", "DENY"); ctx.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin"); await next(); });
     app.UseCors("DefaultPolicy");
     app.UseIpRateLimiting();
     app.UseAuthentication();

@@ -351,4 +351,55 @@ public class RepositoryIntegrationTests : PersistenceTestBase
         var read = await new NotificationRepository(reader).GetByUserIdAsync(userId, unreadOnly: true);
         read.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task UserRepository_PersisteYBuscaTokensDeRefreshYRecuperacion()
+    {
+        if (!CanRun())
+        {
+            return;
+        }
+
+        await using var dbContext = Db.CreateContext();
+        var userId = await CrearClienteAsync(dbContext);
+        var repository = new UserRepository(dbContext);
+
+        var refresh = new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UsuarioId = userId,
+            TokenHash = "sha-refresh",
+            ExpiraEn = DateTime.UtcNow.AddDays(7)
+        };
+
+        await repository.AddRefreshTokenAsync(refresh);
+        await dbContext.SaveChangesAsync();
+
+        await using var reader = Db.CreateContext();
+        var readerRepository = new UserRepository(reader);
+
+        var found = await readerRepository.GetRefreshTokenByHashAsync("sha-refresh");
+        found.Should().NotBeNull();
+        found!.UsuarioId.Should().Be(userId);
+        found.Revocado.Should().BeFalse();
+        (await readerRepository.GetRefreshTokenByHashAsync("no-existe")).Should().BeNull();
+
+        var reset = new PasswordResetToken
+        {
+            Id = Guid.NewGuid(),
+            UsuarioId = userId,
+            TokenHash = "sha-reset",
+            ExpiraEn = DateTime.UtcNow.AddHours(1)
+        };
+
+        await readerRepository.AddPasswordResetTokenAsync(reset);
+        await reader.SaveChangesAsync();
+
+        await using var secondReader = Db.CreateContext();
+        var resetFound = await new UserRepository(secondReader).GetPasswordResetTokenByHashAsync("sha-reset");
+        resetFound.Should().NotBeNull();
+        resetFound!.UsuarioId.Should().Be(userId);
+        resetFound.Usado.Should().BeFalse();
+        (await new UserRepository(secondReader).GetPasswordResetTokenByHashAsync("no-existe")).Should().BeNull();
+    }
 }

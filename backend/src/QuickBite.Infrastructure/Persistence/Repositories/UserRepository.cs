@@ -84,4 +84,26 @@ public class UserRepository : IUserRepository
         token.Revocado = true;
         return true;
     }
+
+    public async Task AddRefreshTokenAsync(RefreshToken token, CancellationToken cancellationToken = default)
+    {
+        await _db.TokensRefresco.AddAsync(token, cancellationToken);
+    }
+
+    public async Task<RefreshToken?> GetRefreshTokenByHashAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        return await _db.TokensRefresco
+            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken);
+    }
+
+    public async Task AddPasswordResetTokenAsync(PasswordResetToken token, CancellationToken cancellationToken = default)
+    {
+        await _db.TokensRecuperacionPassword.AddAsync(token, cancellationToken);
+    }
+
+    public async Task<PasswordResetToken?> GetPasswordResetTokenByHashAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        return await _db.TokensRecuperacionPassword
+            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken);
+    }
 }
