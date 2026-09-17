@@ -1,4 +1,4 @@
-namespace QuickBite.Api.Configuration;
+namespace QuickBite.Application.Configuration;
 
 public sealed class JwtSettings
 {

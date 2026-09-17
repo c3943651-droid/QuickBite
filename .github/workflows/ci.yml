@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: quickbite_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d quickbite_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      ConnectionStrings__TestConnection: Host=localhost;Port=5432;Database=quickbite_test;Username=postgres;Password=postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - run: dotnet build backend/src/QuickBite.sln -warnaserror
+      - run: dotnet test backend/tests/QuickBite.Tests.Unit --nologo
+      - run: dotnet test backend/tests/QuickBite.Tests.Integration --nologo
+  deploy:
+    needs: build-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Render
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}

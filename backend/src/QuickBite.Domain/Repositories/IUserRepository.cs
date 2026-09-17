@@ -13,4 +13,8 @@ public interface IUserRepository
     Task<IReadOnlyList<User>> GetByRoleAsync(UserRole role, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<UserSessionInfo>> GetActiveSessionsAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<bool> RevokeSessionAsync(Guid sessionId, Guid userId, CancellationToken cancellationToken = default);
+    Task AddRefreshTokenAsync(RefreshToken token, CancellationToken cancellationToken = default);
+    Task<RefreshToken?> GetRefreshTokenByHashAsync(string tokenHash, CancellationToken cancellationToken = default);
+    Task AddPasswordResetTokenAsync(PasswordResetToken token, CancellationToken cancellationToken = default);
+    Task<PasswordResetToken?> GetPasswordResetTokenByHashAsync(string tokenHash, CancellationToken cancellationToken = default);
 }
