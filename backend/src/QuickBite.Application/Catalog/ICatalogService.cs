@@ -9,6 +9,7 @@ public interface ICatalogService
     Task<PagedResponse<ProductListItemResponse>> GetProductsAsync(ProductFilterRequest filter, CancellationToken ct = default);
     Task<ProductDetailResponse> GetProductAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<ProductOptionResponse>> GetProductOptionsAsync(Guid productId, CancellationToken ct = default);
+    Task<IReadOnlyList<ProductPriceHistoryResponse>> GetPriceHistoryAsync(Guid productId, CancellationToken ct = default);
     Task<ProductDetailResponse> CreateProductAsync(CreateProductRequest req, Guid? userId = null, CancellationToken ct = default);
     Task<ProductDetailResponse> UpdateProductAsync(Guid id, UpdateProductRequest req, Guid? userId = null, CancellationToken ct = default);
     Task DeleteProductAsync(Guid id, CancellationToken ct = default);

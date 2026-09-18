@@ -71,6 +71,36 @@ public class OrderRepository : IOrderRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<Order> Items, int TotalCount)> GetDeliveredByDeliveryPersonPagedAsync(Guid deliveryPersonId, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        IQueryable<Order> query = _db.Pedidos
+            .AsNoTracking()
+            .Include(p => p.Cliente)
+            .Where(p => p.RepartidorId == deliveryPersonId && p.Estado == OrderStatus.Entregado);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var ordered = query.OrderByDescending(p => p.EntregadoEn ?? p.ActualizadoEn);
+        var pageNumber = Math.Max(1, page);
+        var size = Math.Clamp(pageSize, 1, 100);
+
+        var items = await ordered
+            .Skip((pageNumber - 1) * size)
+            .Take(size)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
+    public async Task<bool> HasActiveOrdersAsync(Guid deliveryPersonId, CancellationToken cancellationToken = default)
+    {
+        return await _db.Pedidos
+            .AsNoTracking()
+            .AnyAsync(p => p.RepartidorId == deliveryPersonId &&
+                p.Estado != OrderStatus.Entregado &&
+                p.Estado != OrderStatus.Cancelado, cancellationToken);
+    }
+
     public async Task UpdateStatusAsync(Guid orderId, OrderStatus newStatus, string? comment = null, Guid? userId = null, CancellationToken cancellationToken = default)
     {
         var order = await _db.Pedidos.FirstOrDefaultAsync(p => p.Id == orderId, cancellationToken);

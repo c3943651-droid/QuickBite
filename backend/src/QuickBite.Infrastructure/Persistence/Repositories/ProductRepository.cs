@@ -119,6 +119,21 @@ public class ProductRepository : IProductRepository
         _db.Productos.Update(product);
     }
 
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _db.Productos.AsNoTracking().AnyAsync(p => p.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ProductPriceHistory>> GetPriceHistoryAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        return await _db.ProductosPreciosHistoricos
+            .AsNoTracking()
+            .Include(h => h.Usuario)
+            .Where(h => h.ProductoId == productId)
+            .OrderByDescending(h => h.CreadoEn)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task SoftDeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var product = await _db.Productos.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);

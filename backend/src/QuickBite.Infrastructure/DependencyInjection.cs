@@ -80,6 +80,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IConfigRepository, ConfigRepository>();
+        services.AddScoped<IReportRepository, ReportRepository>();
 
         return services;
     }

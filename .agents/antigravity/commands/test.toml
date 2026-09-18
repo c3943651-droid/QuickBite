@@ -1,0 +1,29 @@
+description = "Ejecuta el flujo TDD — escribe tests que fallen, implementa, verifica. Para bugs, patrón Pruébalo"
+
+prompt = """
+Invoca la skill test-driven-development.
+
+Para funciones nuevas:
+1. Escribe tests que describan el comportamiento esperado (deben FALLAR)
+2. Implementa el código para que pasen
+3. Refactoriza manteniendo los tests en verde
+
+Para fixes de bugs (patrón Pruébalo):
+1. Escribe un test que reproduzca el bug (debe FALLAR)
+2. Confirma que el test falla
+3. Implementa el fix
+4. Confirma que el test pasa
+5. Corre la suite completa para detectar regresiones
+
+Comandos de verificación:
+- Backend: `dotnet test backend/tests/QuickBite.Tests.Unit/` (unitarios), `dotnet test backend/tests/QuickBite.Tests.Integration/` (integración, requiere PostgreSQL)
+- Test concreto: `dotnet test --filter "FullyQualifiedName~NombreDelTest"`
+- Lint estricto backend: `dotnet build backend/src/QuickBite.sln -warnaserror`
+- Móvil: `flutter test`, `flutter analyze`
+
+Convenciones del proyecto:
+- Tests unitarios con xUnit, en `backend/tests/QuickBite.Tests.Unit/`
+- Tests de integración con xUnit, en `backend/tests/QuickBite.Tests.Integration/`
+- Tests de móvil en `mobile/test/`
+- Nombra los tests describiendo el comportamiento, no el mecanismo
+"""
