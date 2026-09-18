@@ -1,0 +1,17 @@
+description = "Inicia el desarrollo dirigido por especificación — escribe/actualiza la spec antes de codear"
+
+prompt = """
+Invoca la skill spec-driven-development.
+
+Empieza entendiendo qué quiere construir el usuario. Haz preguntas aclaratorias sobre:
+1. El objetivo y usuarios objetivo (¿es para clientes, repartidores o administradores?)
+2. Funciones y criterios de aceptación concretos
+3. En qué capa/frente vive el cambio: backend API (.NET), móvil (Flutter), panel admin (Blazor), o varias
+4. Restricciones del proyecto (.NET 8, Clean Architecture, patrón Result, BLoC/Cubit en móvil, MudBlazor en admin)
+
+IMPORTANTE: las specs de QuickBite viven en `docs/` (Markdown, numerados `00`…`13`). Lee el spec correspondiente y actualízalo si el cambio lo requiere; no lo sobrescribas ni lo inventes desde cero. Doc clave: `02 — Arquitectura del Sistema.md`, `06 — Backend .NET Guía de Implementación.md`, `07 — App Móvil Flutter Arquitectura.md`.
+
+Si la petición agrupa varias capacidades independientes, propón primero un mapa de capacidades y recibe aprobación antes de especificar cada una.
+
+Luego genera o actualiza una spec cubriendo las seis áreas: objetivo, comandos relevantes, estructura del código que se tocará, estilo de código, estrategia de pruebas y límites (siempre / preguntar primero / nunca).
+"""

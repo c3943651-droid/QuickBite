@@ -64,6 +64,12 @@ public sealed class CatalogService : ICatalogService
         var p = await _uow.Products.GetByIdAsync(productId, ct) ?? throw new NotFoundException("Producto", productId);
         return p.Opciones.Where(o => o.Activo).Select(ToOpt).ToList();
     }
+    public async Task<IReadOnlyList<ProductPriceHistoryResponse>> GetPriceHistoryAsync(Guid productId, CancellationToken ct = default)
+    {
+        if (!await _uow.Products.ExistsAsync(productId, ct)) throw new NotFoundException("Producto", productId);
+        var history = await _uow.Products.GetPriceHistoryAsync(productId, ct);
+        return history.Select(h => new ProductPriceHistoryResponse(h.Id, h.PrecioAnterior, h.PrecioNuevo, h.Usuario?.Nombre, h.Motivo, h.CreadoEn)).ToList();
+    }
     public async Task<ProductDetailResponse> CreateProductAsync(CreateProductRequest req, Guid? userId = null, CancellationToken ct = default)
     {
         var prod = new Product { Nombre = req.Nombre.Trim(), Descripcion = req.Descripcion?.Trim(), Precio = req.Precio, CategoriaId = req.CategoriaId, ImagenUrl = req.ImagenUrl?.Trim(), Disponible = req.Disponible };

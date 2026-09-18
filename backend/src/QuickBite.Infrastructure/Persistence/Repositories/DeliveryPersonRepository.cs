@@ -34,6 +34,28 @@ public class DeliveryPersonRepository : IDeliveryPersonRepository
             .FirstOrDefaultAsync(r => r.UsuarioId == userId, cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<DeliveryPerson> Items, int TotalCount)> GetPagedAsync(DeliveryPersonStatus? status, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        IQueryable<DeliveryPerson> query = _db.Repartidores
+            .AsNoTracking()
+            .Include(r => r.Usuario);
+
+        if (status.HasValue)
+        {
+            query = query.Where(r => r.EstadoDisponibilidad == status.Value);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderBy(r => r.FechaAlta)
+            .Skip((Math.Max(1, page) - 1) * Math.Clamp(pageSize, 1, 100))
+            .Take(Math.Clamp(pageSize, 1, 100))
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
     public async Task AddAsync(DeliveryPerson deliveryPerson, CancellationToken cancellationToken = default)
     {
         await _db.Repartidores.AddAsync(deliveryPerson, cancellationToken);

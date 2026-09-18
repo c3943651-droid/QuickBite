@@ -7,5 +7,6 @@ public sealed record CreateProductRequest { public string Nombre { get; init; } 
 public sealed record UpdateProductRequest { public string? Nombre { get; init; } public string? Descripcion { get; init; } public decimal? Precio { get; init; } public Guid? CategoriaId { get; init; } public string? ImagenUrl { get; init; } public bool? Disponible { get; init; } }
 public sealed record CreateProductOptionRequest { public string Nombre { get; init; } = ""; public decimal PrecioAdicional { get; init; } public bool Activo { get; init; } = true; }
 public sealed record UpdateProductOptionRequest { public string? Nombre { get; init; } public decimal? PrecioAdicional { get; init; } public bool? Activo { get; init; } }
+public sealed record ProductPriceHistoryResponse(Guid Id, decimal PrecioAnterior, decimal PrecioNuevo, string? Usuario, string? Motivo, DateTime CreadoEn);
 public sealed record ProductFilterRequest { public Guid? CategoriaId { get; init; } public string? Search { get; init; } public bool? Disponible { get; init; } public decimal? PrecioMin { get; init; } public decimal? PrecioMax { get; init; } public string? Orden { get; init; } public int Page { get; init; } = 1; public int Limit { get; init; } = 10; }
 public sealed record PagedResponse<T>(IReadOnlyList<T> Data, int Total, int Page, int Limit, int TotalPages);
