@@ -129,12 +129,12 @@
 
 ## Fase 6 — Repartidores
 
-### [T6.1] DeliveryPersonService
+### [T6.1] DeliveryPersonService ✅
 - **Aceptación:** Listado, detalle, edición, historial. Endpoints `/admin/delivery-persons`.
 - **Verificar:** build.
 - **Archivos:** `Services/DeliveryPersonService.cs`
 
-### [T6.2] Lista, detalle, editar, alta (ADM-DEL-01..04)
+### [T6.2] Lista, detalle, editar, alta (ADM-DEL-01..04) ✅
 - **Aceptación:** Tabla con chips estado (disponible/ocupado/inactivo), filtros, toggle. Detalle con métricas (entregas totales, del mes, tiempo promedio) y timeline. Modal alta desde usuarios existentes. Formulario edición (vehículo, estado).
 - **Verificar:** build + bUnit tests.
 - **Archivos:** `Pages/DeliveryPersons.razor`, `Pages/DeliveryPersonDetail.razor`, `Components/NewDeliveryPersonDialog.razor`

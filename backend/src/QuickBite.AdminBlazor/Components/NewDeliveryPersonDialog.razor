@@ -1,0 +1,58 @@
+@using QuickBite.AdminBlazor.Models.Delivery
+@using QuickBite.AdminBlazor.Services
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            Alta de repartidor a partir de un usuario existente con rol repartidor.
+        </MudText>
+
+        @if (IsLoading)
+        {
+            <MudProgressLinear Indeterminate Color="Color.Primary" Class="mb-4" />
+        }
+        else if (UserCandidates.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                No hay usuarios con rol repartidor sin dar de alta.
+            </MudAlert>
+        }
+        else
+        {
+            <MudSelect T="DeliveryUserCandidate"
+                       @bind-Value="SelectedCandidate"
+                       Label="Usuario"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Class="mb-4">
+                @foreach (var candidato in UserCandidates)
+                {
+                    <MudSelectItem T="DeliveryUserCandidate" Value="candidato">
+                        @candidato.Nombre · @candidato.Email
+                    </MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudTextField T="string"
+                          @bind-Value="Vehiculo"
+                          Label="Vehículo (opcional)"
+                          Placeholder="Ej. moto, bicicleta eléctrica, furgoneta"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Error))
+        {
+            <MudText Typo="Typo.caption" Color="Color.Error" Class="mt-2">@Error</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   Disabled="IsSaving || SelectedCandidate is null"
+                   OnClick="SaveAsync">
+            Dar de alta
+        </MudButton>
+    </DialogActions>
+</MudDialog>

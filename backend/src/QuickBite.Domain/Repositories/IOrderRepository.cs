@@ -9,6 +9,7 @@ public interface IOrderRepository
     Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Order>> GetOrdersAsync(Guid? clientId = null, Guid? deliveryPersonId = null, OrderStatus? status = null, CancellationToken cancellationToken = default);
+    Task<(IReadOnlyList<Order> Items, int TotalCount)> GetOrdersForAdminAsync(string? search = null, Guid? repartidorId = null, OrderStatus? status = null, DateTime? fechaDesde = null, DateTime? fechaHasta = null, int page = 1, int limit = 10, CancellationToken cancellationToken = default);
     Task<(IReadOnlyList<Order> Items, int TotalCount)> GetDeliveredByDeliveryPersonPagedAsync(Guid deliveryPersonId, int page, int pageSize, CancellationToken cancellationToken = default);
     Task<bool> HasActiveOrdersAsync(Guid deliveryPersonId, CancellationToken cancellationToken = default);
     Task UpdateStatusAsync(Guid orderId, OrderStatus newStatus, string? comment = null, Guid? userId = null, CancellationToken cancellationToken = default);

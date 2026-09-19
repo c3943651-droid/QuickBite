@@ -1,0 +1,37 @@
+@using QuickBite.AdminBlazor.Models.Catalog
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField T="string"
+                      @bind-Value="_nombre"
+                      Label="Nombre"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Disabled="IsSaving" />
+        <MudNumericField T="decimal"
+                         @bind-Value="_precioAdicional"
+                         Label="Precio adicional"
+                         Adornment="Adornment.Start"
+                         AdornmentText="$"
+                         Variant="Variant.Outlined"
+                         Margin="Margin.Dense"
+                         Min="0"
+                         Class="mt-4"
+                         Disabled="IsSaving" />
+        <MudSwitch T="bool"
+                   @bind-Value="_activo"
+                   Label="Opción activa"
+                   Class="mt-4"
+                   Disabled="IsSaving" />
+        @if (!string.IsNullOrWhiteSpace(Error))
+        {
+            <MudText Typo="Typo.caption" Color="Color.Error" Class="mt-2">@Error</MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancel" Disabled="IsSaving">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="IsSaving" OnClick="SaveAsync">
+            Guardar
+        </MudButton>
+    </DialogActions>
+</MudDialog>

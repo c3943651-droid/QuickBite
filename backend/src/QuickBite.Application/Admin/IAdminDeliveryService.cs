@@ -10,4 +10,5 @@ public interface IAdminDeliveryService
     Task<DeliveryPersonListItemResponse> UpdateAsync(Guid id, UpdateDeliveryPersonRequest req, CancellationToken ct = default);
     Task<DeliveryPersonListItemResponse> DeactivateAsync(Guid id, CancellationToken ct = default);
     Task<PagedResponse<DeliveryPersonHistoryResponse>> GetHistoryAsync(Guid id, int page, int limit, CancellationToken ct = default);
+    Task<IReadOnlyList<DeliveryUserCandidateResponse>> GetAvailableUsersAsync(CancellationToken ct = default);
 }

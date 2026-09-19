@@ -10,7 +10,7 @@ public sealed class CatalogService : ICatalogService
     public CatalogService(IUnitOfWork uow) { _uow = uow; }
     private static CategoryResponse ToCat(Category c) => new(c.Id, c.Nombre, c.Descripcion, c.Orden, c.Activo);
     private static ProductOptionResponse ToOpt(ProductOption o) => new(o.Id, o.Nombre, o.PrecioAdicional, o.Activo);
-    private static ProductListItemResponse ToList(Product p) => new(p.Id, p.Nombre, p.Descripcion, p.Precio, p.ImagenUrl, p.Disponible, p.Categoria == null ? null : new CategoryResponse(p.Categoria.Id, p.Categoria.Nombre, p.Categoria.Descripcion, p.Categoria.Orden, p.Categoria.Activo));
+    private static ProductListItemResponse ToList(Product p) => new(p.Id, p.Nombre, p.Descripcion, p.Precio, p.ImagenUrl, p.Disponible, p.Categoria == null ? null : new CategoryResponse(p.Categoria.Id, p.Categoria.Nombre, p.Categoria.Descripcion, p.Categoria.Orden, p.Categoria.Activo), p.Inventario?.Stock, p.Inventario?.StockMinimo);
     private static ProductDetailResponse ToDetail(Product p) => new(p.Id, p.Nombre, p.Descripcion, p.Precio, p.ImagenUrl, p.Disponible, p.Categoria == null ? null : new CategoryResponse(p.Categoria.Id, p.Categoria.Nombre, p.Categoria.Descripcion, p.Categoria.Orden, p.Categoria.Activo), p.Opciones.Select(ToOpt).ToList(), p.Inventario?.Stock);
 
     public async Task<IReadOnlyList<CategoryResponse>> GetCategoriesAsync(CancellationToken ct = default)

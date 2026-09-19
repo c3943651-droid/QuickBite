@@ -1,0 +1,72 @@
+@page "/products/{Id:guid}/price-history"
+@using QuickBite.AdminBlazor.Models.Catalog
+@using QuickBite.AdminBlazor.Services
+
+<PageTitle>Historial de precios — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 pb-8">
+    <div class="d-flex align-center justify-space-between mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">Historial de precios</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@(string.IsNullOrWhiteSpace(ProductName) ? "Cargando..." : ProductName)</MudText>
+        </div>
+        <MudButton Variant="Variant.Text"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="GoToEdit">
+            Volver
+        </MudButton>
+    </div>
+
+    @if (_isLoading)
+    {
+        <MudPaper Elevation="1" Class="pa-8 rounded-lg">
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        </MudPaper>
+    }
+    else if (!string.IsNullOrEmpty(_error))
+    {
+        <MudPaper Elevation="1" Class="pa-8 rounded-lg">
+            <MudText Typo="Typo.body2" Color="Color.Error" Align="Align.Center">@_error</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Elevation="1" Class="pa-4 rounded-lg">
+            <MudTable T="PriceHistoryItem" Items="_items" Hover="true" Striped="true" Dense="true" SortLabel="Ordenar por"
+                      RowsPerPage="_pageSize" FixedHeader="true" Height="520" Breakpoint="Breakpoint.Sm">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Cambios de precio</MudText>
+                </ToolBarContent>
+                <ColGroup>
+                    <col />
+                    <col />
+                    <col />
+                    <col />
+                    <col style="width: 180px" />
+                </ColGroup>
+                <HeaderContent>
+                    <MudTh>Precio anterior</MudTh>
+                    <MudTh>Precio nuevo</MudTh>
+                    <MudTh>Usuario</MudTh>
+                    <MudTh>Motivo</MudTh>
+                    <MudTh>Fecha</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Precio anterior">@($"{context.PrecioAnterior:C}")</MudTd>
+                    <MudTd DataLabel="Precio nuevo">@($"{context.PrecioNuevo:C}")</MudTd>
+                    <MudTd DataLabel="Usuario">@(context.Usuario ?? "—")</MudTd>
+                    <MudTd DataLabel="Motivo">@(context.Motivo ?? "—")</MudTd>
+                    <MudTd DataLabel="Fecha">@context.CreadoEn.ToLocalTime().ToString("g")</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager RowsPerPageString="Filas por página" />
+                </PagerContent>
+                <NoRecordsContent>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="py-8">
+                        Este producto no ha tenido cambios de precio.
+                    </MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudPaper>
+    }
+</MudContainer>

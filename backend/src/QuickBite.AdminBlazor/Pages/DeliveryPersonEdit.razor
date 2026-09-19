@@ -1,0 +1,67 @@
+@page "/delivery-persons/{id:guid}/edit"
+@using QuickBite.AdminBlazor.Models.Delivery
+@using QuickBite.AdminBlazor.Services
+
+<PageTitle>Editar repartidor — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 pb-8">
+    @if (IsLoading)
+    {
+        <MudProgressLinear Indeterminate Color="Color.Primary" />
+    }
+    else if (_repartidor is null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4">@(_error ?? "No se pudo cargar el repartidor.")</MudAlert>
+    }
+    else
+    {
+        <div class="d-flex align-center justify-space-between mb-4">
+            <div class="d-flex align-center gap-3">
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                               Color="Color.Default"
+                               title="Volver al detalle"
+                               OnClick="GoToDetail" />
+                <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">Editar repartidor</MudText>
+            </div>
+        </div>
+
+        <MudPaper Elevation="1" Class="pa-6 rounded-lg">
+            <MudText Typo="Typo.subtitle1" Class="mb-4">Modifica los datos de @_repartidor.Nombre</MudText>
+
+            <MudTextField T="string"
+                          @bind-Value="_vehiculo"
+                          Label="Vehículo"
+                          Placeholder="Ej. moto, bicicleta eléctrica, furgoneta"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Class="mb-4" />
+
+            <MudSelect T="string"
+                       @bind-Value="_estado"
+                       Label="Estado de disponibilidad"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Class="mb-4">
+                @foreach (var estado in DeliveryStatusUi.All)
+                {
+                    <MudSelectItem T="string" Value="estado">@DeliveryStatusUi.Display(estado)</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (!string.IsNullOrWhiteSpace(_errorForm))
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error" Class="mb-2">@_errorForm</MudText>
+            }
+
+            <div class="d-flex justify-end gap-2">
+                <MudButton Variant="Variant.Text" OnClick="GoToDetail">Cancelar</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           Disabled="IsSaving"
+                           OnClick="GuardarAsync">
+                    Guardar
+                </MudButton>
+            </div>
+        </MudPaper>
+    }
+</MudContainer>
