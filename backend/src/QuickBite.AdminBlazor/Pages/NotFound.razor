@@ -1,0 +1,19 @@
+@page "/404"
+
+<PageTitle>Página No Encontrada — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex flex-column align-center justify-center min-vh-80 py-12">
+    <MudIcon Icon="@Icons.Material.Filled.SentimentDissatisfied" Color="Color.Primary" Style="font-size: 6rem;" Class="mb-4" />
+    <MudText Typo="Typo.h3" Color="Color.Primary" Align="Align.Center" Class="fw-bold mb-2">
+        404
+    </MudText>
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">
+        Página no encontrada
+    </MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Align="Align.Center" Class="mb-6" Style="max-width: 480px;">
+        La página o el recurso al que intentas acceder no existe, ha sido movido o no tienes permisos suficientes para visualizarlo.
+    </MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Home" Href="/">
+        Volver al Inicio
+    </MudButton>
+</MudContainer>
