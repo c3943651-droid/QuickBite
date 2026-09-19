@@ -1,0 +1,18 @@
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex align-center gap-4">
+            <MudIcon Icon="@(Icon ?? Icons.Material.Filled.Warning)"
+                     Color="@(Danger ? Color.Error : Color.Primary)"
+                     Size="Size.Large" />
+            <MudText Typo="Typo.body1">@Text</MudText>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancel">@(CancelText ?? "Cancelar")</MudButton>
+        <MudButton Variant="Variant.Filled" Color="@(Danger ? Color.Error : Color.Primary)" OnClick="Confirm">
+            @(ConfirmText ?? "Confirmar")
+        </MudButton>
+    </DialogActions>
+</MudDialog>

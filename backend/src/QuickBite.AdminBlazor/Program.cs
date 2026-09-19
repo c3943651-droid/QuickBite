@@ -25,6 +25,12 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 builder.Services.AddTransient<TokenRefreshHandler>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ICloudinaryUploadService, CloudinaryUploadService>();
+builder.Services.AddScoped<ICsvService, CsvService>();
+builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
+builder.Services.AddScoped<IDeliveryPersonService, DeliveryPersonService>();
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
 if (string.IsNullOrWhiteSpace(apiBaseUrl))

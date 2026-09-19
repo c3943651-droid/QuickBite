@@ -190,4 +190,58 @@ public class AdminDeliveryServiceTests
 
         await act.Should().ThrowAsync<ValidationException>();
     }
+
+    [Fact]
+    public async Task GetAvailableUsersAsync_DevuelveSoloRepartidoresSinRegistro()
+    {
+        var conRegistro = Guid.NewGuid();
+        var sinRegistro = Guid.NewGuid();
+        _users.Setup(u => u.GetByRoleAsync(UserRole.Repartidor, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<User>
+            {
+                new() { Id = conRegistro, Nombre = "Pedro", Email = "pedro@quickbite.com", Rol = UserRole.Repartidor },
+                new() { Id = sinRegistro, Nombre = "Luis", Email = "luis@quickbite.com", Rol = UserRole.Repartidor }
+            });
+        _deliveryPeople.Setup(d => d.GetPagedAsync(null, 1, 1000, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((new List<DeliveryPerson> { new() { UsuarioId = conRegistro } }, 1));
+
+        var result = await CreateService().GetAvailableUsersAsync();
+
+        result.Should().ContainSingle().Which.UsuarioId.Should().Be(sinRegistro);
+    }
+
+    [Fact]
+    public async Task GetAvailableUsersAsync_ConsultaUsuariosRolRepartidor()
+    {
+        var userId = Guid.NewGuid();
+        _users.Setup(u => u.GetByRoleAsync(UserRole.Repartidor, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<User>
+            {
+                new() { Id = userId, Nombre = "Ana", Email = "ana@quickbite.com", Rol = UserRole.Repartidor }
+            });
+        _deliveryPeople.Setup(d => d.GetPagedAsync(null, 1, 1000, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((new List<DeliveryPerson>(), 0));
+
+        await CreateService().GetAvailableUsersAsync();
+
+        _users.Verify(u => u.GetByRoleAsync(UserRole.Repartidor, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetAvailableUsersAsync_ExponeNombreYEmail()
+    {
+        var userId = Guid.NewGuid();
+        _users.Setup(u => u.GetByRoleAsync(UserRole.Repartidor, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<User>
+            {
+                new() { Id = userId, Nombre = "Marta", Email = "marta@quickbite.com", Rol = UserRole.Repartidor }
+            });
+        _deliveryPeople.Setup(d => d.GetPagedAsync(null, 1, 1000, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((new List<DeliveryPerson>(), 0));
+
+        var result = await CreateService().GetAvailableUsersAsync();
+
+        result.Should().ContainSingle().Which.Nombre.Should().Be("Marta");
+        result.Should().ContainSingle().Which.Email.Should().Be("marta@quickbite.com");
+    }
 }

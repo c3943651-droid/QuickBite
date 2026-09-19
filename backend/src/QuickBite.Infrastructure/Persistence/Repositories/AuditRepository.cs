@@ -19,10 +19,11 @@ public class AuditRepository : IAuditRepository
         await _db.AuditoriaAcciones.AddAsync(auditAction, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<AuditAction>> GetFilteredAsync(Guid? userId = null, string? entity = null, DateTime? from = null, DateTime? to = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<AuditAction>> GetFilteredAsync(Guid? userId = null, string? entity = null, DateTime? from = null, DateTime? to = null, Guid? entityId = null, CancellationToken cancellationToken = default)
     {
         var query = _db.AuditoriaAcciones
             .AsNoTracking()
+            .Include(a => a.Usuario)
             .AsQueryable();
 
         if (userId.HasValue)
@@ -33,6 +34,11 @@ public class AuditRepository : IAuditRepository
         if (!string.IsNullOrWhiteSpace(entity))
         {
             query = query.Where(a => a.Entidad.ToLower() == entity.Trim().ToLower());
+        }
+
+        if (entityId.HasValue)
+        {
+            query = query.Where(a => a.EntidadId == entityId.Value);
         }
 
         if (from.HasValue)

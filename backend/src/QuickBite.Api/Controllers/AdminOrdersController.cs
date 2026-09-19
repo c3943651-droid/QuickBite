@@ -11,22 +11,22 @@ public class AdminOrdersController : ControllerBase
     private readonly IAdminOrderService _s;
     public AdminOrdersController(IAdminOrderService s) { _s = s; }
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] string? estado, [FromQuery] Guid? repartidorId, CancellationToken ct)
+    public async Task<IActionResult> List([FromQuery] string? search, [FromQuery] string? estado, [FromQuery] Guid? repartidor_id, [FromQuery] DateTime? fecha_desde, [FromQuery] DateTime? fecha_hasta, CancellationToken ct, [FromQuery] int page = 1, [FromQuery] int limit = 10)
     {
         OrderStatus? st = null; if (estado != null && Enum.TryParse<OrderStatus>(estado, true, out var p)) st = p;
-        return Ok(await _s.ListAsync(st, repartidorId, ct));
+        return Ok(await _s.ListAsync(search, st, repartidor_id, fecha_desde, fecha_hasta, page, limit, ct));
     }
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id, CancellationToken ct)
     {
-        var list = await _s.ListAsync(null, null, ct);
-        var o = list.FirstOrDefault(x => x.Id == id); if (o == null) return NotFound(); return Ok(o);
+        var o = await _s.GetAsync(id, ct); if (o == null) return NotFound(); return Ok(o);
     }
     [HttpPatch("{id:guid}/status")]
     public async Task<IActionResult> Status(Guid id, [FromBody] Dictionary<string, string> body, CancellationToken ct)
     {
         var st = Enum.Parse<OrderStatus>(body["estado"], true);
-        return Ok(await _s.UpdateStatusAsync(id, st, ct));
+        var comentario = body.GetValueOrDefault("comentario");
+        return Ok(await _s.UpdateStatusAsync(id, st, string.IsNullOrWhiteSpace(comentario) ? null : comentario, ct));
     }
     [HttpPatch("{id:guid}/assign")]
     public async Task<IActionResult> Assign(Guid id, [FromBody] Dictionary<string, string> body, CancellationToken ct)

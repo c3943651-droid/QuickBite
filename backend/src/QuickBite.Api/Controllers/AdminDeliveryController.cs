@@ -21,6 +21,10 @@ public class AdminDeliveryController : ControllerBase
     public async Task<IActionResult> List([FromQuery] string? estado, [FromQuery] int page = 1, [FromQuery] int limit = 10, CancellationToken ct = default)
         => Ok(await _delivery.ListAsync(estado, page, limit, ct));
 
+    [HttpGet("available-users")]
+    public async Task<IActionResult> AvailableUsers(CancellationToken ct = default)
+        => Ok(await _delivery.GetAvailableUsersAsync(ct));
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateDeliveryPersonRequest req, CancellationToken ct)
         => StatusCode(201, await _delivery.CreateAsync(req, ct));

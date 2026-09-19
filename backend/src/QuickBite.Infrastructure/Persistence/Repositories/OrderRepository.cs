@@ -71,6 +71,53 @@ public class OrderRepository : IOrderRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<Order> Items, int TotalCount)> GetOrdersForAdminAsync(string? search = null, Guid? repartidorId = null, OrderStatus? status = null, DateTime? fechaDesde = null, DateTime? fechaHasta = null, int page = 1, int limit = 10, CancellationToken cancellationToken = default)
+    {
+        IQueryable<Order> query = _db.Pedidos
+            .AsNoTracking()
+            .Include(p => p.Cliente)
+            .Include(p => p.Repartidor)
+                .ThenInclude(r => r!.Usuario)
+            .AsQueryable();
+
+        if (repartidorId.HasValue)
+        {
+            query = query.Where(p => p.RepartidorId == repartidorId.Value);
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(p => p.Estado == status.Value);
+        }
+
+        if (fechaDesde.HasValue)
+        {
+            query = query.Where(p => p.CreadoEn >= fechaDesde.Value);
+        }
+
+        if (fechaHasta.HasValue)
+        {
+            query = query.Where(p => p.CreadoEn <= fechaHasta.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(p => p.NumeroPedido.Contains(term) ||
+                (p.Cliente != null && p.Cliente.Nombre.Contains(term)));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(p => p.CreadoEn)
+            .Skip((Math.Max(1, page) - 1) * Math.Clamp(limit, 1, 100))
+            .Take(Math.Clamp(limit, 1, 100))
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
     public async Task<(IReadOnlyList<Order> Items, int TotalCount)> GetDeliveredByDeliveryPersonPagedAsync(Guid deliveryPersonId, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         IQueryable<Order> query = _db.Pedidos

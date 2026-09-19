@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 namespace QuickBite.Application.Catalog.Dtos;
-public sealed record ProductListItemResponse(Guid Id, string Nombre, string? Descripcion, decimal Precio, string? ImagenUrl, bool Disponible, CategoryResponse? Categoria);
+public sealed record ProductListItemResponse(Guid Id, string Nombre, string? Descripcion, decimal Precio, string? ImagenUrl, bool Disponible, CategoryResponse? Categoria, int? Stock = null, int? StockMinimo = null);
 public sealed record ProductDetailResponse(Guid Id, string Nombre, string? Descripcion, decimal Precio, string? ImagenUrl, bool Disponible, CategoryResponse? Categoria, IReadOnlyList<ProductOptionResponse> Opciones, int? Stock);
 public sealed record ProductOptionResponse(Guid Id, string Nombre, decimal PrecioAdicional, bool Activo);
 public sealed record CreateProductRequest { public string Nombre { get; init; } = ""; public string? Descripcion { get; init; } public decimal Precio { get; init; } public Guid? CategoriaId { get; init; } public string? ImagenUrl { get; init; } public bool Disponible { get; init; } = true; public int StockInicial { get; init; } public int StockMinimo { get; init; } }

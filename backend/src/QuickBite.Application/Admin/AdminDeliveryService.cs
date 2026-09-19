@@ -117,4 +117,16 @@ public sealed class AdminDeliveryService : IAdminDeliveryService
         var totalPages = (int)Math.Ceiling((double)total / Math.Max(1, limit));
         return new PagedResponse<DeliveryPersonHistoryResponse>(data, total, Math.Max(1, page), limit, totalPages);
     }
+
+    public async Task<IReadOnlyList<DeliveryUserCandidateResponse>> GetAvailableUsersAsync(CancellationToken ct = default)
+    {
+        var users = await _uow.Users.GetByRoleAsync(UserRole.Repartidor, ct);
+        var (existing, _) = await _uow.DeliveryPeople.GetPagedAsync(null, 1, 1000, ct);
+        var existingIds = existing.Select(d => d.UsuarioId).ToHashSet();
+
+        return users
+            .Where(u => !existingIds.Contains(u.Id))
+            .Select(u => new DeliveryUserCandidateResponse(u.Id, u.Nombre, u.Email))
+            .ToList();
+    }
 }

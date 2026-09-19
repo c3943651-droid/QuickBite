@@ -194,3 +194,4 @@ node_modules/
 opencode.json
 .kilo/
 skills-lock.json
+.agents/

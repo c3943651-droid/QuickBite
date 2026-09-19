@@ -21,7 +21,8 @@ public class ProductRepository : IProductRepository
     {
         IQueryable<Product> query = _db.Productos
             .AsNoTracking()
-            .Include(p => p.Categoria);
+            .Include(p => p.Categoria)
+            .Include(p => p.Inventario);
 
         if (categoryId.HasValue)
         {
@@ -40,7 +41,8 @@ public class ProductRepository : IProductRepository
     {
         IQueryable<Product> query = _db.Productos
             .AsNoTracking()
-            .Include(p => p.Categoria);
+            .Include(p => p.Categoria)
+            .Include(p => p.Inventario);
 
         if (filterParams.CategoryId.HasValue)
         {
