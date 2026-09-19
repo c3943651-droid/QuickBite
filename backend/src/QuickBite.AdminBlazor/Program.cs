@@ -24,6 +24,7 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 // HTTP Handlers & Services
 builder.Services.AddTransient<TokenRefreshHandler>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
 if (string.IsNullOrWhiteSpace(apiBaseUrl))

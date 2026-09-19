@@ -1,0 +1,191 @@
+@page "/"
+@page "/dashboard"
+
+<PageTitle>Dashboard — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 pb-8">
+    <!-- Top Bar Header -->
+    <div class="d-flex align-center justify-space-between mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">Dashboard</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Resumen ejecutivo y estado del restaurante en tiempo real</MudText>
+        </div>
+        <div class="d-flex align-center gap-2">
+            @if (IsRefreshing)
+            {
+                <MudProgressCircular Size="Size.Small" Color="Color.Primary" Indeterminate="true" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Actualizando...</MudText>
+            }
+            else
+            {
+                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" Icon="@Icons.Material.Filled.Refresh">
+                    Actualizado: @LastUpdated.ToString("HH:mm:ss")
+                </MudChip>
+            }
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="ManualRefreshAsync" Disabled="IsRefreshing" />
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <MudGrid Class="mb-6">
+            @for (int i = 0; i < 4; i++)
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="120px" Class="rounded-lg" />
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else
+    {
+        <!-- 4 KPI Metric Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Class="rounded-lg border-start border-4 border-primary">
+                    <MudCardContent Class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase">Total Pedidos</MudText>
+                            <MudText Typo="Typo.h4" Class="fw-bold my-1">@Data.TotalPedidos</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Success">+100% registros</MudText>
+                        </div>
+                        <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large">
+                            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Large" />
+                        </MudAvatar>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Class="rounded-lg border-start border-4 border-success">
+                    <MudCardContent Class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase">Ventas Totales</MudText>
+                            <MudText Typo="Typo.h4" Class="fw-bold my-1">$@Data.VentasTotales.ToString("N2")</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Success">Ingresos brutos</MudText>
+                        </div>
+                        <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Large">
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" />
+                        </MudAvatar>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Class="rounded-lg border-start border-4 border-warning">
+                    <MudCardContent Class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase">Pendientes</MudText>
+                            <MudText Typo="Typo.h4" Class="fw-bold my-1">@Data.Pendientes</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Warning">Requieren atención</MudText>
+                        </div>
+                        <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Large">
+                            <MudIcon Icon="@Icons.Material.Filled.PendingActions" Size="Size.Large" />
+                        </MudAvatar>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="3" Class="rounded-lg border-start border-4 border-info">
+                    <MudCardContent Class="d-flex align-center justify-space-between">
+                        <div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="fw-bold text-uppercase">En Proceso / Entregados</MudText>
+                            <MudText Typo="Typo.h4" Class="fw-bold my-1">@CompletedOrActiveCount</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Info">En cocina o ruta</MudText>
+                        </div>
+                        <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Large">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" />
+                        </MudAvatar>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Charts and Breakdown Section -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" md="7">
+                <MudPaper Elevation="3" Class="pa-4 rounded-lg">
+                    <MudText Typo="Typo.h6" Class="fw-bold mb-4">Ventas de la Semana</MudText>
+                    @if (ChartSeries.Count > 0 && ChartLabels.Length > 0)
+                    {
+                        <MudChart ChartType="ChartType.Line" ChartSeries="@ChartSeries" XAxisLabels="@ChartLabels" Width="100%" Height="300px" />
+                    }
+                    else
+                    {
+                        <div class="d-flex align-center justify-center py-12">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">No hay datos suficientes para graficar ventas.</MudText>
+                        </div>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <MudPaper Elevation="3" Class="pa-4 rounded-lg">
+                    <MudText Typo="Typo.h6" Class="fw-bold mb-4">Distribución por Estado</MudText>
+                    @if (DonutData.Length > 0)
+                    {
+                        <MudChart ChartType="ChartType.Donut" InputData="@DonutData" InputLabels="@DonutLabels" Width="100%" Height="300px" />
+                    }
+                    else
+                    {
+                        <div class="d-flex align-center justify-center py-12">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Sin pedidos registrados en la sucursal.</MudText>
+                        </div>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Recent Orders Section -->
+        <MudPaper Elevation="3" Class="pa-4 rounded-lg">
+            <div class="d-flex align-center justify-space-between mb-4">
+                <MudText Typo="Typo.h6" Class="fw-bold">Pedidos Recientes</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Href="orders">
+                    Ver todos los pedidos
+                </MudButton>
+            </div>
+
+            @if (Data.RecentOrders.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    No se han registrado pedidos recientemente en esta sucursal.
+                </MudAlert>
+            }
+            else
+            {
+                <MudSimpleTable Hover="true" Striped="true">
+                    <thead>
+                        <tr>
+                            <th>Nº Pedido</th>
+                            <th>Cliente</th>
+                            <th>Estado</th>
+                            <th>Total</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Data.RecentOrders)
+                        {
+                            <tr>
+                                <td><span class="fw-bold">#@order.NumeroPedido</span></td>
+                                <td>@order.Cliente</td>
+                                <td>
+                                    <MudChip T="string" Color="@GetStatusColor(order.Estado)" Size="Size.Small" Variant="Variant.Filled">
+                                        @order.Estado
+                                    </MudChip>
+                                </td>
+                                <td><span class="fw-bold">$@order.Total.ToString("N2")</span></td>
+                                <td>@order.Fecha.ToString("g")</td>
+                                <td>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Size="Size.Small" Href="@($"orders/{order.Id}")" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+        </MudPaper>
+    }
+</MudContainer>
