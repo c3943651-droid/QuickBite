@@ -1,29 +1,41 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">QuickBite Admin</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
+<MudNavMenu Class="mud-width-full py-2">
+    <MudText Typo="Typo.caption" Class="px-4 py-2 mud-text-secondary" Style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+        Menú Principal
+    </MudText>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Inicio
-            </NavLink>
-        </div>
-    </nav>
-</div>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">
+        Dashboard
+    </MudNavLink>
 
-@code {
-    private bool collapseNavMenu = true;
+    <MudNavLink Href="products" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Fastfood" IconColor="Color.Primary">
+        Productos
+    </MudNavLink>
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    <MudNavLink Href="orders" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ReceiptLong" IconColor="Color.Primary">
+        Pedidos
+    </MudNavLink>
 
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
+    <MudNavLink Href="delivery-persons" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TwoWheeler" IconColor="Color.Primary">
+        Repartidores
+    </MudNavLink>
+
+    <MudText Typo="Typo.caption" Class="px-4 pt-4 pb-2 mud-text-secondary" Style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+        Administración
+    </MudText>
+
+    <MudNavLink Href="reports" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Assessment" IconColor="Color.Primary">
+        Reportes
+    </MudNavLink>
+
+    <MudNavLink Href="audit" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.History" IconColor="Color.Primary">
+        Auditoría
+    </MudNavLink>
+
+    <MudNavLink Href="config" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings" IconColor="Color.Primary">
+        Configuración
+    </MudNavLink>
+
+    <MudNavLink Href="profile" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AccountCircle" IconColor="Color.Primary">
+        Mi Perfil
+    </MudNavLink>
+</MudNavMenu>
