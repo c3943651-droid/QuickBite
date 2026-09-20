@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
+using QuickBite.AdminBlazor.Models.Orders;
 using QuickBite.AdminBlazor.Services;
 using QuickBite.Shared.Dashboard;
 
@@ -9,6 +11,7 @@ public partial class Dashboard : IAsyncDisposable
 {
     [Inject] private IDashboardService DashboardService { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     protected DashboardDataDto Data { get; set; } = new();
     protected bool IsLoading { get; set; } = true;
@@ -25,11 +28,31 @@ public partial class Dashboard : IAsyncDisposable
 
     private CancellationTokenSource? _cts;
     private PeriodicTimer? _timer;
+    private int _visibilityHandle;
+    private bool _isPageVisible = true;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadDashboardDataAsync(initialLoad: true);
         StartPolling();
+        await StartVisibilityTrackingAsync();
+    }
+
+    private async Task StartVisibilityTrackingAsync()
+    {
+        try
+        {
+            _visibilityHandle = await JSRuntime.InvokeAsync<int>("quickbite.onVisibilityChange", DotNetObjectReference.Create(this));
+        }
+        catch
+        {
+        }
+    }
+
+    [JSInvokable]
+    public void HandlePageVisibilityChanged(bool visible)
+    {
+        _isPageVisible = visible;
     }
 
     private void StartPolling()
@@ -43,6 +66,7 @@ public partial class Dashboard : IAsyncDisposable
             {
                 while (await _timer.WaitForNextTickAsync(_cts.Token))
                 {
+                    if (!_isPageVisible) continue;
                     await InvokeAsync(async () =>
                     {
                         await RefreshWithBackoffAsync();
@@ -130,24 +154,22 @@ public partial class Dashboard : IAsyncDisposable
         }
     }
 
-    protected Color GetStatusColor(string status)
-    {
-        return status.ToLowerInvariant() switch
-        {
-            "pendiente" => Color.Warning,
-            "enpreparacion" or "preparando" => Color.Info,
-            "listopararentrega" or "enruta" => Color.Primary,
-            "entregado" or "completado" => Color.Success,
-            "cancelado" => Color.Error,
-            _ => Color.Default
-        };
-    }
+    protected Color GetStatusColor(string status) => OrderStatusUi.Color(status);
 
     public async ValueTask DisposeAsync()
     {
         _cts?.Cancel();
         _cts?.Dispose();
         _timer?.Dispose();
-        await Task.CompletedTask;
+        if (_visibilityHandle != 0)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("quickbite.offVisibilityChange", _visibilityHandle);
+            }
+            catch
+            {
+            }
+        }
     }
 }

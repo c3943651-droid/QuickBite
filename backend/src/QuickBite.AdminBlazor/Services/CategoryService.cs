@@ -16,7 +16,7 @@ public class CategoryService : ICategoryService
     {
         try
         {
-            var response = await _httpClient.GetAsync("api/v1/categories", cancellationToken);
+            var response = await _httpClient.GetAsync("api/v1/admin/categories", cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 return null;

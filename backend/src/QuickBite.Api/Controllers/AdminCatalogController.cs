@@ -12,6 +12,7 @@ public class AdminCatalogController : ControllerBase
     private readonly ICatalogService _svc;
     public AdminCatalogController(ICatalogService s) { _svc = s; }
     private Guid? Uid => Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var g) ? g : null;
+    [HttpGet("categories")] public async Task<IActionResult> ListCats(CancellationToken ct) => Ok(await _svc.GetAdminCategoriesAsync(ct));
     [HttpPost("categories")] public async Task<IActionResult> CreateCat([FromBody] CreateCategoryRequest r, CancellationToken ct) => StatusCode(201, await _svc.CreateCategoryAsync(r, ct));
     [HttpPut("categories/{id:guid}")] public async Task<IActionResult> UpdCat(Guid id, [FromBody] UpdateCategoryRequest r, CancellationToken ct) => Ok(await _svc.UpdateCategoryAsync(id, r, ct));
     [HttpDelete("categories/{id:guid}")] public async Task<IActionResult> DelCat(Guid id, CancellationToken ct) { await _svc.DeleteCategoryAsync(id, ct); return NoContent(); }

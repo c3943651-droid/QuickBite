@@ -190,7 +190,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
-    public async Task GetCategoriesAsync_ReturnsActiveCategories()
+    public async Task GetCategoriesAsync_RequestsAdminEndpoint()
     {
         var handler = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -205,7 +205,7 @@ public class CategoryServiceTests
 
         result.Should().NotBeNull();
         result!.Should().ContainSingle(c => c.Nombre == "Hamburguesas");
-        handler.Requests[0].RequestUri!.PathAndQuery.Should().EndWith("/api/v1/categories");
+        handler.Requests[0].RequestUri!.PathAndQuery.Should().EndWith("/api/v1/admin/categories");
     }
 }
 

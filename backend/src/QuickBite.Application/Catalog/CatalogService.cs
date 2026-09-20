@@ -18,6 +18,12 @@ public sealed class CatalogService : ICatalogService
         var cats = await _uow.Categories.GetActiveAsync(ct);
         return cats.Select(ToCat).ToList();
     }
+
+    public async Task<IReadOnlyList<CategoryResponse>> GetAdminCategoriesAsync(CancellationToken ct = default)
+    {
+        var cats = await _uow.Categories.GetAllAsync(ct);
+        return cats.Select(ToCat).ToList();
+    }
     public async Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest req, CancellationToken ct = default)
     {
         var cat = new Category { Nombre = req.Nombre.Trim(), Descripcion = req.Descripcion?.Trim(), Orden = req.Orden };

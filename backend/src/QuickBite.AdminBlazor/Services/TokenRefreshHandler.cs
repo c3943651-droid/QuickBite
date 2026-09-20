@@ -11,12 +11,14 @@ public class TokenRefreshHandler : DelegatingHandler
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly NavigationManager _navigationManager;
+    private readonly IHttpClientFactory _httpClientFactory;
     private bool _isRefreshing;
 
-    public TokenRefreshHandler(IJSRuntime jsRuntime, NavigationManager navigationManager)
+    public TokenRefreshHandler(IJSRuntime jsRuntime, NavigationManager navigationManager, IHttpClientFactory httpClientFactory)
     {
         _jsRuntime = jsRuntime;
         _navigationManager = navigationManager;
+        _httpClientFactory = httpClientFactory;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -75,7 +77,7 @@ public class TokenRefreshHandler : DelegatingHandler
 
         try
         {
-            using var client = new HttpClient { BaseAddress = _navigationManager.BaseUri.Contains("http") ? new Uri(_navigationManager.BaseUri) : null };
+            var client = _httpClientFactory.CreateClient("QuickBite.Api");
             var response = await client.PostAsJsonAsync("api/v1/auth/refresh", new RefreshRequest { RefreshToken = refreshToken }, cancellationToken);
             if (!response.IsSuccessStatusCode) return false;
 

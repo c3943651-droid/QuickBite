@@ -51,7 +51,7 @@ public partial class Categories
     {
         var confirmed = await DialogService.ShowMessageBox(
             "Eliminar categoría",
-            $"¿Seguro que deseas eliminar \"{categoria.Nombre}\"? Esta acción no se puede deshacer.",
+            $"¿Seguro que deseas eliminar \"{categoria.Nombre}\"? La categoría se marcará como inactiva y no se mostrará en el menú del cliente.",
             yesText: "Eliminar",
             cancelText: "Cancelar");
 
