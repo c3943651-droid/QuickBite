@@ -34,7 +34,7 @@ public class CategoryService : ICategoryService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/v1/categories", request, cancellationToken);
+            var response = await _httpClient.PostAsJsonAsync("api/v1/admin/categories", request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 return null;
@@ -52,7 +52,7 @@ public class CategoryService : ICategoryService
     {
         try
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/v1/categories/{id}", request, cancellationToken);
+            var response = await _httpClient.PutAsJsonAsync($"api/v1/admin/categories/{id}", request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 return null;
@@ -70,7 +70,7 @@ public class CategoryService : ICategoryService
     {
         try
         {
-            var response = await _httpClient.DeleteAsync($"api/v1/categories/{id}", cancellationToken);
+            var response = await _httpClient.DeleteAsync($"api/v1/admin/categories/{id}", cancellationToken);
             return response.IsSuccessStatusCode;
         }
         catch
