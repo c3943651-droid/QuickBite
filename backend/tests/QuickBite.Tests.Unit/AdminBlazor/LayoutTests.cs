@@ -29,7 +29,7 @@ public class LayoutTests : TestContext
 
         Services.AddMudServices();
         Services.AddSingleton(_authServiceMock.Object);
-        
+
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 

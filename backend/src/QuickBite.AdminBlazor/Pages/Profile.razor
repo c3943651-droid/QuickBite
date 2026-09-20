@@ -1,0 +1,72 @@
+@page "/profile"
+@using QuickBite.AdminBlazor.Models.Profile
+
+<PageTitle>Perfil — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 pb-8">
+    <div class="mb-4">
+        <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">Mi perfil</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">Datos personales, contraseña y sesiones</MudText>
+    </div>
+
+    @if (IsLoading)
+    {
+        <MudPaper Elevation="2" Class="pa-4 rounded-lg mb-4">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="120px" Class="rounded-lg" />
+        </MudPaper>
+    }
+    else if (_profile is null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled">No se pudo cargar tu perfil.</MudAlert>
+    }
+    else
+    {
+        <MudPaper Elevation="2" Class="pa-4 rounded-lg mb-4">
+            <MudText Typo="Typo.h6" Class="fw-bold mb-4">Datos personales</MudText>
+
+            <div class="mb-4">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Correo electrónico</MudText>
+                <MudText Typo="Typo.body1" Class="pf-email">@_profile.Email</MudText>
+            </div>
+
+            <MudTextField Label="Nombre" @bind-Value="_nombre" Class="mb-3 pf-nombre" />
+            <MudTextField Label="Teléfono" @bind-Value="_telefono" Class="mb-4 pf-telefono" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="GuardarPerfilAsync" Disabled="IsSavingProfile" Class="btn-guardar-perfil">
+                Guardar cambios
+            </MudButton>
+        </MudPaper>
+
+        <MudPaper Elevation="2" Class="pa-4 rounded-lg mb-4">
+            <MudText Typo="Typo.h6" Class="fw-bold mb-4">Cambio de contraseña</MudText>
+
+<MudTextField Label="Contraseña actual" InputType="InputType.Password" @bind-Value="_passwordActual" Class="mb-3 pw-actual" />
+                <MudTextField Label="Nueva contraseña" InputType="InputType.Password" @bind-Value="_passwordNueva" Class="mb-3 pw-nueva" />
+                <MudTextField Label="Confirmar nueva contraseña" InputType="InputType.Password" @bind-Value="_passwordConfirm" Class="mb-4 pw-confirm" />
+
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Lock"
+                       OnClick="CambiarPasswordAsync" Disabled="IsChangingPassword" Class="btn-cambiar-password">
+                Actualizar contraseña
+            </MudButton>
+        </MudPaper>
+
+        <MudPaper Elevation="2" Class="pa-4 rounded-lg mb-4">
+            <MudText Typo="Typo.h6" Class="fw-bold mb-2">Cuenta</MudText>
+
+            <div class="d-flex align-center justify-space-between mb-4">
+                <MudText Typo="Typo.body1" Class="sesiones-count">
+                    @(_sessionsCount == 1 ? "1 sesión activa" : $"{_sessionsCount} sesiones activas")
+                </MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="profile/sessions" EndIcon="@Icons.Material.Filled.ChevronRight" Class="link-sesiones">
+                    Ver sesiones
+                </MudButton>
+            </div>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout"
+                       OnClick="CerrarSesionAsync" Disabled="IsLoggingOut" Class="btn-cerrar-sesion">
+                Cerrar sesión
+            </MudButton>
+        </MudPaper>
+    }
+</MudContainer>

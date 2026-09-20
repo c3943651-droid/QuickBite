@@ -43,7 +43,7 @@ public class AuthService : IAuthService
 
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "access_token", authResult.AccessToken);
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "refresh_token", authResult.RefreshToken);
-            
+
             var userJson = JsonSerializer.Serialize(authResult.User);
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "user", userJson);
 

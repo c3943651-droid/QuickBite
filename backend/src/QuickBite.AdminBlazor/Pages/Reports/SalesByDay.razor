@@ -1,0 +1,81 @@
+@page "/reports/sales-by-day"
+@using QuickBite.AdminBlazor.Models.Reports
+
+<PageTitle>Ventas por día — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 pb-8">
+    <div class="d-flex align-center justify-space-between mb-4">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">Ventas por día</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Ingresos y pedidos agrupados por día</MudText>
+        </div>
+        <div class="d-flex align-center gap-2">
+            <MudDateRangePicker Label="Rango de fechas" @bind-DateRange="_rango" Clearable="true" Class="mt-2" />
+            <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="LoadDataAsync" Disabled="IsLoading || IsExporting" Class="refresh-sales" />
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <MudGrid>
+            @for (int i = 0; i < 2; i++)
+            {
+                <MudItem xs="12">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300px" Class="rounded-lg" />
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else if (Error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled">@Error</MudAlert>
+    }
+    else if (_rows.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">Sin datos en el rango seleccionado.</MudAlert>
+    }
+    else
+    {
+        <MudPaper Elevation="3" Class="pa-4 rounded-lg mb-6">
+            <MudText Typo="Typo.h6" Class="fw-bold mb-4">Ingresos y pedidos por día</MudText>
+            <MudChart ChartType="ChartType.Bar" ChartSeries="@ChartSeries" XAxisLabels="@ChartLabels" Width="100%" Height="300px" />
+        </MudPaper>
+
+        <MudPaper Elevation="3" Class="pa-4 rounded-lg">
+            <div class="d-flex align-center justify-space-between mb-4">
+                <MudText Typo="Typo.h6" Class="fw-bold">Detalle por día</MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" OnClick="ExportCsvAsync" Disabled="IsExporting" Class="export-sales">
+                    Exportar CSV
+                </MudButton>
+            </div>
+
+            <MudSimpleTable Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Día</th>
+                        <th>Total pedidos</th>
+                        <th>Entregados</th>
+                        <th>Cancelados</th>
+                        <th>Activos</th>
+                        <th>Ingresos</th>
+                        <th>Ticket promedio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _rows)
+                    {
+                        <tr>
+                            <td>@row.Dia.ToString("yyyy-MM-dd")</td>
+                            <td>@row.TotalPedidos</td>
+                            <td>@row.Entregados</td>
+                            <td>@row.Cancelados</td>
+                            <td>@row.Activos</td>
+                            <td class="fw-bold">$@row.Ingresos.ToString("N2")</td>
+                            <td>$@row.TicketPromedio.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+    }
+</MudContainer>
