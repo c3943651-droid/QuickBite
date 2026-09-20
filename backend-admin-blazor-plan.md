@@ -143,12 +143,12 @@
 
 ## Fase 7 — Reportes
 
-### [T7.1] ReportService
+### [T7.1] ReportService ✅
 - **Aceptación:** 4 endpoints: `/admin/reports/sales-by-day`, `/admin/reports/top-products`, `/admin/reports/top-clients`, `/admin/reports/delivery-performance`.
 - **Verificar:** build.
 - **Archivos:** `Services/ReportService.cs`
 
-### [T7.2] 4 páginas de reporte (ADM-REP-01..04)
+### [T7.2] 4 páginas de reporte (ADM-REP-01..04) ✅
 - **Aceptación:** Cada página con chart (`MudChart`) + tabla + exportar CSV. Selectores de rango de fechas y límite (10/20/50).
 - **Verificar:** build + bUnit test.
 - **Archivos:** `Pages/Reports/SalesByDay.razor`, `Pages/Reports/TopProducts.razor`, `Pages/Reports/TopClients.razor`, `Pages/Reports/DeliveryPerformance.razor`

@@ -59,7 +59,8 @@ public class TokenRefreshHandler : DelegatingHandler
                 _isRefreshing = false;
             }
 
-            // Refresh failed: clear session and redirect to login
+            // Refresh failed: clear session, show snackbar and redirect to login
+            await _jsRuntime.InvokeVoidAsync("quickbite.showSessionExpiredSnackbar");
             await ClearSessionAsync();
             _navigationManager.NavigateTo("/login");
         }

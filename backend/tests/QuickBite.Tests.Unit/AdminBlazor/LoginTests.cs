@@ -26,7 +26,7 @@ public class LoginTests : TestContext
         Services.AddMudServices();
         Services.AddSingleton(_authServiceMock.Object);
         Services.AddSingleton(_snackbarMock.Object);
-        
+
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 

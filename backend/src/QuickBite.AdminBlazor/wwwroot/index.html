@@ -40,6 +40,16 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+            },
+            showSessionExpiredSnackbar: function () {
+                const existing = document.getElementById('qb-session-snackbar');
+                if (existing) existing.remove();
+                const bar = document.createElement('div');
+                bar.id = 'qb-session-snackbar';
+                bar.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:12px 24px;border-radius:4px;font-family:Roboto,sans-serif;font-size:14px;z-index:9999;box-shadow:0 3px 5px rgba(0,0,0,0.3);transition:opacity 0.3s;';
+                bar.textContent = 'Tu sesión ha expirado. Redirigiendo al inicio de sesión...';
+                document.body.appendChild(bar);
+                setTimeout(function () { if (bar.parentNode) bar.remove(); }, 4000);
             }
         };
     </script>

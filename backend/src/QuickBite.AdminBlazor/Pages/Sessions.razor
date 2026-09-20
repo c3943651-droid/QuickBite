@@ -1,0 +1,61 @@
+@page "/profile/sessions"
+@using QuickBite.AdminBlazor.Models.Profile
+
+<PageTitle>Sesiones activas — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 pb-8">
+    <div class="d-flex align-center justify-space-between mb-4">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">Sesiones activas</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Dispositivos con acceso a tu cuenta</MudText>
+        </div>
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="LoadAsync" Disabled="IsLoading" Class="refresh-sessions" />
+    </div>
+
+    @if (IsLoading)
+    {
+        <MudPaper Elevation="2" Class="pa-4 rounded-lg mb-3">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100px" Class="rounded-lg" />
+        </MudPaper>
+    }
+    else if (Error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled">@Error</MudAlert>
+    }
+    else if (_sessions.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">No hay sesiones activas.</MudAlert>
+    }
+    else
+    {
+        @foreach (var session in _sessions.OrderByDescending(s => s.EsActual).ThenByDescending(s => s.CreadoEn))
+        {
+            <MudPaper Elevation="2" Class="pa-4 rounded-lg mb-3 session-card">
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        @if (session.EsActual)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Class="mb-1 sesion-actual">Sesión actual</MudChip>
+                        }
+                        <MudText Typo="Typo.subtitle1" Class="fw-bold sesion-ip">@(session.IpOrigen ?? "IP desconocida")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@(session.UserAgent ?? "Agente de usuario desconocido")</MudText>
+                    </div>
+                    @if (!session.EsActual)
+                    {
+                        <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small"
+                                   OnClick="@(() => RevocarAsync(session))" Disabled="IsRevoking"
+                                   Class="revoke-session">Revocar</MudButton>
+                    }
+                </div>
+                <div class="d-flex flex-wrap mt-3" style="gap: 1rem;">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Creada: @session.CreadoEn.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Expira: @session.ExpiraEn.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</MudText>
+                </div>
+            </MudPaper>
+        }
+
+        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="profile" StartIcon="@Icons.Material.Filled.ArrowBack" Class="link-profile">
+            Volver al perfil
+        </MudButton>
+    }
+</MudContainer>

@@ -31,6 +31,10 @@ builder.Services.AddScoped<ICloudinaryUploadService, CloudinaryUploadService>();
 builder.Services.AddScoped<ICsvService, CsvService>();
 builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
 builder.Services.AddScoped<IDeliveryPersonService, DeliveryPersonService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IConfigService, ConfigService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
 if (string.IsNullOrWhiteSpace(apiBaseUrl))

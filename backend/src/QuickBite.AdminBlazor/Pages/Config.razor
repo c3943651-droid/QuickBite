@@ -1,0 +1,83 @@
+@page "/config"
+@using QuickBite.AdminBlazor.Models.Config
+
+<PageTitle>Configuración — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 pb-8">
+    <div class="d-flex align-center justify-space-between mb-4">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">Configuración del sistema</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Parámetros globales del restaurante</MudText>
+        </div>
+        <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" OnClick="LoadAsync" Disabled="IsLoading" Class="refresh-config" />
+    </div>
+
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-4 config-note">
+        Los cambios se aplican en tiempo real al sistema.
+    </MudAlert>
+
+    @if (IsLoading)
+    {
+        <MudGrid>
+            @for (int i = 0; i < 4; i++)
+            {
+                <MudItem xs="12">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="80px" Class="rounded-lg" />
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else if (Error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled">@Error</MudAlert>
+    }
+    else if (_entries.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">No hay parámetros configurados.</MudAlert>
+    }
+    else
+    {
+        <MudPaper Elevation="3" Class="pa-4 rounded-lg">
+            <MudSimpleTable Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Clave</th>
+                        <th>Descripción</th>
+                        <th>Valor</th>
+                        <th>Editable</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in _entries)
+                    {
+                        <tr>
+                            <td class="fw-bold config-clave">@entry.Clave</td>
+                            <td>@(entry.Descripcion ?? "—")</td>
+                            <td>
+                                @if (entry.Editable)
+                                {
+                                    <MudTextField T="string" @bind-Value="_editing[entry.Id]" Class="edi-value" />
+                                }
+                                else
+                                {
+                                    <MudText Inline="true">@entry.Valor</MudText>
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Lock" Disabled="true" aria-label="No editable" />
+                                }
+                            </td>
+                            <td>@(entry.Editable ? "Sí" : "No")</td>
+                            <td>
+                                @if (entry.Editable)
+                                {
+                                    <MudIconButton Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Save"
+                                                   OnClick="@(() => GuardarAsync(entry))"
+                                                   Disabled="IsSaving" Class="save-config" aria-label="Guardar" />
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+        </MudPaper>
+    }
+</MudContainer>
