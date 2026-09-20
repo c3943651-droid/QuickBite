@@ -1,0 +1,87 @@
+@page "/categories"
+@using QuickBite.AdminBlazor.Models.Catalog
+@using QuickBite.AdminBlazor.Services
+
+<PageTitle>Categorías — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 pb-8">
+    <div class="d-flex align-center justify-space-between mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">Categorías</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Gestión de categorías de productos</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="GoToCreate">
+            Nueva categoría
+        </MudButton>
+    </div>
+
+    <MudPaper Elevation="1" Class="pa-4 rounded-lg">
+        <MudDataGrid T="CategoryItem"
+                     @ref="_grid"
+                     ServerData="LoadServerData"
+                     RowsPerPage="10"
+                     Hover="true"
+                     Striped="true"
+                     Dense="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Lista de categorías</MudText>
+            </ToolBarContent>
+            <Columns>
+                <TemplateColumn T="CategoryItem" Title="Nombre">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body1" Class="fw-bold">@context.Item.Nombre</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CategoryItem" Title="Descripción">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@(context.Item.Descripcion ?? "—")</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CategoryItem" Title="Orden">
+                    <CellTemplate>
+                        <MudText Typo="Typo.body2">@context.Item.Orden</MudText>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CategoryItem" Title="Activa">
+                    <CellTemplate>
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Variant="Variant.Filled"
+                                 Color="@(context.Item.Activo ? Color.Success : Color.Error)">
+                            @(context.Item.Activo ? "Sí" : "No")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn T="CategoryItem" Title="Acciones" HeaderClass="text-right">
+                    <CellTemplate>
+                        <div class="d-flex align-center justify-end gap-1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           title="Editar"
+                                           aria-label="@($"Editar {context.Item.Nombre}")"
+                                           OnClick="() => GoToEdit(context.Item.Id)" />
+                            <MudIconButton Icon="@(context.Item.Activo ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                           Color="@(context.Item.Activo ? Color.Warning : Color.Success)"
+                                           Size="Size.Small"
+                                           title="@(context.Item.Activo ? "Desactivar" : "Activar")"
+                                           aria-label="@($"Toggle activo {context.Item.Nombre}")"
+                                           OnClick="() => ToggleActivoAsync(context.Item)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           title="Eliminar"
+                                           aria-label="@($"Eliminar {context.Item.Nombre}")"
+                                           OnClick="() => EliminarAsync(context.Item)" />
+                        </div>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <NoRecordsContent>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="py-8">
+                    No hay categorías.
+                </MudText>
+            </NoRecordsContent>
+        </MudDataGrid>
+    </MudPaper>
+</MudContainer>
