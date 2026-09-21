@@ -336,7 +336,7 @@ label_status() {
 verify_hint() {
     case "$1" in
         api|application|domain|infra|db|shared|backend)
-            printf '%s\n' '- Backend: `dotnet build backend/src/QuickBite.sln -warnaserror` y `dotnet test backend/tests/QuickBite.Tests.Unit/`'
+            printf '%s\n' '- Backend: `dotnet build backend/src/QuickBite.sln -warnaserror`, `dotnet test backend/tests/QuickBite.Tests.Unit/` y `dotnet test backend/tests/QuickBite.Tests.Integration/`'
             ;;
         mobile)
             printf '%s\n' '- Móvil: `npm run lint` y `npm test`'
@@ -391,6 +391,10 @@ run_verification() {
             if command -v dotnet >/dev/null 2>&1; then
                 echo "==> Verificando backend (dotnet build -warnaserror)..."
                 dotnet build "$REPO_ROOT/backend/src/QuickBite.sln" -warnaserror
+                echo "==> Verificando backend (dotnet test Unit)..."
+                dotnet test "$REPO_ROOT/backend/tests/QuickBite.Tests.Unit/" --nologo
+                echo "==> Verificando backend (dotnet test Integration, requiere PostgreSQL)..."
+                dotnet test "$REPO_ROOT/backend/tests/QuickBite.Tests.Integration/" --nologo
             else
                 echo "==> Aviso: dotnet no encontrado; se omite la verificación del backend."
             fi

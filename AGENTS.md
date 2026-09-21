@@ -116,4 +116,4 @@ Ante cada petición:
 - Patrones del móvil: React Query + Zustand, Repository, Dependency Injection, Singleton para servicios compartidos.
 - Errores con `Result` y tipados, no excepciones silenciosas ni pánicos.
 - Cero lógica de negocio en controladores, en widgets/pantallas y en los servicios de API del panel: la lógica vive en Application (backend) y en hooks/repositorios (móvil).
-- Todos los tests deben pasar, con `dotnet build -warnaserror` limpio en backend y `npm run lint` + `npx tsc --noEmit` en móvil antes de terminar.
+- Todos los tests deben pasar antes de cerrar: `dotnet test backend/tests/QuickBite.Tests.Unit/` y `dotnet test backend/tests/QuickBite.Tests.Integration/` (requiere PostgreSQL) en backend, con `dotnet build -warnaserror` limpio, y `npm run lint` + `npx tsc --noEmit` en móvil.
