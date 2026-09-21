@@ -67,6 +67,7 @@ public static class DependencyInjection
         }
 
         services.AddHostedService<EmailDispatcher>();
+        services.AddHttpClient();
         services.AddSingleton<IImageService, CloudinaryImageService>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
