@@ -7,20 +7,20 @@ namespace QuickBite.AdminBlazor.Services;
 
 public class CloudinaryUploadService : ICloudinaryUploadService
 {
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _cloudName;
     private readonly string _uploadPreset;
     private readonly string? _folder;
 
-    public CloudinaryUploadService(HttpClient httpClient, IConfiguration configuration)
+    public CloudinaryUploadService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
     {
-        _httpClient = httpClient;
+        _httpClientFactory = httpClientFactory;
         _cloudName = configuration["Cloudinary:CloudName"] ?? string.Empty;
         _uploadPreset = configuration["Cloudinary:UploadPreset"] ?? string.Empty;
         _folder = configuration["Cloudinary:Folder"];
     }
 
-    public async Task<OperationResult<string>> UploadImageAsync(Stream fileStream, string fileName, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<string>> UploadImageAsync(byte[] fileBytes, string fileName, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(_cloudName) || string.IsNullOrWhiteSpace(_uploadPreset))
         {
@@ -30,8 +30,9 @@ public class CloudinaryUploadService : ICloudinaryUploadService
 
         try
         {
+            using var client = _httpClientFactory.CreateClient();
             using var content = new MultipartFormDataContent();
-            var fileContent = new StreamContent(fileStream);
+            var fileContent = new ByteArrayContent(fileBytes);
             fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             content.Add(fileContent, "file", fileName);
             content.Add(new StringContent(_uploadPreset), "upload_preset");
@@ -40,7 +41,7 @@ public class CloudinaryUploadService : ICloudinaryUploadService
                 content.Add(new StringContent(_folder), "folder");
             }
 
-            var response = await _httpClient.PostAsync($"https://api.cloudinary.com/v1_1/{_cloudName}/image/upload", content, cancellationToken);
+            var response = await client.PostAsync($"https://api.cloudinary.com/v1_1/{_cloudName}/image/upload", content, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 return OperationResult<string>.Fail($"Error al subir la imagen ({(int)response.StatusCode}).");

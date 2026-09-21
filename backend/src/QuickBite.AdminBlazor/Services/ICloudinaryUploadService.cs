@@ -4,5 +4,5 @@ namespace QuickBite.AdminBlazor.Services;
 
 public interface ICloudinaryUploadService
 {
-    Task<OperationResult<string>> UploadImageAsync(Stream fileStream, string fileName, CancellationToken cancellationToken = default);
+    Task<OperationResult<string>> UploadImageAsync(byte[] fileBytes, string fileName, CancellationToken cancellationToken = default);
 }

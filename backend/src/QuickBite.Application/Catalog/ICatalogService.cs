@@ -19,4 +19,5 @@ public interface ICatalogService
     Task<ProductOptionResponse> CreateOptionAsync(Guid productId, CreateProductOptionRequest req, CancellationToken ct = default);
     Task<ProductOptionResponse> UpdateOptionAsync(Guid productId, Guid optionId, UpdateProductOptionRequest req, CancellationToken ct = default);
     Task DeleteOptionAsync(Guid productId, Guid optionId, CancellationToken ct = default);
+    IImageService GetImageService();
 }
