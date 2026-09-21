@@ -51,10 +51,10 @@ Frecuencias de polling:
 
 | Cliente | Endpoint | Frecuencia |
 | :--- | :--- | :--- |
-| App móvil (cliente) | GET /orders/{id}/status | 10 segundos |
+| App móvil RN (cliente) | GET /orders/{id}/status | 10 segundos |
 | Panel admin | GET /admin/dashboard | 30 segundos |
 | Panel admin | GET /admin/orders | 30 segundos |
-| App móvil (repartidor) | GET /delivery/available | 30 segundos |
+| App móvil RN (repartidor) | GET /delivery/available | 30 segundos |
 
 Reglas:
 
@@ -361,7 +361,7 @@ Se integran dos servicios externos gratuitos:
 
 ### Contexto
 
-La app móvil está desarrollada en Flutter para Android. La distribución tradicional es mediante Google Play Store.
+La app móvil está desarrollada con React Native (CLI, sin Expo) para Android. La distribución tradicional es mediante Google Play Store.
 
 ### Decisión
 
@@ -654,7 +654,7 @@ Las siguientes funcionalidades **no forman parte del alcance de v1.0**. Se docum
 | Gestión de métodos de pago guardados | CRUD de métodos de pago | Contradice D-08 |
 | Multi-sucursal | Gestionar varias ubicaciones de la misma marca | Contradice D-09 |
 | Marketplace multi-restaurante | Plataforma con múltiples restaurantes independientes | Contradice D-09 |
-| Multi-idioma | Internacionalización en Flutter y Blazor | — |
+| Multi-idioma | Internacionalización en React Native y Blazor | — |
 | App para iOS | Lanzamiento en App Store | — |
 | Sistema de fidelización | Puntos, niveles, recompensas | — |
 | Promociones y cupones | Descuentos automáticos, códigos promocionales | — |

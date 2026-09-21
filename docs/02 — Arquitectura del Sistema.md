@@ -21,7 +21,7 @@ QuickBite se organiza en cuatro niveles lógicos.
 
 | Nivel | Descripción | Componentes |
 | :--- | :--- | :--- |
-| Presentación móvil | Interfaz para clientes y repartidores | Aplicación Flutter (Android) |
+| Presentación móvil | Interfaz para clientes y repartidores | Aplicación React Native (Android) |
 | Presentación web | Interfaz para administradores | Panel Blazor WebAssembly |
 | Lógica de negocio | Reglas de negocio, validaciones, orquestación | API REST .NET 8 |
 | Persistencia | Almacenamiento transaccional y analítico | PostgreSQL 15 en Supabase |
@@ -99,37 +99,35 @@ Adicionalmente existe un proyecto compartido (`Shared`) que contiene DTOs reutil
 
 ### 4.1. Paradigma
 
-La aplicación móvil sigue un paradigma reactivo: la interfaz es una función del estado. Los cambios en el estado se propagan automáticamente a la UI.
+La aplicación móvil sigue un paradigma reactivo: la interfaz es una función del estado; los cambios se propagan automáticamente a los componentes consumidores (hooks de React Query y stores de Zustand).
 
 ### 4.2. Capas
 
 | Capa | Responsabilidad |
 | :--- | :--- |
-| Presentación | Widgets estáticos y dinámicos, navegación declarativa con protección de rutas |
-| Lógica de negocio | BLoCs y Cubits que transforman eventos en estados |
-| Servicios | Repositorios remotos y locales, clientes HTTP, servicio de polling |
-| Modelos | Entidades de dominio y DTOs |
+| Presentación | Pantallas y componentes React Native, navegación declarativa con protección de rutas (React Navigation) |
+| Lógica de negocio | Hooks de React Query y stores de Zustand que transforman datos en estado de UI |
+| Servicios | Repositorios remotos y locales, clientes HTTP (axios), servicio de polling |
+| Modelos | Entidades de dominio, DTOs y tipos TypeScript |
 
 ### 4.3. Gestión de Estado
 
-Se utiliza el patrón BLoC (Business Logic Component) con flujo unidireccional:
+Se combina **React Query** para el estado derivado del servidor y **Zustand** para el estado global del cliente:
 
-- El widget emite un evento.
-- El BLoC procesa el evento y llama al repositorio.
-- El repositorio devuelve datos (remotos o locales).
-- El BLoC emite un nuevo estado.
-- El widget se reconstruye según el nuevo estado.
-
-Para estados simples se utilizan Cubits.
+- La UI invoca hooks de React Query que consultan el repositorio.
+- El repositorio devuelve datos (remotos o locales) mediante axios.
+- React Query cachea la respuesta y expone datos, estado de carga y errores a la UI.
+- Zustand gestiona el estado global del cliente (sesión, carrito, preferencias).
+- La UI se re-renderiza reactivamente según el estado observado.
 
 ### 4.4. Patrones de Diseño en el Móvil
 
 | Patrón | Aplicación |
 | :--- | :--- |
-| BLoC | Gestión de estado reactiva y desacoplada |
+| React Query + Zustand | Gestión de estado de servidor (React Query) y estado global de cliente (Zustand) |
 | Repository | Abstracción de origen de datos (remoto vs. local) |
-| Dependency Injection | Inyección de BLoCs, repositorios y servicios |
-| Observer | Los widgets se suscriben a los streams de los BLoCs |
+| Dependency Injection | Inyección de repositorios, servicios e instancias de axios |
+| Observer | Los componentes se suscriben a los hooks de React Query y a los stores de Zustand |
 | Singleton | Servicios compartidos (cliente HTTP, almacenamiento seguro, servicio de polling) |
 
 ---
@@ -229,8 +227,8 @@ El detalle de la estrategia de seguridad reside en el documento 10.
 | :--- | :--- |
 | .NET 8 | Soporte a largo plazo, rendimiento, ecosistema maduro, integración nativa con PostgreSQL |
 | PostgreSQL 15 | Motor relacional robusto con soporte para tipos avanzados, índices especializados y lógica en el motor |
-| Flutter | Interfaz nativa con código único, hot-reload, soporte para programación reactiva |
-| BLoC | Flujo unidireccional, estados explícitos y trazables, testabilidad |
+| React Native | Interfaz nativa con JavaScript/TypeScript, empaquetado con React Native CLI, enfoque reactivo declarativo |
+| React Query + Zustand | Estado de servidor cacheado (React Query) y estado global de cliente (Zustand) |
 | Blazor WebAssembly | Unificación del stack en C#, reutilización de DTOs con la API |
 | MudBlazor | Componentes maduros, gratuitos y open source |
 | REST | Simplicidad, cacheabilidad, stateless por naturaleza |
@@ -306,7 +304,7 @@ Las extensiones futuras (multi-sucursal, marketplace, notificaciones push, etc.)
 | Término | Definición |
 | :--- | :--- |
 | Clean Architecture | Estilo de organización por capas concéntricas con dependencias hacia el núcleo |
-| BLoC | Patrón de gestión de estado con flujo unidireccional |
+| React Query + Zustand | Librerías de gestión de estado de servidor (React Query) y de estado global de cliente (Zustand) |
 | SPA | Aplicación de página única que se ejecuta en el navegador |
 | Stateless | Modelo en el que el servidor no mantiene estado de sesión |
 | DTO | Objeto de transferencia de datos entre capas o entre sistemas |

@@ -1,6 +1,6 @@
 ---
 name: incremental-implementation
-description: Entrega cambios de forma incremental. Úsalo al implementar cualquier función o cambio que toque más de un archivo en QuickBite (.NET backend, Flutter mobile o Blazor admin). Verifica cada incremento con dotnet build / dotnet test / flutter analyze antes de avanzar.
+description: Entrega cambios de forma incremental. Úsalo al implementar cualquier función o cambio que toque más de un archivo en QuickBite (.NET backend, React Native mobile o Blazor admin). Verifica cada incremento con dotnet build / dotnet test / npm run lint antes de avanzar.
 ---
 
 # Incremental Implementation (adaptado a QuickBite)
@@ -29,11 +29,11 @@ dotnet build backend/src/QuickBite.sln -warnaserror       # lint estricto
 dotnet format backend/src/QuickBite.sln --verify-no-changes  # formato
 ```
 
-### Móvil (Flutter)
+### Móvil (React Native)
 
 ```bash
-cd mobile && flutter analyze          # lint estático
-cd mobile && flutter test             # tests
+cd mobile && npm run lint          # lint estático
+cd mobile && npm test             # tests
 ```
 
 ## El ciclo de incremento
@@ -53,7 +53,7 @@ cd mobile && flutter test             # tests
 
 Por cada corte:
 1. **Implementa** la pieza de funcionalidad completa más pequeña.
-2. **Prueba** — corre `dotnet test` o `flutter test` (o escribe un test si no existe).
+2. **Prueba** — corre `dotnet test` o `npm test` (o escribe un test si no existe).
 3. **Verifica** — compila limpio y lint pasa.
 4. **Commit** — guarda el progreso con un mensaje descriptivo.
 5. **Pasa al siguiente corte**.
@@ -81,8 +81,8 @@ Ataca primero la pieza más arriesgada o incierta.
 ```
 Ejemplo — Sistema de polling en móvil:
   Corte 1: Servicio HTTP básico + manejo de errores (mayor riesgo)
-  Corte 2: BLoC/Cubit que consume el servicio
-  Corte 3: Widget que se suscribe al BLoC
+  Corte 2: Hook de React Query / store de Zustand que consume el servicio
+  Corte 3: Componente que se suscribe a la query/store
 ```
 
 Si el corte 1 falla, lo descubres antes de invertir en los cortes 2 y 3.
@@ -98,8 +98,8 @@ COMPROBACIÓN DE SIMPLICIDAD:
 ✗ Un servicio genérico "GenericRepository<T>" para un solo caso de uso simple
 ✓ Un servicio concreto con un método claro
 
-✗ Un BLoC con 15 eventos para una pantalla de lista
-✓ Un Cubit que carga y maneja error, más un BLoC solo donde hay flujos complejos
+✗ Un store de Zustand con 15 acciones para una pantalla de lista
+✓ Hooks de React Query para datos del servidor, más un store pequeño para estado de UI local
 ```
 
 Tres líneas parecidas de código son mejores que una abstracción prematura. Implementa la versión ingenua primero. Optimiza solo después de que la corrección esté probada con tests.
@@ -129,10 +129,10 @@ Cada incremento debe poder revertirse de forma independiente. Cambios aditivos (
 Tras cada incremento, verifica con los comandos del proyecto:
 
 - [ ] El cambio hace una sola cosa y la hace completa.
-- [ ] Todos los tests existentes pasan (`dotnet test` o `flutter test`).
-- [ ] El proyecto compila (`dotnet build` o `flutter analyze` limpio).
-- [ ] El lint pasa (`dotnet build -warnaserror` o `flutter analyze`).
-- [ ] El formato está correcto (`dotnet format` o `dart format`).
+- [ ] Todos los tests existentes pasan (`dotnet test` o `npm test`).
+- [ ] El proyecto compila (`dotnet build` o `npm run lint` limpio).
+- [ ] El lint pasa (`dotnet build -warnaserror` o `npm run lint`).
+- [ ] El formato está correcto (`dotnet format` o `npx prettier --check .`).
 - [ ] La nueva funcionalidad funciona como se espera.
 - [ ] El cambio se confirma con un mensaje descriptivo (Conventional Commits).
 
@@ -158,7 +158,7 @@ Tras cada incremento, verifica con los comandos del proyecto:
 Al terminar todos los incrementos de una tarea:
 
 - [ ] Cada incremento fue probado y commiteado individualmente.
-- [ ] La suite completa pasa (`dotnet test` / `flutter test`).
-- [ ] El proyecto compila limpio (`dotnet build -warnaserror` / `flutter analyze`).
+- [ ] La suite completa pasa (`dotnet test` / `npm test`).
+- [ ] El proyecto compila limpio (`dotnet build -warnaserror` / `npm run lint`).
 - [ ] La funcionalidad funciona de extremo a extremo según lo especificado.
 - [ ] No quedan cambios sin commitear.

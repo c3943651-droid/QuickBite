@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────
 #  QuickBite — Root .gitignore
-#  .NET backend + Flutter mobile monorepo
+#  .NET backend + React Native mobile monorepo
 # ─────────────────────────────────────────────
 
 # ──────────────── .NET / C# ────────────────
@@ -54,26 +54,21 @@ _NCrunch_*/
 publish/
 artifacts/
 
-# ──────────────── Flutter / Dart ────────────────
-# By default, Dart build artifacts live in .dart_tool
-.dart_tool/
-build/
-.flutter-plugins
-.flutter-plugins-dependencies
-.flutter_build_*
-*.iml
-*.ipr
-*.iws
-.doc/
-mobile/configh.json
-# IntelliJ / Android Studio
-mobile/.idea/
-mobile/*.iml
-mobile/android/.idea/
-mobile/android/*.iml
-mobile/ios/.idea/
-mobile/ios/*.iml
-mobile/.metadata
+# ──────────────── Node / React Native ────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+mobile/android/app/build/
+mobile/android/build/
+mobile/ios/Pods/
+mobile/ios/*.xcworkspace/xcuserdata/
+mobile/ios/Runner.xcodeproj/xcuserdata/
 
 # ──────────────── Android ────────────────
 *.apk
@@ -87,6 +82,7 @@ mobile/android/captures/
 mobile/android/key.properties
 mobile/android/app/release/
 mobile/android/app/keystore.properties
+mobile/android/app/.cxx/
 
 # ──────────────── iOS / macOS ────────────────
 *.ipa
@@ -94,22 +90,10 @@ mobile/android/app/keystore.properties
 *.dSYM
 mobile/ios/Flutter/App.framework/
 mobile/ios/Flutter/ephemeral/
-mobile/ios/Pods/
 mobile/ios/.symlinks/
-mobile/ios/Runner.xcworkspace/xcuserdata/
-mobile/ios/Runner.xcodeproj/xcuserdata/
 mobile/ios/Flutter/flutter_export_environment.sh
 mobile/macos/Pods/
 mobile/macos/.symlinks/
-mobile/macos/Flutter/ephemeral/
-mobile/macos/Runner.xcworkspace/xcuserdata/
-mobile/macos/Runner.xcodeproj/xcuserdata/
-
-# ──────────────── Web (Flutter web) ────────────────
-mobile/web/*.log
-mobile/web/.dart_tool/
-mobile/web/packages/
-mobile/web/build/
 
 # ──────────────── Environment / Secrets ────────────────
 .env
@@ -143,8 +127,6 @@ credentials/
 *.tmp
 *.bak
 .ionide/
-# VS Code for Flutter
-.vscode/*.log
 
 # ──────────────── OS ────────────────
 .DS_Store
@@ -179,7 +161,6 @@ htmlcov/
 .pytest_cache/
 
 # ──────────────── Misc ────────────────
-node_modules/
 .tool-versions
 .terraform/
 *.tgz

@@ -404,15 +404,15 @@ Las funcionalidades no incluidas en v1.0 se documentan como extensiones futuras 
 
 ## 15. Comparativa con Alternativas
 
-| Criterio | Blazor WASM | React | Angular | Flutter Web |
+| Criterio | Blazor WASM | React | Angular | React Native Web |
 | :--- | :--- | :--- | :--- | :--- |
-| Lenguaje | C# | JS/TS | TS | Dart |
+| Lenguaje | C# | JS/TS | TS | TS/JS |
 | Reutilización con backend | Alta | Baja | Baja | Media |
 | Curva de aprendizaje | Baja (.NET) | Media | Alta | Media |
-| Ecosistema de componentes | Bueno | Excelente | Excelente | Limitado |
-| Rendimiento en tablas densas | Bueno | Excelente | Excelente | Regular |
+| Ecosistema de componentes | Bueno | Excelente | Excelente | Bueno |
+| Rendimiento en tablas densas | Bueno | Excelente | Excelente | Bueno |
 | Hosting gratuito | Sí | Sí | Sí | Sí |
-| Mantenimiento | Un solo lenguaje | Dos ecosistemas | Dos ecosistemas | Un lenguaje |
+| Mantenimiento | Un solo lenguaje | Dos ecosistemas | Dos ecosistemas | Un solo lenguaje (TS/JS) |
 
 **Conclusión:** Blazor WebAssembly es la opción más coherente para QuickBite por la unificación del stack en C#, la reutilización de DTOs y el ecosistema de componentes de MudBlazor.
 

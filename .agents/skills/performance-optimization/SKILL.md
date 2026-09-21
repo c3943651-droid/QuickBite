@@ -1,6 +1,6 @@
 ---
 name: performance-optimization
-description: Optimiza el rendimiento de QuickBite. Úsalo cuando existan requisitos de rendimiento, sospeches regresiones, o al trabajar en el backend (API, EF Core), la app móvil (Flutter) o el panel admin (Blazor). Mide primero antes de optimizar.
+description: Optimiza el rendimiento de QuickBite. Úsalo cuando existan requisitos de rendimiento, sospeches regresiones, o al trabajar en el backend (API, EF Core), la app móvil (React Native) o el panel admin (Blazor). Mide primero antes de optimizar.
 ---
 
 # Performance Optimization (adaptado a QuickBite)
@@ -52,13 +52,13 @@ dotnet-trace collect --process-id <PID>
 # "Logging": { "LogLevel": { "Microsoft.EntityFrameworkCore.Database.Command": "Information" } }
 ```
 
-### Móvil (Flutter)
+### Móvil (React Native)
 
 ```bash
 cd mobile
-flutter run --profile              # ejecuta en modo profile
-flutter run --profile --trace-systrace  # trace del sistema
-# Flutter DevTools: dart devtools (abre en el navegador)
+npm start                # Metro (dev server)
+# Perfilado: React Native DevTools (performance monitor), React DevTools,
+# re-render evidence con why-did-you-render, trace de Hermes si aplica
 ```
 
 ### Panel Admin (Blazor)
@@ -165,4 +165,4 @@ Tras cualquier cambio de rendimiento:
 - [ ] Los cambios que no superaron la línea base se revirtieron.
 - [ ] Los intentos quedan registrados (conservados y revertidos).
 - [ ] No hay regresión en tests existentes.
-- [ ] `dotnet build -warnaserror` sigue pasando (backend) / `flutter analyze` limpio (móvil).
+- [ ] `dotnet build -warnaserror` sigue pasando (backend) / `npm run lint` limpio (móvil).

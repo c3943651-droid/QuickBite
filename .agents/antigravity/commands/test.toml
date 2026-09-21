@@ -19,7 +19,7 @@ Comandos de verificación:
 - Backend: `dotnet test backend/tests/QuickBite.Tests.Unit/` (unitarios), `dotnet test backend/tests/QuickBite.Tests.Integration/` (integración, requiere PostgreSQL)
 - Test concreto: `dotnet test --filter "FullyQualifiedName~NombreDelTest"`
 - Lint estricto backend: `dotnet build backend/src/QuickBite.sln -warnaserror`
-- Móvil: `flutter test`, `flutter analyze`
+- Móvil: `npm test`, `npm run lint`
 
 Convenciones del proyecto:
 - Tests unitarios con xUnit, en `backend/tests/QuickBite.Tests.Unit/`

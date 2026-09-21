@@ -221,7 +221,7 @@ detect_type() {
             *.md|docs/*|PLAN_DE_FASES_*) doc_count=$((doc_count + 1)) ;;
         esac
         case "$f" in
-            backend/tests/*|*/Tests/*|*Tests.cs|*_test.dart|mobile/test/*) test_count=$((test_count + 1)) ;;
+            backend/tests/*|*/Tests/*|*Tests.cs|*.test.ts|*.test.tsx|mobile/src/**/*.test.*) test_count=$((test_count + 1)) ;;
         esac
         case "$status" in
             \?\?|A*) new_count=$((new_count + 1)) ;;
@@ -339,10 +339,10 @@ verify_hint() {
             printf '%s\n' '- Backend: `dotnet build backend/src/QuickBite.sln -warnaserror` y `dotnet test backend/tests/QuickBite.Tests.Unit/`'
             ;;
         mobile)
-            printf '%s\n' '- Móvil: `flutter analyze` y `flutter test`'
+            printf '%s\n' '- Móvil: `npm run lint` y `npm test`'
             ;;
         *)
-            printf '%s\n' '- Ajustar verificación según el frente afectado (`dotnet build`/`flutter analyze`)'
+            printf '%s\n' '- Ajustar verificación según el frente afectado (`dotnet build`/`npm run lint`)'
             ;;
     esac
 }
@@ -396,11 +396,11 @@ run_verification() {
             fi
             ;;
         mobile)
-            if command -v flutter >/dev/null 2>&1; then
-                echo "==> Verificando móvil (flutter analyze)..."
-                (cd "$REPO_ROOT/mobile" && flutter analyze)
+            if command -v npm >/dev/null 2>&1 && [ -f "$REPO_ROOT/mobile/package.json" ]; then
+                echo "==> Verificando móvil (npm run lint)..."
+                (cd "$REPO_ROOT/mobile" && npm run lint)
             else
-                echo "==> Aviso: flutter no encontrado; se omite la verificación del móvil."
+                echo "==> Aviso: proyecto móvil no disponible; se omite la verificación."
             fi
             ;;
     esac

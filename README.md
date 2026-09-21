@@ -13,7 +13,7 @@ Monorepo con tres frentes que consumen una única API REST:
 | Frente | Tecnología | Ubicación |
 |---|---|---|
 | **API REST** | ASP.NET Core 8, Clean Architecture | `backend/src/QuickBite.sln` |
-| **App móvil** (clientes y repartidores) | Flutter (Android), BLoC/Cubit | `mobile/` |
+| **App móvil** (clientes y repartidores) | React Native (CLI, sin Expo), TypeScript | `mobile/` |
 | **Panel admin** | Blazor WebAssembly + MudBlazor | `backend/src/QuickBite.AdminBlazor/` |
 
 **Stack del backend:** .NET 8 · Entity Framework Core · PostgreSQL 15 (Supabase) · JWT · Cloudinary (imágenes) · Resend (correos).
@@ -21,7 +21,7 @@ Monorepo con tres frentes que consumen una única API REST:
 ```
 ┌──────────────┐   ┌──────────────┐
 │ App móvil    │   │ Panel admin  │
-│ Flutter      │   │ Blazor (SPA) │
+│ React Native │   │ Blazor (SPA) │
 └──────┬───────┘   └──────┬───────┘
        │         HTTPS + JWT       │
        └───────────┬───────────────┘
@@ -55,7 +55,7 @@ QuickBite/
 │   └── tests/
 │       ├── QuickBite.Tests.Unit/         # xUnit (Application, Domain)
 │       └── QuickBite.Tests.Integration/  # xUnit (Api, Infrastructure)
-├── mobile/                     # App Flutter
+├── mobile/                     # App React Native (CLI, sin Expo)
 ├── docs/                       # Especificaciones del sistema (00…13)
 └── AGENTS.md                   # Guía para agentes de IA
 ```
@@ -65,7 +65,7 @@ Las capas siguen **Clean Architecture**: las dependencias fluyen hacia el núcle
 ## 🚀 Requisitos previos
 
 - .NET SDK 8 (`dotnet --version` → 8.x)
-- Flutter (stable) + Dart
+- Node.js 20+ y npm (para la app móvil React Native)
 - PostgreSQL 15 (local, o una instancia de Supabase)
 - Una cuenta en Cloudinary y Resend (para el entorno completo)
 
@@ -89,12 +89,12 @@ cd backend
 dotnet run --project src/QuickBite.AdminBlazor/
 ```
 
-### 3. App móvil (Flutter)
+### 3. App móvil (React Native)
 
 ```bash
 cd mobile
-flutter pub get
-flutter run
+npm install
+npm run android        # (o npm run ios)
 ```
 
 ## 🧪 Pruebas
@@ -107,7 +107,7 @@ dotnet test backend/tests/QuickBite.Tests.Unit/
 dotnet test backend/tests/QuickBite.Tests.Integration/
 
 # Móvil
-cd mobile && flutter test
+cd mobile && npm test
 ```
 
 ## 📚 Documentación
@@ -123,7 +123,7 @@ Las especificaciones del sistema viven en [`docs/`](docs/), numeradas del `00` a
 | `04` | Contrato de API REST |
 | `05` | Decisiones canónicas y simplificaciones |
 | `06` | Backend .NET — guía de implementación |
-| `07` / `07.1` | App móvil Flutter — arquitectura y pantallas |
+| `07` / `07.1` | App móvil React Native — arquitectura y pantallas |
 | `08` / `08.1` | Panel admin Blazor — arquitectura y páginas |
 | `09` | Diseño UI/UX y sistema de componentes |
 | `10` | Seguridad |

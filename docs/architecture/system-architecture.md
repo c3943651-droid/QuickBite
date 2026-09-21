@@ -11,7 +11,7 @@ QuickBite se organiza en **cuatro niveles lógicos** con comunicación exclusiva
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     PRESENTACIÓN MÓVIL                          │
-│                  Flutter App (Android API 21+)                  │
+│               React Native App (Android API 21+)                │
 │                    Clientes + Repartidores                      │
 └──────────────────────────┬──────────────────────────────────────┘
                            │ HTTPS + JWT
@@ -41,7 +41,7 @@ QuickBite se organiza en **cuatro niveles lógicos** con comunicación exclusiva
 
 | Nivel | Componentes | Tecnología |
 |-------|-------------|------------|
-| **Presentación Móvil** | App Flutter (Clientes + Repartidores) | Flutter/Dart, BLoC |
+| **Presentación Móvil** | App React Native (Clientes + Repartidores) | React Native/TypeScript, React Query + Zustand |
 | **Presentación Web** | Panel Blazor WebAssembly (Admins) | Blazor WASM, MudBlazor |
 | **Lógica de Negocio** | API REST .NET 8 | C# 12, ASP.NET Core |
 | **Persistencia** | PostgreSQL 15 | Supabase (managed) |
@@ -104,46 +104,46 @@ QuickBite se organiza en **cuatro niveles lógicos** con comunicación exclusiva
 
 ---
 
-## 4. Arquitectura Frontend Móvil (Flutter)
+## 4. Arquitectura Frontend Móvil (React Native)
 
 ### 4.1 Paradigma: Reactivo + Flujo Unidireccional
 
 ```
-UI (Widgets) → Eventos → BLoC/Cubit → Repositorio → API/Local → Estado → UI
+UI (Componentes) → Hooks/Eventos → React Query + Zustand → Repositorio → API/Local → Estado → UI
 ```
 
 ### 4.2 Capas
 
 | Capa | Responsabilidad |
 |------|-----------------|
-| **Presentación** | Widgets, navegación declarativa, protección de rutas |
-| **Lógica de Negocio** | BLoCs/Cubits transforman eventos en estados |
-| **Servicios** | Repositorios remotos/locales, HTTP client, polling service |
+| **Presentación** | Componentes, React Navigation, protección de rutas |
+| **Lógica de Negocio** | React Query + Zustand gestionan data fetching y estado local |
+| **Servicios** | Repositorios remotos/locales, axios, polling service |
 | **Modelos** | Entidades de dominio + DTOs |
 
-### 4.3 Gestión de Estado: BLoC Pattern
+### 4.3 Gestión de Estado: React Query + Zustand
 
-| BLoC Principal | Responsabilidad |
-|----------------|-----------------|
-| `AuthBloc` | Auth, registro, logout, recovery |
-| `ProductBloc` | Catálogo, búsqueda, filtros, detalle |
-| `CartBloc` | Gestión carrito |
-| `OrderBloc` | Pedidos, seguimiento (polling), reordenar |
-| `DeliveryBloc` | Funcionalidades repartidor |
-| `ProfileBloc` | Perfil, direcciones, sesiones, ajustes |
-| `NotificationBloc` | Notificaciones in-app |
+| Store / Query Key Principal | Responsabilidad |
+|------------------------------|-----------------|
+| `AuthStore` | Auth, registro, logout, recovery |
+| `ProductQueries` | Catálogo, búsqueda, filtros, detalle |
+| `CartStore` | Gestión carrito |
+| `OrderStore` | Pedidos, seguimiento (polling), reordenar |
+| `DeliveryStore` | Funcionalidades repartidor |
+| `ProfileStore` | Perfil, direcciones, sesiones, ajustes |
+| `notifications` | Notificaciones in-app |
 
-**Estados simples:** `Cubit` (visibilidad password, tabs, filtros simples)
+**Estado UI simple (slices de Zustand):** visibilidad password, tabs, filtros simples
 
 ### 4.4 Patrones Móvil
 
 | Patrón | Aplicación |
 |--------|------------|
-| **BLoC** | Gestión estado reactiva desacoplada |
+| **React Query + Zustand** | Server state en caché (React Query) + estado UI local (Zustand) |
 | **Repository** | Abstracción origen datos (remoto vs local) |
-| **Dependency Injection** | Inyección BLoCs, repos, servicios |
-| **Observer** | Widgets suscritos a streams de BLoCs |
-| **Singleton** | Servicios compartidos (HTTP, secure storage, polling) |
+| **Dependency Injection** | Inyección repos, servicios, stores |
+| **Reactividad** | Componentes suscritos a estado de stores/queries |
+| **Singleton** | Servicios compartidos (axios, keychain, polling) |
 
 ---
 
@@ -261,8 +261,8 @@ UI (Widgets) → Eventos → BLoC/Cubit → Repositorio → API/Local → Estado
 |------------|---------------|
 | **.NET 8 (LTS)** | Soporte largo, rendimiento, ecosistema maduro, PostgreSQL nativo |
 | **PostgreSQL 15** | Motor robusto, tipos avanzados, índices especializados, lógica en motor |
-| **Flutter** | UI nativa código único, hot-reload, reactivo |
-| **BLoC** | Flujo unidireccional, estados explícitos, testable |
+| **React Native** | UI nativa con JS/TS, empaquetado con React Native CLI, enfoque reactivo declarativo |
+| **React Query + Zustand** | Server state cacheable, estado local predecible, testable |
 | **Blazor WASM** | Stack unificado C#, reutilización DTOs con API |
 | **MudBlazor** | Componentes maduros, gratuitos, open source |
 | **REST** | Simplicidad, cacheable, stateless por naturaleza |
@@ -335,7 +335,7 @@ UI (Widgets) → Eventos → BLoC/Cubit → Repositorio → API/Local → Estado
 - `docs/02 — Arquitectura del Sistema.md` — Documento maestro
 - `docs/03 — Modelo de Datos.md` — Esquema completo DDL + triggers
 - `docs/06 — Backend .NET Guía de Implementación.md` — Implementación backend
-- `docs/07 — App Móvil Flutter Arquitectura.md` — Arquitectura móvil
+- `docs/07 — App Móvil React Native Arquitectura.md` — Arquitectura móvil
 - `docs/08 — Panel Admin Blazor Arquitectura.md` — Arquitectura panel
 - `docs/architecture/database-model.md` — Este archivo (modelo BD)
 - `docs/architecture/decisions.md` — Decisiones arquitectónicas

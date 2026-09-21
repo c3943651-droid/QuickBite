@@ -1,7 +1,7 @@
 **Versión:** 3.0
 **Fecha:** 14/09/2026
 **Estado:** Aprobado
-**Audiencia:** Diseño, Flutter, Blazor
+**Audiencia:** Diseño, React Native, Blazor
 **Depende de:** 00, 05
 **Referenciado por:** 07, 07.1, 08, 08.1, 12, 13
 
@@ -9,7 +9,7 @@
 
 ## 1. Introducción
 
-Este documento define el sistema de diseño de QuickBite: la identidad visual, los principios de experiencia de usuario, la paleta de colores, la tipografía, el sistema de espaciado, y el catálogo de componentes reutilizables que se aplican tanto en la app móvil (Flutter) como en el panel de administración (Blazor).
+Este documento define el sistema de diseño de QuickBite: la identidad visual, los principios de experiencia de usuario, la paleta de colores, la tipografía, el sistema de espaciado, y el catálogo de componentes reutilizables que se aplican tanto en la app móvil (React Native) como en el panel de administración (Blazor).
 
 La arquitectura de la app móvil reside en el documento 07 y la especificación de sus pantallas en el documento 07.1. La arquitectura del panel admin reside en el documento 08 y la especificación de sus páginas en el documento 08.1. Este documento no repite pantallas ni páginas: se enfoca en las reglas de diseño que ambos comparten.
 
@@ -112,7 +112,7 @@ El modo oscuro es una opción disponible en la app y en el panel, activable desd
 | :--- | :--- |
 | Fuente principal | Roboto o Inter |
 | Justificación | Amplia disponibilidad, excelente legibilidad, múltiples pesos |
-| Aplicación en Flutter | Fuente de Google Fonts o la fuente por defecto de Material |
+| Aplicación en React Native | Fuente de Google Fonts o la fuente por defecto del sistema |
 | Aplicación en Blazor | Configuración en el tema de MudBlazor |
 
 ### 5.2. Escala Tipográfica
@@ -158,8 +158,8 @@ El espaciado se basa en una grilla de 8 puntos.
 
 | Contexto | Columnas | Margen lateral | Gutter |
 | :--- | :--- | :--- | :--- |
-| Móvil (Flutter) | 4 | 16 px | 16 px |
-| Tablet (Flutter) | 8 | 24 px | 16 px |
+| Móvil (React Native) | 4 | 16 px | 16 px |
+| Tablet (React Native) | 8 | 24 px | 16 px |
 | Web (Blazor admin) | 12 | 24 px, máximo 1280 px centrado | 24 px |
 
 ### 7.2. Bordes Redondeados
@@ -188,7 +188,7 @@ El espaciado se basa en una grilla de 8 puntos.
 
 ## 8. Catálogo de Componentes
 
-Los componentes se describen por su comportamiento y aspecto. Su implementación específica se realiza con los componentes nativos de Flutter o con MudBlazor, según la plataforma.
+Los componentes se describen por su comportamiento y aspecto. Los componentes nativos se implementan con los componentes base de React Native o con MudBlazor, según la plataforma.
 
 ### 8.1. Botones
 
@@ -260,7 +260,7 @@ Elevación nivel 1, esquinas redondeadas 16 px.
 
 **Regla:** Toda acción destructiva requiere confirmación mediante diálogo.
 
-### 8.8. Barra de Navegación Inferior (Flutter)
+### 8.8. Barra de Navegación Inferior (React Native)
 
 | Rol | Pestañas |
 | :--- | :--- |
@@ -392,7 +392,7 @@ Los siguientes estados aparecen en múltiples pantallas y siguen las mismas regl
 
 ## 12. Responsive Design
 
-### 12.1. App Móvil (Flutter)
+### 12.1. App Móvil (React Native)
 
 | Aspecto | Definición |
 | :--- | :--- |
@@ -438,11 +438,11 @@ El usuario puede elegir entre claro, oscuro o seguir el tema del sistema. La opc
 
 El sistema de diseño se aplica con adaptaciones específicas por plataforma.
 
-| Elemento | App móvil (Flutter) | Panel web (Blazor) |
+| Elemento | App móvil (React Native) | Panel web (Blazor) |
 | :--- | :--- | :--- |
 | Navegación principal | Barra inferior | Menú lateral |
 | Densidad de información | Media | Alta |
-| Componentes principales | Widgets Material | Componentes MudBlazor |
+| Componentes principales | Sistema de diseño de QuickBite | Componentes MudBlazor |
 | Tamaño de fuente base | 14–16 | 14–16 |
 | Interacciones táctiles | Sí | Sí, con soporte de teclado |
 | Estado del sistema | Barra de estado de Android | Título de pestaña del navegador |

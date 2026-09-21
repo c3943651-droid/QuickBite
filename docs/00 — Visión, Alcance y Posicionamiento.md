@@ -162,9 +162,9 @@ Esta lista es **vinculante**. Un agente o desarrollador no debe crear ninguno de
 | Lenguaje backend | C# | 12 |
 | Base de datos | PostgreSQL | 15 |
 | ORM | Entity Framework Core | 8 |
-| App móvil | Flutter / Dart | Estable |
+| App móvil | React Native / TypeScript | Estable |
 | Plataforma móvil | Android | API 21+ |
-| Gestión de estado móvil | BLoC / Cubit | Estable |
+| Gestión de estado móvil | React Query + Zustand | Estable |
 | Panel admin | Blazor WebAssembly | .NET 8 |
 | Componentes UI web | MudBlazor | Estable |
 | Autenticación | JWT + Refresh Tokens | — |
@@ -187,7 +187,7 @@ QuickBite se organiza en cuatro niveles lógicos:
 
 | Nivel | Componentes |
 | :--- | :--- |
-| Presentación móvil | App Flutter (clientes y repartidores) |
+| Presentación móvil | App React Native (clientes y repartidores) |
 | Presentación web | Panel Blazor WebAssembly (administradores) |
 | Lógica de negocio | API REST .NET 8 |
 | Persistencia | PostgreSQL en Supabase |
@@ -211,11 +211,11 @@ QuickBite se organiza en cuatro niveles lógicos:
 | 04 | Contrato de API REST | Backend, móvil, web |
 | 05 | Decisiones Canónicas y Simplificaciones | Todos |
 | 06 | Backend .NET: Guía de Implementación | Backend |
-| 07 | App Móvil Flutter: Arquitectura | Flutter |
-| 07.1 | Especificación de Pantallas Móviles | Flutter, diseño |
+| 07 | App Móvil React Native: Arquitectura | React Native |
+| 07.1 | Especificación de Pantallas Móviles | React Native, diseño |
 | 08 | Panel Admin Blazor: Arquitectura | Blazor |
 | 08.1 | Especificación de Páginas del Panel Admin | Blazor, diseño |
-| 09 | Diseño UI/UX y Sistema de Componentes | Diseño, Flutter, Blazor |
+| 09 | Diseño UI/UX y Sistema de Componentes | Diseño, React Native, Blazor |
 | 10 | Seguridad | Todos |
 | 11 | Despliegue, Operación y Mantenimiento | DevOps |
 | 12 | Pruebas y Calidad | QA, desarrollo |

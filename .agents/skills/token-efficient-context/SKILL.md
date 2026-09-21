@@ -7,7 +7,7 @@ description: Minimiza el consumo de tokens al trabajar con el código de QuickBi
 
 ## Descripción general
 
-El token más barato es el que nunca entra al contexto. Antes de ejecutar cualquier herramienta, decide cuánto de su salida necesitas realmente. Esto aplica a exploración, implementación y depuración en los tres frentes (backend .NET, Flutter, Blazor admin).
+El token más barato es el que nunca entra al contexto. Antes de ejecutar cualquier herramienta, decide cuánto de su salida necesitas realmente. Esto aplica a exploración, implementación y depuración en los tres frentes (backend .NET, React Native, Blazor admin).
 
 ## Cuándo usar
 

@@ -15,7 +15,7 @@ Convierte el siguiente paso del plan en código, una capa a la vez, respetando C
 
 Reglas del proyecto:
 - Backend: .NET 8, Clean Architecture (Domain → Application → Infrastructure → Api), patrón Result, Repository, Unit of Work.
-- Móvil: Flutter, BLoC/Cubit, Repository, DI.
+- Móvil: React Native, React Query + Zustand, Repository, DI.
 - Panel admin: Blazor WebAssembly (MudBlazor), consume la API.
 - Cero lógica de negocio en controladores, widgets o servicios de API.
 - Errores con Result, no excepciones silenciosas.
@@ -23,5 +23,5 @@ Reglas del proyecto:
 
 Verifica con los comandos del proyecto:
 - Backend: `dotnet build backend/src/QuickBite.sln`, `dotnet test backend/tests/QuickBite.Tests.Unit/`, `dotnet build backend/src/QuickBite.sln -warnaserror`
-- Móvil: `flutter analyze`, `flutter test`
+- Móvil: `npm run lint`, `npm test`
 """

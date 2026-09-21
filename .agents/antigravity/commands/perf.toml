@@ -25,6 +25,6 @@ Una optimización que no supera la línea base se REVIERTE, no se conserva como 
 
 Herramientas útiles:
 - Backend: MiniProfiler, logging de EF Core, BenchmarkDotNet (si se crea), dotnet-counters
-- Móvil: Flutter DevTools, flutter run --profile
+- Móvil: React Native DevTools, perfilado de rendimiento (React DevTools / performance monitor)
 - Panel admin: DevTools del navegador (Network, Performance)
 """

@@ -1,6 +1,6 @@
 ---
 name: code-review-and-quality
-description: Realiza una revisión de código multidimensional en QuickBite (.NET backend, Flutter mobile, Blazor admin). Úsalo antes de fusionar cualquier cambio, al revisar código escrito por ti, otro agente o un humano. Verifica con dotnet test, dotnet build -warnaserror y flutter analyze.
+description: Realiza una revisión de código multidimensional en QuickBite (.NET backend, React Native mobile, Blazor admin). Úsalo antes de fusionar cualquier cambio, al revisar código escrito por ti, otro agente o un humano. Verifica con dotnet test, dotnet build -warnaserror y npm run lint.
 ---
 
 # Code Review and Quality (adaptado a QuickBite)
@@ -30,8 +30,8 @@ dotnet build backend/src/QuickBite.sln -warnaserror
 dotnet format backend/src/QuickBite.sln --verify-no-changes
 
 # Móvil
-cd mobile && flutter analyze
-cd mobile && flutter test
+cd mobile && npm run lint
+cd mobile && npm test
 ```
 
 ## La revisión de cinco ejes
@@ -64,7 +64,7 @@ cd mobile && flutter test
 - ¿Sigue Clean Architecture (dependencias hacia el núcleo)?
 - ¿Domain no conoce Infrastructure ni Api?
 - ¿La lógica de negocio vive en Application, no en controladores?
-- ¿En el móvil: BLoC/Cubit maneja estado, repositorio abstrae datos, widget es presentación?
+- ¿En el móvil: React Query/hooks + Zustand manejan estado, repositorio abstrae datos, componente es presentación?
 - ¿En el admin: componentes Blazor consumen servicios de API, no tienen lógica de negocio?
 - ¿Los patrones existentes se mantienen (Repository, Unit of Work, Result)?
 - ¿Sin dependencias circulares entre proyectos?
@@ -89,7 +89,7 @@ cd mobile && flutter test
 - ¿Objetos grandes retenidos en memoria innecesariamente?
 - ¿Sin índices en columnas filtradas?
 - ¿Servicios externos bloqueando threads (uso async/await)?
-- ¿En móvil: reconstrucciones innecesarias de widgets? Imágenes sin caché?
+- ¿En móvil: reconstrucciones innecesarias de componentes? Imágenes sin caché?
 
 ## Remedios estructurales
 
@@ -97,7 +97,7 @@ Cuando marques un problema estructural, propón el movimiento — no solo el pro
 
 - Reemplaza lógica de negocio en controladores → muévela a servicios de Application.
 - Reemplaza consultas directas a BD en controladores → muévela a repositorios.
-- Reemplaza estado mutable directo en widgets → muévelo a BLoC/Cubit.
+- Reemplaza estado mutable directo en componentes → muévelo a hooks de React Query + stores de Zustand.
 - Colapsa ramas duplicadas en un solo flujo más claro.
 - Extrae helpers o divide archivos grandes en módulos enfocados.
 
@@ -169,8 +169,8 @@ Cada cambio necesita una descripción que se sostenga sola en el historial.
 ### Verificación
 - [ ] `dotnet test` pasa (backend)
 - [ ] `dotnet build -warnaserror` pasa (backend)
-- [ ] `flutter analyze` limpio (móvil)
-- [ ] `flutter test` pasa (móvil)
+- [ ] `npm run lint` limpio (móvil)
+- [ ] `npm test` pasa (móvil)
 - [ ] Verificación manual hecha (si aplica)
 
 ### Veredicto
@@ -180,7 +180,7 @@ Cada cambio necesita una descripción que se sostenga sola en el historial.
 
 ## Disciplina de dependencias
 
-Parte de la revisión de código es la revisión de dependencias. **Antes de añadir cualquier paquete NuGet o pubspec:**
+Parte de la revisión de código es la revisión de dependencias. **Antes de añadir cualquier paquete NuGet o dependencia npm:**
 1. ¿Lo resuelve la biblioteca estándar o el código existente?
 2. ¿Cuán grande es la dependencia?
 3. ¿Se mantiene activamente?
@@ -205,6 +205,6 @@ Tras completar la revisión:
 - [ ] Todos los cambios Requeridos están resueltos o diferidos con justificación.
 - [ ] `dotnet test` pasa.
 - [ ] `dotnet build -warnaserror` pasa.
-- [ ] `flutter analyze` limpio.
-- [ ] `flutter test` pasa.
+- [ ] `npm run lint` limpio.
+- [ ] `npm test` pasa.
 - [ ] La historia de verificación está documentada.

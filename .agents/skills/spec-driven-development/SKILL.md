@@ -31,8 +31,8 @@ dotnet test backend/tests/QuickBite.Tests.Integration/
 dotnet build backend/src/QuickBite.sln -warnaserror
 
 # Móvil
-flutter test
-flutter analyze
+npm test
+npm run lint
 ```
 
 ## Flujo con fases (gated)
@@ -59,7 +59,7 @@ Si una petición agrupa varias capacidades independientes (p. ej. "implementa ca
 | cart-service    | Lógica del carrito (add, remove, update)   | Application   | — |
 | checkout-flow   | Proceso de checkout y validación           | Application   | cart-service |
 | payment-sim     | Estrategia de pago simulada                | Infrastructure| checkout-flow |
-| order-polling   | Servicio de polling de estado del pedido   | Mobile (BLoC) | order-service |
+| order-polling   | Servicio de polling de estado del pedido   | Mobile (React Query + Zustand) | order-service |
 ```
 
 El mapa se revisa como cualquier fase antes de escribir specs de módulo.
@@ -79,12 +79,12 @@ Escribe/actualiza una spec que cubra las seis áreas:
 
 1. **Objetivo** — Qué estamos construyendo y por qué. ¿Quién lo usa (clientes, repartidores, admins)?
 2. **Comandos** — Comandos ejecutables completos del proyecto (ver arriba).
-3. **Estructura del código** — En qué capa vive: Domain (entidades), Application (servicios), Infrastructure (repos, servicios externos), Api (controladores), Mobile (BLoCs, repositorios, widgets), Admin (componentes Blazor).
-4. **Estilo de código** — Fragmento real mostrando convenciones: Clean Architecture, patrón Result, DTOs, validadores FluentValidation, BLoC/Cubit en móvil.
-5. **Estrategia de pruebas** — xUnit (backend), flutter_test (móvil), dónde viven los tests, cobertura esperada.
+3. **Estructura del código** — En qué capa vive: Domain (entidades), Application (servicios), Infrastructure (repos, servicios externos), Api (controladores), Mobile (hooks de React Query, stores de Zustand, repositorios, componentes), Admin (componentes Blazor).
+4. **Estilo de código** — Fragmento real mostrando convenciones: Clean Architecture, patrón Result, DTOs, validadores FluentValidation, React Query + Zustand en móvil.
+5. **Estrategia de pruebas** — xUnit (backend), Jest + React Native Testing Library (móvil), dónde viven los tests, cobertura esperada.
 6. **Límites** — Tres niveles:
    - **Siempre:** correr tests antes de commits, `dotnet build -warnaserror`, respetar Clean Architecture.
-   - **Preguntar primero:** cambios en el contrato de API, cambios en la BD (migraciones), añadir dependencias NuGet/pubspec nuevas.
+   - **Preguntar primero:** cambios en el contrato de API, cambios en la BD (migraciones), añadir dependencias NuGet/npm nuevas.
    - **Nunca:** cometer secretos, lógica de negocio en controladores, exponer datos sensibles, romper el contrato de API.
 
 **Importante:** lee el spec `docs/` correspondiente antes de especificar. Si el cambio afecta un spec existente, actualízalo; no lo dupliques ni lo inventes desde cero.
@@ -98,13 +98,13 @@ Con la spec validada, genera un plan técnico: componentes y dependencias, orden
 Descompón el plan en tareas discretas, ordenadas por dependencia. Cada tarea:
 - Completables en una sesión.
 - Con criterios de aceptación explícitos.
-- Con un paso de verificación (`dotnet test`, `flutter test`, comprobación manual).
+- Con un paso de verificación (`dotnet test`, `npm test`, comprobación manual).
 - Sin tocar más de ~5 archivos.
 
 ```markdown
 - [ ] Tarea: [Descripción]
   - Aceptación: [Qué debe ser cierto al terminar]
-  - Verificar: [dotnet test ... / flutter test / comprobación]
+  - Verificar: [dotnet test ... / npm test / comprobación]
   - Archivos: [Cuáles se tocarán]
 ```
 
