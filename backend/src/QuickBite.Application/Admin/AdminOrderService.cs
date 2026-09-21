@@ -4,6 +4,7 @@ using QuickBite.Application.Orders.Dtos;
 using QuickBite.Domain.Entities;
 using QuickBite.Domain.Enums;
 using QuickBite.Domain.Repositories;
+using QuickBite.Shared.Dashboard;
 namespace QuickBite.Application.Admin;
 public sealed class AdminOrderService : IAdminOrderService
 {
@@ -87,11 +88,43 @@ public sealed class AdminOrderService : IAdminOrderService
     }
     public async Task CancelAsync(Guid orderId, string motivo, CancellationToken ct = default) { await _uow.Orders.CancelOrderAsync(orderId, motivo, null, ct); await _uow.SaveChangesAsync(ct); }
     public async Task AssignAsync(Guid orderId, Guid repartidorId, AssignmentOrigin origin, CancellationToken ct = default) { await _uow.Orders.AssignDeliveryPersonAsync(orderId, repartidorId, origin, ct); await _uow.SaveChangesAsync(ct); }
-    public async Task<object> DashboardAsync(CancellationToken ct = default)
+    public async Task<DashboardDataDto> DashboardAsync(CancellationToken ct = default)
     {
         var orders = await _uow.Orders.GetOrdersAsync(null, null, null, ct);
-        var total = orders.Count; var ventas = orders.Sum(o => o.Total);
-        var pendientes = orders.Count(o => o.Estado == OrderStatus.Pendiente);
-        return new { totalPedidos = total, ventasTotales = ventas, pendientes, porEstado = orders.GroupBy(o => o.Estado.ToString()).ToDictionary(g => g.Key, g => g.Count()) };
+
+        var today = DateTime.UtcNow.Date;
+        var firstDay = today.AddDays(-6);
+        var salesChart = Enumerable.Range(0, 7)
+            .Select(i => firstDay.AddDays(i))
+            .Select(day => new SalesChartItemDto
+            {
+                Dia = day.ToString("yyyy-MM-dd"),
+                Ventas = orders.Where(o => o.CreadoEn.Date == day).Sum(o => o.Total)
+            })
+            .ToList();
+
+        var recentOrders = orders
+            .OrderByDescending(o => o.CreadoEn)
+            .Take(5)
+            .Select(o => new RecentOrderDto
+            {
+                Id = o.Id,
+                NumeroPedido = o.NumeroPedido,
+                Cliente = o.Cliente?.Nombre ?? string.Empty,
+                Estado = o.Estado.ToString(),
+                Total = o.Total,
+                Fecha = o.CreadoEn
+            })
+            .ToList();
+
+        return new DashboardDataDto
+        {
+            TotalPedidos = orders.Count,
+            VentasTotales = orders.Sum(o => o.Total),
+            Pendientes = orders.Count(o => o.Estado == OrderStatus.Pendiente),
+            PorEstado = orders.GroupBy(o => o.Estado.ToString()).ToDictionary(g => g.Key, g => g.Count()),
+            SalesChart = salesChart,
+            RecentOrders = recentOrders
+        };
     }
 }

@@ -18,6 +18,7 @@ public class AuthServiceTests
 
     private readonly Mock<IUserRepository> _users = new();
     private readonly Mock<IDeliveryPersonRepository> _deliveryPeople = new();
+    private readonly Mock<IAuditRepository> _audits = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IPasswordHasher> _passwordHasher = new();
     private readonly Mock<ISecureTokenGenerator> _tokenGenerator = new();
@@ -28,6 +29,7 @@ public class AuthServiceTests
     {
         _unitOfWork.SetupGet(u => u.Users).Returns(_users.Object);
         _unitOfWork.SetupGet(u => u.DeliveryPeople).Returns(_deliveryPeople.Object);
+        _unitOfWork.SetupGet(u => u.Audits).Returns(_audits.Object);
         _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         _passwordHasher.Setup(h => h.Hash(It.IsAny<string>())).Returns("hashed-password");
@@ -127,6 +129,30 @@ public class AuthServiceTests
         user.UltimoLogin.Should().NotBeNull();
         user.IntentosFallidos.Should().Be(0);
         _users.Verify(u => u.AddRefreshTokenAsync(It.Is<RefreshToken>(t => t.TokenHash == "hashed-token" && t.IpOrigen == "127.0.0.1"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoginAsync_ConCredencialesValidas_RegistraAuditoriaDeSesion()
+    {
+        var user = new User { Id = Guid.NewGuid(), Email = "ana@quickbite.com", PasswordHash = "hashed-password", Activo = true };
+        _users.Setup(u => u.GetByEmailAsync("ana@quickbite.com", It.IsAny<CancellationToken>())).ReturnsAsync(user);
+        _passwordHasher.Setup(h => h.Verify("Admin123!", "hashed-password")).Returns(true);
+
+        AuditAction? captured = null;
+        _audits
+            .Setup(a => a.AddAsync(It.IsAny<AuditAction>(), It.IsAny<CancellationToken>()))
+            .Callback<AuditAction, CancellationToken>((action, _) => captured = action)
+            .Returns(Task.CompletedTask);
+
+        await CreateService().LoginAsync(new LoginRequest { Email = "ana@quickbite.com", Password = "Admin123!" }, Client);
+
+        captured.Should().NotBeNull();
+        captured!.UsuarioId.Should().Be(user.Id);
+        captured.EntidadId.Should().Be(user.Id);
+        captured.Accion.Should().Be("login");
+        captured.Entidad.Should().Be("sesion");
+        captured.IpOrigen.Should().Be("127.0.0.1");
+        captured.UserAgent.Should().Be("test-agent");
     }
 
     [Fact]

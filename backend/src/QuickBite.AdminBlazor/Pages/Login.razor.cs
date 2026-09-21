@@ -27,11 +27,17 @@ public partial class Login
         ShowPassword = !ShowPassword;
     }
 
+    private const string ErrorText = "Credenciales inválidas o sin conexión con el servidor.";
+
     protected async Task SubmitAsync()
     {
+        if (IsLoading)
+        {
+            return;
+        }
+
         ErrorMessage = null;
         await Form.Validate();
-
         if (!IsValid)
         {
             return;
@@ -48,12 +54,14 @@ public partial class Login
             }
             else
             {
-                ErrorMessage = result.ErrorMessage ?? "Credenciales inválidas. Por favor verifique sus datos.";
+                ErrorMessage = ErrorText;
+                Snackbar.Add(ErrorText, Severity.Error);
             }
         }
-        catch (Exception ex)
+        catch
         {
-            ErrorMessage = $"Ocurrió un error inesperado al iniciar sesión: {ex.Message}";
+            ErrorMessage = ErrorText;
+            Snackbar.Add(ErrorText, Severity.Error);
         }
         finally
         {

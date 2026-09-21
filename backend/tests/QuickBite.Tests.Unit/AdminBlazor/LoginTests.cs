@@ -44,7 +44,7 @@ public class LoginTests : TestContext
     }
 
     [Fact]
-    public async Task Login_CallsAuthService_WhenFormIsSubmitted()
+    public void Login_CallsAuthService_WhenFormIsSubmitted()
     {
         // Arrange
         _authServiceMock
@@ -59,18 +59,18 @@ public class LoginTests : TestContext
         inputs[0].Change("admin@quickbite.com");
         inputs[1].Change("Password123!");
 
-        var form = cut.Find("form");
-        await cut.InvokeAsync(() => form.Submit());
+        var submit = cut.FindAll("button").First(b => b.TextContent.Contains("Iniciar Sesión"));
+        submit.Click();
 
         // Assert
-        _authServiceMock.Verify(x => x.LoginAsync(It.Is<LoginRequest>(r =>
-            r.Email == "admin@quickbite.com" && r.Password == "Password123!")), Times.Once);
+        cut.WaitForAssertion(() => _authServiceMock.Verify(x => x.LoginAsync(It.Is<LoginRequest>(r =>
+            r.Email == "admin@quickbite.com" && r.Password == "Password123!")), Times.Once));
 
         navMan.Uri.Should().EndWith("/");
     }
 
     [Fact]
-    public async Task Login_DisplaysErrorMessage_WhenLoginFails()
+    public void Login_DisplaysErrorMessage_WhenLoginFails()
     {
         // Arrange
         _authServiceMock
@@ -84,10 +84,10 @@ public class LoginTests : TestContext
         inputs[0].Change("admin@quickbite.com");
         inputs[1].Change("WrongPassword");
 
-        var form = cut.Find("form");
-        await cut.InvokeAsync(() => form.Submit());
+        var submit = cut.FindAll("button").First(b => b.TextContent.Contains("Iniciar Sesión"));
+        submit.Click();
 
         // Assert
-        cut.Markup.Should().Contain("Correo electrónico o contraseña incorrectos.");
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Credenciales inválidas o sin conexión con el servidor."));
     }
 }

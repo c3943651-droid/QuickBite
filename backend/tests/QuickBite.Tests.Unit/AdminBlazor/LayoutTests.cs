@@ -30,6 +30,10 @@ public class LayoutTests : TestContext
         Services.AddMudServices();
         Services.AddSingleton(_authServiceMock.Object);
 
+        this.AddTestAuthorization()
+            .SetAuthorized("admin@quickbite.com", AuthorizationState.Authorized)
+            .SetRoles("Admin");
+
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
 

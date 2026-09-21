@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using QuickBite.Shared.Auth;
 
@@ -11,6 +12,7 @@ public class AuthService : IAuthService
     private readonly HttpClient _httpClient;
     private readonly IJSRuntime _jsRuntime;
     private readonly CustomAuthenticationStateProvider _authStateProvider;
+    private readonly ILogger<AuthService> _logger;
 
     public UserSummaryDto? CurrentUser { get; private set; }
     public bool IsAuthenticated => CurrentUser != null;
@@ -18,26 +20,33 @@ public class AuthService : IAuthService
     public AuthService(
         HttpClient httpClient,
         IJSRuntime jsRuntime,
-        AuthenticationStateProvider authStateProvider)
+        AuthenticationStateProvider authStateProvider,
+        ILogger<AuthService> logger)
     {
         _httpClient = httpClient;
         _jsRuntime = jsRuntime;
         _authStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        _logger = logger;
     }
 
     public async Task<AuthResult> LoginAsync(LoginRequest request)
     {
         try
         {
+            _logger.LogDebug("Enviando login a {BaseAddress}api/v1/auth/login", _httpClient.BaseAddress);
             var response = await _httpClient.PostAsJsonAsync("api/v1/auth/login", request);
             if (!response.IsSuccessStatusCode)
             {
+                var body = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("Login rechazado por la API. Status: {Status} ({StatusCode}) Body: {Body}",
+                    (int)response.StatusCode, response.StatusCode, body);
                 return AuthResult.Failure("Correo electrónico o contraseña incorrectos.");
             }
 
             var authResult = await response.Content.ReadFromJsonAsync<AuthResponse>();
             if (authResult == null || string.IsNullOrWhiteSpace(authResult.AccessToken))
             {
+                _logger.LogWarning("Respuesta de login sin accessToken válido.");
                 return AuthResult.Failure("Respuesta de autenticación inválida.");
             }
 
@@ -54,6 +63,8 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error de conexión al iniciar sesión contra {BaseAddress}api/v1/auth/login",
+                _httpClient.BaseAddress);
             return AuthResult.Failure($"Error de conexión al iniciar sesión: {ex.Message}");
         }
     }
