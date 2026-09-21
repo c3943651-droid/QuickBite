@@ -50,6 +50,33 @@
                 bar.textContent = 'Tu sesión ha expirado. Redirigiendo al inicio de sesión...';
                 document.body.appendChild(bar);
                 setTimeout(function () { if (bar.parentNode) bar.remove(); }, 4000);
+            },
+            _visibilityHandlers: new Map(),
+            _visibilitySeq: 0,
+            _onVisibilityChange: function () {
+                const visible = !document.hidden;
+                quickbite._visibilityHandlers.forEach(function (ref) {
+                    ref.invokeMethodAsync('HandlePageVisibilityChanged', visible);
+                });
+            },
+            onVisibilityChange: function (dotNetRef) {
+                const id = ++quickbite._visibilitySeq;
+                quickbite._visibilityHandlers.set(id, dotNetRef);
+                if (quickbite._visibilityHandlers.size === 1) {
+                    document.addEventListener('visibilitychange', quickbite._onVisibilityChange);
+                }
+                dotNetRef.invokeMethodAsync('HandlePageVisibilityChanged', !document.hidden);
+                return id;
+            },
+            offVisibilityChange: function (id) {
+                const ref = quickbite._visibilityHandlers.get(id);
+                if (ref) {
+                    quickbite._visibilityHandlers.delete(id);
+                    ref.dispose();
+                }
+                if (quickbite._visibilityHandlers.size === 0) {
+                    document.removeEventListener('visibilitychange', quickbite._onVisibilityChange);
+                }
             }
         };
     </script>

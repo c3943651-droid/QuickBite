@@ -68,7 +68,7 @@ Las decisiones canónicas que afectan a las pruebas (lógica en triggers, pollin
 | Componente | Qué se prueba |
 | :--- | :--- |
 | Backend | Servicios de aplicación, validadores, utilidades |
-| App móvil | BLoCs, repositorios, validadores, servicio de polling, repositorio de historial de búsquedas |
+| App móvil | Stores/hooks (React Query + Zustand), repositorios, validadores, servicio de polling, repositorio de historial de búsquedas |
 | Panel admin | Componentes Razor, servicios de API, validadores |
 
 **Importante:** La lógica crítica en triggers de base de datos **no se cubre con pruebas unitarias**; se cubre con pruebas de integración (ver 05#D-05).
@@ -309,14 +309,14 @@ Una parte significativa de la lógica crítica reside en triggers y funciones de
 | Backend integración | xUnit, WebApplicationFactory, Npgsql | Endpoints con base de datos real |
 | Backend carga | k6 | Simulación de usuarios concurrentes |
 | Backend seguridad | OWASP ZAP | Escaneo de vulnerabilidades |
-| Móvil unitarias | Framework de pruebas, mockito | BLoCs, repositorios, validadores, servicio de polling |
-| Móvil widget | Framework de pruebas, WidgetTester | Componentes visuales |
-| Móvil integración | Framework de integración, adaptador de mocks HTTP | Flujos completos |
+| Móvil unitarias | Jest + React Native Testing Library, mocks | hooks/stores, repositorios, validadores, servicio de polling |
+| Móvil componentes | React Native Testing Library | Componentes/pantallas visuales |
+| Móvil integración | Jest + msw (mocks HTTP) | Flujos completos |
 | Móvil rendimiento | Herramientas de perfilado | CPU, memoria, fluidez |
 | Panel unitarias | bUnit | Componentes Razor |
 | Panel end-to-end | Playwright | Flujos en navegador |
 | Cobertura (C#) | Coverlet | Medición de cobertura C# |
-| Cobertura (Flutter) | lcov | Medición de cobertura Dart |
+| Cobertura (React Native) | c8 / Jest coverage | Medición de cobertura JS/TS |
 | Cobertura (triggers) | Medición cualitativa | Triggers cubiertos / total |
 | CI/CD | GitHub Actions | Ejecución automática |
 
@@ -381,7 +381,7 @@ Si algún quality gate no se cumple, el pipeline falla y no se despliega.
 | :--- | :--- | :--- | :--- |
 | Cobertura de código backend | Líneas cubiertas en C# excluyendo lógica en triggers | Al menos 70 % | Coverlet |
 | Cobertura de triggers | Porcentaje de triggers críticos cubiertos | 100 % | Medición cualitativa |
-| Cobertura de código móvil | Líneas cubiertas en lógica de negocio | Al menos 70 % | lcov |
+| Cobertura de código móvil | Líneas cubiertas en lógica de negocio | Al menos 70 % | jest --coverage |
 | Cobertura de código panel | Líneas cubiertas en componentes críticos | Al menos 60 % | Coverlet |
 | Defectos críticos resueltos | Porcentaje antes de la demostración | 100 % | Herramienta de issues |
 | Tiempo medio de corrección | Horas desde reporte a corrección | Menos de 72 | Herramienta de issues |
@@ -397,7 +397,7 @@ Si algún quality gate no se cumple, el pipeline falla y no se despliega.
 | Rol | Responsabilidades |
 | :--- | :--- |
 | Desarrollo backend | Pruebas unitarias de servicios; pruebas de integración de triggers y endpoints; mantener cobertura |
-| Desarrollo móvil | Pruebas unitarias de BLoCs y repositorios; pruebas de widget |
+| Desarrollo móvil | Pruebas unitarias de hooks/stores y repositorios; pruebas de componentes con RNTL |
 | Desarrollo web | Pruebas unitarias con bUnit |
 | QA | Diseño y ejecución de pruebas end-to-end, carga y seguridad; gestión de defectos |
 | Todo el equipo | Revisiones de código, pruebas exploratorias y ensayos de la demostración |

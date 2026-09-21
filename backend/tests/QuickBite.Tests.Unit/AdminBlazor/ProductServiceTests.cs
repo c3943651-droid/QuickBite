@@ -190,7 +190,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
-    public async Task GetCategoriesAsync_ReturnsActiveCategories()
+    public async Task GetCategoriesAsync_RequestsAdminEndpoint()
     {
         var handler = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -205,7 +205,7 @@ public class CategoryServiceTests
 
         result.Should().NotBeNull();
         result!.Should().ContainSingle(c => c.Nombre == "Hamburguesas");
-        handler.Requests[0].RequestUri!.PathAndQuery.Should().EndWith("/api/v1/categories");
+        handler.Requests[0].RequestUri!.PathAndQuery.Should().EndWith("/api/v1/admin/categories");
     }
 }
 
@@ -224,6 +224,18 @@ public class CloudinaryUploadServiceTests
             => Task.FromResult(_responder(request));
     }
 
+    private sealed class HttpClientFactoryMock : IHttpClientFactory
+    {
+        private readonly HttpClient _client;
+
+        public HttpClientFactoryMock(HttpClient client)
+        {
+            _client = client;
+        }
+
+        public HttpClient CreateClient(string name) => _client;
+    }
+
     private static CloudinaryUploadService BuildService(Action<Func<HttpRequestMessage, HttpResponseMessage>>? register = null)
     {
         var responder = (HttpRequestMessage _) => new HttpResponseMessage(HttpStatusCode.Created)
@@ -233,6 +245,7 @@ public class CloudinaryUploadServiceTests
                 Encoding.UTF8, "application/json")
         };
         var handler = new FakeHandler(responder);
+        var httpClientFactory = new HttpClientFactoryMock(new HttpClient(handler));
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -241,16 +254,32 @@ public class CloudinaryUploadServiceTests
                 ["Cloudinary:Folder"] = "admin"
             })
             .Build();
-        return new CloudinaryUploadService(new HttpClient(handler), config);
+        return new CloudinaryUploadService(httpClientFactory, config);
     }
 
     [Fact]
     public async Task UploadImageAsync_ReturnsSecureUrl()
     {
-        var service = BuildService();
+        var httpClientFactory = new HttpClientFactoryMock(new HttpClient(new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.Created)
+        {
+            Content = new StringContent(
+                """{"secure_url":"https://res.cloudinary.com/demo/image/upload/v1/hamburguesa.jpg","url":"http://..."}""",
+                Encoding.UTF8, "application/json")
+        })));
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Cloudinary:CloudName"] = "demo",
+                ["Cloudinary:UploadPreset"] = "qb_admin",
+                ["Cloudinary:Folder"] = "admin"
+            })
+            .Build();
+        var service = new CloudinaryUploadService(httpClientFactory, config);
         using var stream = new MemoryStream("fakedata"u8.ToArray());
+        var buffer = new byte[stream.Length];
+        await stream.ReadAsync(buffer, 0, buffer.Length);
 
-        var result = await service.UploadImageAsync(stream, "hamburguesa.jpg");
+        var result = await service.UploadImageAsync(buffer, "hamburguesa.jpg");
 
         result.Success.Should().BeTrue();
         result.Value.Should().Be("https://res.cloudinary.com/demo/image/upload/v1/hamburguesa.jpg");
@@ -262,10 +291,12 @@ public class CloudinaryUploadServiceTests
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?> { ["Cloudinary:CloudName"] = "demo" })
             .Build();
-        var service = new CloudinaryUploadService(new HttpClient(new FakeHandler(_ => new HttpResponseMessage())), config);
+        var service = new CloudinaryUploadService(new HttpClientFactoryMock(new HttpClient(new FakeHandler(_ => new HttpResponseMessage()))), config);
         using var stream = new MemoryStream("fakedata"u8.ToArray());
+        var buffer = new byte[stream.Length];
+        await stream.ReadAsync(buffer, 0, buffer.Length);
 
-        var result = await service.UploadImageAsync(stream, "x.jpg");
+        var result = await service.UploadImageAsync(buffer, "x.jpg");
 
         result.Success.Should().BeFalse();
         result.Error.Should().Contain("Cloudinary");

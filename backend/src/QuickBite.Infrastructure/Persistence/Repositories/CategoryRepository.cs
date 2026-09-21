@@ -24,6 +24,15 @@ public class CategoryRepository : ICategoryRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Category>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _db.Categorias
+            .AsNoTracking()
+            .OrderBy(c => c.Orden)
+            .ThenBy(c => c.Nombre)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _db.Categorias

@@ -57,7 +57,7 @@ Mapea la intención de la tarea al subcomando de `.agents/scripts/git-auto.sh`:
 - La rama de integración activa es siempre `develop`, no `main`.
 - **Nunca hagas commit directamente en `develop`, `main` o `master`**: usa una rama
   de trabajo o `git-auto.sh auto`, que la crea automáticamente.
-- Nunca hagas commit si `dotnet build -warnaserror` o `flutter analyze` fallan
+- Nunca hagas commit si `dotnet build -warnaserror` o `npm run lint` fallan
   (`auto` ya lo verifica antes de commitear).
 - Mantén mensajes de commit descriptivos y en minúsculas en el subject,
   formato Conventional Commits (`tipo(ámbito): verbo imperativo corto`).

@@ -1,5 +1,6 @@
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuickBite.Api.Configuration;
@@ -8,6 +9,7 @@ using QuickBite.Api.Middleware;
 using QuickBite.Application;
 using QuickBite.Application.Configuration;
 using QuickBite.Infrastructure;
+using QuickBite.Infrastructure.Persistence;
 using Serilog;
 using System.Security.Claims;
 using System.Text;
@@ -128,6 +130,8 @@ try
 
     var app = builder.Build();
 
+    await ApplyMigrationsAsync(app.Services);
+
     app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
     app.UseSwagger();
@@ -158,6 +162,15 @@ catch (Exception ex) when (ex is not HostAbortedException)
 finally
 {
     Log.CloseAndFlush();
+}
+
+static async Task ApplyMigrationsAsync(IServiceProvider services)
+{
+    var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("DbInitializer");
+    using var scope = services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<QuickBiteDbContext>();
+    await db.Database.MigrateAsync();
+    logger.LogInformation("Migraciones aplicadas al iniciar (incluye credenciales/admin por defecto).");
 }
 
 public partial class Program;

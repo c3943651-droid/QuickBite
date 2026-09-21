@@ -10,13 +10,13 @@ Consideraciones específicas de QuickBite:
 - Arquitectura: Clean Architecture respetada (Domain no depende de nada, capas externas dependen de internas), sin lógica en controladores, sin dependencias circulares entre proyectos.
 - Seguridad: JWT bien configurado, secrets fuera del código, CORS restrictivo, validación de entrada, contraseñas hasheadas con BCrypt.
 - Rendimiento: consultas EF Core optimizadas (no N+1), uso de caché donde corresponda, paginación, sin clonar objetos grandes en hot paths.
-- Móvil: BLoC emite todos los estados (loading, success, error), repositorios manejan excepciones correctamente, widgets manejan null/empty.
+- Móvil: React Query/stores exponen loading/error/data, repositorios manejan excepciones correctamente, componentes manejan null/empty.
 
 Clasifica cada comentario por severidad (Crítico / Requerido / Opcional / Detalle).
 
 Verifica la historia de verificación del autor:
 - `dotnet test` pasa (backend)
-- `flutter analyze` limpio (móvil)
+- `npm run lint` limpio (móvil)
 - `dotnet build -warnaserror` pasa (si aplica backend)
 - La spec en `docs/` coincide con lo implementado
 """

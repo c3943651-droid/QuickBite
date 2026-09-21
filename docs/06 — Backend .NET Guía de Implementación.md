@@ -63,7 +63,7 @@ La solución se ubica en un monorepo con tres carpetas de primer nivel:
 | Carpeta | Contenido |
 | :--- | :--- |
 | backend | Solución .NET con API, Application, Domain, Infrastructure, Shared, AdminBlazor y pruebas |
-| mobile | Proyecto Flutter |
+| mobile | Proyecto React Native |
 | docs | Documentación del proyecto |
 
 ---

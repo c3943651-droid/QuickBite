@@ -48,8 +48,8 @@ Antes de realizar un commit o enviar cambios al remoto:
    - Backend `.NET`: `dotnet build backend/src/QuickBite.sln` y `dotnet test backend/tests/QuickBite.Tests.Unit/`.
    - Lint estricto del backend: `dotnet build backend/src/QuickBite.sln -warnaserror`.
    - Formato del backend: `dotnet format backend/src/QuickBite.sln --verify-no-changes`.
-   - Móvil Flutter: `flutter analyze` y `flutter test` (desde `mobile/`).
-   - Formato del móvil: `dart format --output=none --set-exit-if-changed .` (desde `mobile/`).
+   - Móvil (React Native): `npm run lint` y `npm test` (desde `mobile/`).
+   - Formato del móvil: `npx prettier --check .` (desde `mobile/`).
 
 ---
 
@@ -75,7 +75,7 @@ bash .agents/scripts/git-auto.sh auto fix      # fuerza tipo fix
 1. Si se está en `develop`/`main`/`master`, crea automáticamente una rama
    `feature/`, `fix/` o `chore/` con un slug descriptivo derivado de los cambios.
 2. Hace `git add -A`.
-3. Verifica el frente afectado (`dotnet build -warnaserror` en backend o `flutter analyze` en móvil);
+3. Verifica el frente afectado (`dotnet build -warnaserror` en backend o `npm run lint` en móvil);
    si falla, aborta sin commitear. Se puede omitir con `GIT_AUTO_SKIP_VERIFY=1`.
 4. Genera un mensaje de commit Conventional Commits automático
    (`feat(ámbito): add ...`, `fix(ámbito): fix ...`, `docs: update ...`) a partir del diff.

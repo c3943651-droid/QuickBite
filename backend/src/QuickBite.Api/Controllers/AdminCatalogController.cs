@@ -12,6 +12,7 @@ public class AdminCatalogController : ControllerBase
     private readonly ICatalogService _svc;
     public AdminCatalogController(ICatalogService s) { _svc = s; }
     private Guid? Uid => Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var g) ? g : null;
+    [HttpGet("categories")] public async Task<IActionResult> ListCats(CancellationToken ct) => Ok(await _svc.GetAdminCategoriesAsync(ct));
     [HttpPost("categories")] public async Task<IActionResult> CreateCat([FromBody] CreateCategoryRequest r, CancellationToken ct) => StatusCode(201, await _svc.CreateCategoryAsync(r, ct));
     [HttpPut("categories/{id:guid}")] public async Task<IActionResult> UpdCat(Guid id, [FromBody] UpdateCategoryRequest r, CancellationToken ct) => Ok(await _svc.UpdateCategoryAsync(id, r, ct));
     [HttpDelete("categories/{id:guid}")] public async Task<IActionResult> DelCat(Guid id, CancellationToken ct) { await _svc.DeleteCategoryAsync(id, ct); return NoContent(); }
@@ -24,4 +25,16 @@ public class AdminCatalogController : ControllerBase
     [HttpPost("products/{id:guid}/options")] public async Task<IActionResult> CreateOpt(Guid id, [FromBody] CreateProductOptionRequest r, CancellationToken ct) => StatusCode(201, await _svc.CreateOptionAsync(id, r, ct));
     [HttpPut("products/{id:guid}/options/{optionId:guid}")] public async Task<IActionResult> UpdOpt(Guid id, Guid optionId, [FromBody] UpdateProductOptionRequest r, CancellationToken ct) => Ok(await _svc.UpdateOptionAsync(id, optionId, r, ct));
     [HttpDelete("products/{id:guid}/options/{optionId:guid}")] public async Task<IActionResult> DelOpt(Guid id, Guid optionId, CancellationToken ct) { await _svc.DeleteOptionAsync(id, optionId, ct); return NoContent(); }
+    [HttpPost("products/upload-image")]
+    public async Task<IActionResult> UploadProductImage([FromForm] IFormFile file, CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return BadRequest(new { error = "No se ha proporcionado ningún archivo." });
+        }
+
+        await using var stream = file.OpenReadStream();
+        var imageUrl = await _svc.GetImageService().UploadAsync(stream, file.FileName, ct);
+        return Ok(new { imageUrl });
+    }
 }

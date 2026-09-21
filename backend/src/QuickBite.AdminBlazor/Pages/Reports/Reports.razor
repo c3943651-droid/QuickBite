@@ -1,0 +1,53 @@
+@page "/reports"
+@attribute [Authorize]
+
+<PageTitle>Reportes — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 pb-8">
+    <div class="mb-4">
+        <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">Reportes</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">Analíticas de ventas, productos, clientes y repartidores</MudText>
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12" sm="6" lg="3">
+            <MudCard Class="d-flex flex-column h-100 rounded-lg">
+                <MudCardContent Class="d-flex flex-column flex-grow-1">
+                    <MudText Typo="Typo.h6" Color="Color.Primary">Ventas por día</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="flex-grow-1">Ingresos y pedidos agrupados por día en el rango seleccionado.</MudText>
+                    <MudButton Class="mt-3" Variant="Variant.Outlined" Color="Color.Primary" Href="/reports/sales-by-day">Ver reporte</MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" lg="3">
+            <MudCard Class="d-flex flex-column h-100 rounded-lg">
+                <MudCardContent Class="d-flex flex-column flex-grow-1">
+                    <MudText Typo="Typo.h6" Color="Color.Primary">Productos más vendidos</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="flex-grow-1">Ranking de productos por cantidad y monto acumulado en el período.</MudText>
+                    <MudButton Class="mt-3" Variant="Variant.Outlined" Color="Color.Primary" Href="/reports/top-products">Ver reporte</MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" lg="3">
+            <MudCard Class="d-flex flex-column h-100 rounded-lg">
+                <MudCardContent Class="d-flex flex-column flex-grow-1">
+                    <MudText Typo="Typo.h6" Color="Color.Primary">Clientes frecuentes</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="flex-grow-1">Top clientes por número de pedidos y gasto total.</MudText>
+                    <MudButton Class="mt-3" Variant="Variant.Outlined" Color="Color.Primary" Href="/reports/top-clients">Ver reporte</MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" lg="3">
+            <MudCard Class="d-flex flex-column h-100 rounded-lg">
+                <MudCardContent Class="d-flex flex-column flex-grow-1">
+                    <MudText Typo="Typo.h6" Color="Color.Primary">Rendimiento de repartidores</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="flex-grow-1">Entregas, tiempo promedio y desempeño por repartidor.</MudText>
+                    <MudButton Class="mt-3" Variant="Variant.Outlined" Color="Color.Primary" Href="/reports/delivery-performance">Ver reporte</MudButton>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

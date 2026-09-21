@@ -1,0 +1,106 @@
+@page "/categories/create"
+@page "/categories/{Id:guid}/edit"
+@attribute [Authorize]
+@using QuickBite.AdminBlazor.Models.Catalog
+@using QuickBite.AdminBlazor.Services
+
+<PageTitle>@(IsEdit ? "Editar categoría" : "Nueva categoría") — QuickBite Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 pb-8">
+    <div class="d-flex align-center justify-space-between mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">@(IsEdit ? "Editar categoría" : "Nueva categoría")</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@(IsEdit ? "Actualiza los datos de la categoría" : "Completa los datos para agregar la categoría")</MudText>
+        </div>
+        <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoToList">
+            Volver
+        </MudButton>
+    </div>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+    }
+    else if (Model is not null)
+    {
+        <MudPaper Elevation="1" Class="pa-6 rounded-lg">
+            <EditForm Model="Model" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                <MudForm @ref="_form" @bind-IsValid="@IsValid">
+                    <MudText Typo="Typo.subtitle1" Class="fw-bold mb-2">Datos de la categoría</MudText>
+                    <MudGrid>
+                        <MudItem xs="12">
+                            <MudTextField T="string"
+                                        Label="Nombre"
+                                        @bind-Value="Model.Nombre"
+                                        Required="true"
+                                        RequiredError="El nombre es requerido."
+                                        Variant="Variant.Outlined"
+                                        Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField T="string"
+                                        Label="Descripción"
+                                        @bind-Value="Model.Descripcion"
+                                        Variant="Variant.Outlined"
+                                        Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudNumericField T="short"
+                                           Label="Orden"
+                                           @bind-Value="Model.Orden"
+                                           Min="0"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" Class="d-flex align-center">
+                            <MudSwitch T="bool"
+                                     @bind-Value="Model.Activo"
+                                     Color="Color.Success"
+                                     Label="Activa" />
+                        </MudItem>
+                    </MudGrid>
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mt-4">
+                            @ErrorMessage
+                        </MudAlert>
+                    }
+
+                    <div class="d-flex align-center justify-end gap-2 mt-6">
+                        <MudButton Variant="Variant.Text" OnClick="GoToList">
+                            Cancelar
+                        </MudButton>
+                        <MudButton ButtonType="ButtonType.Submit"
+                                 Variant="Variant.Filled"
+                                 Color="Color.Primary"
+                                 Disabled="IsSaving"
+                                 StartIcon="@(IsSaving ? null : Icons.Material.Filled.Save)">
+                            @if (IsSaving)
+                            {
+                                <MudProgressCircular Size="Size.Small" Class="me-2" Indeterminate="true" />
+                                <MudText>Guardando...</MudText>
+                            }
+                            else
+                            {
+                                <MudText>@(IsEdit ? "Guardar cambios" : "Crear categoría")</MudText>
+                            }
+                        </MudButton>
+                    </div>
+                </MudForm>
+            </EditForm>
+        </MudPaper>
+    }
+    else
+    {
+        <MudContainer MaxWidth="MaxWidth.Small" Class="py-12 text-center">
+            <MudIcon Icon="@Icons.Material.Filled.Block" Color="Color.Error" Style="font-size: 5rem;" />
+            <MudText Typo="Typo.h4" Color="Color.Error" Class="mt-4">No encontrada</MudText>
+            <MudText Typo="Typo.body1" Class="mt-2">La categoría solicitada no existe.</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowBack" OnClick="GoToList" Class="mt-4">
+                Volver a la lista
+            </MudButton>
+        </MudContainer>
+    }
+</MudContainer>

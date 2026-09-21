@@ -12,6 +12,7 @@ public class CatalogServiceTests
 {
     private readonly Mock<IProductRepository> _products = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
+    private readonly Mock<IImageService> _imageService = new();
 
     public CatalogServiceTests()
     {
@@ -20,7 +21,7 @@ public class CatalogServiceTests
         _products.Setup(p => p.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
     }
 
-    private CatalogService CreateService() => new(_unitOfWork.Object);
+    private CatalogService CreateService() => new(_unitOfWork.Object, _imageService.Object);
 
     [Fact]
     public async Task GetPriceHistoryAsync_ProductoNoExiste_LanzaNotFound()

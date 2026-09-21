@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Impulsa el desarrollo con pruebas (TDD). Úsalo al implementar cualquier lógica, corregir un bug o cambiar comportamiento en QuickBite (.NET backend, Flutter mobile o Blazor admin). Escribe un test que falle antes de escribir el código que lo haga pasar.
+description: Impulsa el desarrollo con pruebas (TDD). Úsalo al implementar cualquier lógica, corregir un bug o cambiar comportamiento en QuickBite (.NET backend, React Native mobile o Blazor admin). Escribe un test que falle antes de escribir el código que lo haga pasar.
 ---
 
 # Test-Driven Development (adaptado a QuickBite)
@@ -38,16 +38,16 @@ Los tests unitarios viven en `backend/tests/QuickBite.Tests.Unit/` (xUnit).
 Los tests de integración viven en `backend/tests/QuickBite.Tests.Integration/`.
 Convención: nombra los tests describiendo el *comportamiento*, no el mecanismo.
 
-### Móvil (Flutter)
+### Móvil (React Native)
 
 ```bash
 cd mobile
-flutter test           # suite completa
-flutter test <archivo> # test concreto
-flutter analyze        # lint estático
+npm test           # suite completa
+npm test -- <archivo> # test concreto
+npm run lint        # lint estático
 ```
 
-Los tests viven en `mobile/test/`.
+Los tests viven en `mobile/src/**/*.test.*` (Jest + React Native Testing Library).
 
 ## El ciclo TDD
 
@@ -120,9 +120,9 @@ Invierte el esfuerzo según la pirámide: la mayoría de los tests deben ser peq
 
 | Tamaño | Restricciones | Velocidad | Ejemplo en QuickBite |
 |---|---|---|---|
-| **Pequeño** | Un solo proceso, sin I/O, sin red, sin DB | Milisegundos | Servicios de aplicación, validadores, BLoCs/Cubits, lógica de dominio |
+| **Pequeño** | Un solo proceso, sin I/O, sin red, sin DB | Milisegundos | Servicios de aplicación, validadores, hooks de React Query + stores de Zustand, lógica de dominio |
 | **Mediano** | Multiproceso ok, solo localhost | Segundos | Integración con EF Core (in-memory o container), repositorios con DB de prueba |
-| **Grande** | Multi-máquina ok, servicios externos | Minutos | E2E con API + Flutter, integración con PostgreSQL real (Supabase local) |
+| **Grande** | Multi-máquina ok, servicios externos | Minutos | E2E con API + React Native, integración con PostgreSQL real (Supabase local) |
 
 ## Escribir buenos tests
 
@@ -198,9 +198,9 @@ Para fixes complejos, lanza un subagente que escriba el test de reproducción si
 Al terminar cualquier implementación:
 
 - [ ] Cada comportamiento nuevo tiene un test correspondiente.
-- [ ] La suite completa pasa: `dotnet test` (backend) / `flutter test` (móvil).
+- [ ] La suite completa pasa: `dotnet test` (backend) / `npm test` (móvil).
 - [ ] Los fixes de bugs incluyen un test de reproducción que fallaba antes del fix.
 - [ ] `dotnet build -warnaserror` pasa sin errores (backend).
-- [ ] `flutter analyze` limpio (móvil).
+- [ ] `npm run lint` limpio (móvil).
 - [ ] Los nombres de tests describen el comportamiento verificado.
 - [ ] No se saltaron ni deshabilitaron tests.

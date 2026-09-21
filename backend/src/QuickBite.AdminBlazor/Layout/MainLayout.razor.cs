@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 using QuickBite.AdminBlazor.Services;
 
@@ -8,35 +10,42 @@ public partial class MainLayout
 {
     [Inject] private IAuthService AuthService { get; set; } = default!;
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
     protected bool _drawerOpen = true;
     protected bool _isDarkMode;
 
-    protected readonly MudTheme _theme = new()
+    protected readonly MudTheme _theme = QuickBiteTheme.Instance;
+
+    private ClaimsPrincipal? _user;
+
+    protected override async Task OnInitializedAsync()
     {
-        PaletteLight = new PaletteLight
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        _user = state.User;
+    }
+
+    protected string? UserName =>
+        !string.IsNullOrWhiteSpace(_user?.Identity?.Name)
+            ? _user!.Identity!.Name
+            : AuthService.CurrentUser?.Nombre;
+
+    protected string? UserEmail =>
+        _user?.FindFirst(ClaimTypes.Email)?.Value
+        ?? AuthService.CurrentUser?.Email;
+
+    protected string DisplayName => UserName ?? "Administrador";
+
+    protected string DisplayEmail => UserEmail ?? "admin@quickbite.com";
+
+    protected string Initials
+    {
+        get
         {
-            Primary = "#FF6B00",
-            PrimaryDarken = "#E05E00",
-            PrimaryLighten = "#FF8533",
-            Secondary = "#212121",
-            AppbarBackground = "#FF6B00",
-            Background = "#F8F9FA",
-            Surface = "#FFFFFF",
-            DrawerBackground = "#FFFFFF"
-        },
-        PaletteDark = new PaletteDark
-        {
-            Primary = "#FF6B00",
-            PrimaryDarken = "#E05E00",
-            PrimaryLighten = "#FF8533",
-            Secondary = "#E0E0E0",
-            AppbarBackground = "#1E1E1E",
-            Background = "#121212",
-            Surface = "#1E1E1E",
-            DrawerBackground = "#1E1E1E"
+            var fromName = GetInitials(UserName);
+            return string.IsNullOrEmpty(fromName) ? GetInitials(UserEmail) : fromName;
         }
-    };
+    }
 
     protected void ToggleDrawer()
     {
@@ -56,7 +65,7 @@ public partial class MainLayout
 
     protected string GetInitials(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name)) return "AD";
+        if (string.IsNullOrWhiteSpace(name)) return string.Empty;
         var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length >= 2) return $"{parts[0][0]}{parts[1][0]}".ToUpper();
         return name[0..Math.Min(2, name.Length)].ToUpper();

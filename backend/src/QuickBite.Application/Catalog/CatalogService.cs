@@ -7,7 +7,15 @@ namespace QuickBite.Application.Catalog;
 public sealed class CatalogService : ICatalogService
 {
     private readonly IUnitOfWork _uow;
-    public CatalogService(IUnitOfWork uow) { _uow = uow; }
+    private readonly IImageService _imageService;
+
+    public CatalogService(IUnitOfWork uow, IImageService imageService)
+    {
+        _uow = uow;
+        _imageService = imageService;
+    }
+
+    public IImageService GetImageService() => _imageService;
     private static CategoryResponse ToCat(Category c) => new(c.Id, c.Nombre, c.Descripcion, c.Orden, c.Activo);
     private static ProductOptionResponse ToOpt(ProductOption o) => new(o.Id, o.Nombre, o.PrecioAdicional, o.Activo);
     private static ProductListItemResponse ToList(Product p) => new(p.Id, p.Nombre, p.Descripcion, p.Precio, p.ImagenUrl, p.Disponible, p.Categoria == null ? null : new CategoryResponse(p.Categoria.Id, p.Categoria.Nombre, p.Categoria.Descripcion, p.Categoria.Orden, p.Categoria.Activo), p.Inventario?.Stock, p.Inventario?.StockMinimo);
@@ -16,6 +24,12 @@ public sealed class CatalogService : ICatalogService
     public async Task<IReadOnlyList<CategoryResponse>> GetCategoriesAsync(CancellationToken ct = default)
     {
         var cats = await _uow.Categories.GetActiveAsync(ct);
+        return cats.Select(ToCat).ToList();
+    }
+
+    public async Task<IReadOnlyList<CategoryResponse>> GetAdminCategoriesAsync(CancellationToken ct = default)
+    {
+        var cats = await _uow.Categories.GetAllAsync(ct);
         return cats.Select(ToCat).ToList();
     }
     public async Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest req, CancellationToken ct = default)

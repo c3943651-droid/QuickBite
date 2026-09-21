@@ -1,6 +1,6 @@
 ---
 name: debugging-and-error-recovery
-description: Guía la depuración sistemática de causa raíz en QuickBite (.NET backend, Flutter mobile o Blazor admin). Úsalo cuando fallen los tests, se rompa la compilación, el comportamiento no coincida con lo esperado, o aparezca un error inesperado.
+description: Guía la depuración sistemática de causa raíz en QuickBite (.NET backend, React Native mobile o Blazor admin). Úsalo cuando fallen los tests, se rompa la compilación, el comportamiento no coincida con lo esperado, o aparezca un error inesperado.
 ---
 
 # Debugging and Error Recovery (adaptado a QuickBite)
@@ -12,7 +12,7 @@ Depuración sistemática con triage estructurado. Cuando algo se rompe, deja de 
 ## Cuándo usar
 
 - Los tests fallan tras un cambio de código.
-- La compilación se rompe (`dotnet build` o `flutter build/analyze`).
+- La compilación se rompe (`dotnet build` o `npm run lint`).
 - El comportamiento en tiempo de ejecución no coincide con lo esperado.
 - Llega un reporte de bug.
 - Aparece un error en logs, una excepción o un crash en la app.
@@ -45,10 +45,10 @@ dotnet test backend/tests/QuickBite.Tests.Unit/ --filter "NombreDelTest" --logge
 dotnet test --filter "FullyQualifiedName~NombreContiene"
 
 # Móvil — test que falla
-cd mobile && flutter test test/archivo_test.dart --name "nombreDelTest"
+cd mobile && npm test -- test/archivo.test.ts -t "nombreDelTest"
 
-# Móvil — app en modo profile (debugging en vivo)
-cd mobile && flutter run --profile
+# Móvil — app en modo dev (debugging en vivo)
+cd mobile && npm run android && npx react-native log-android
 
 # Backend — ejecutar solo un proyecto
 dotnet run --project backend/src/QuickBite.Api/
@@ -60,10 +60,10 @@ dotnet run --project backend/src/QuickBite.Api/
 No se reproduce bajo demanda:
 ├── ¿Depende de temporalización?
 │   ├── Revisa pollings concurrentes (doc 05: intervalo de polling)
-│   ├── ¿Carreras de estado en BLoC/Cubit (móvil)?
+│   ├── ¿Carreras de estado en React Query/Zustand (móvil)?
 │   └── Añade logs con timestamps en la zona sospechosa
 ├── ¿Depende del entorno?
-│   ├── Compara versiones de .NET SDK, Flutter, PostgreSQL
+│   ├── Compara versiones de .NET SDK, Node.js, PostgreSQL
 │   ├── ¿Diferencias entre Development/Production?
 │   └── Prueba en un contenedor limpio
 ├── ¿Depende del estado?
@@ -87,8 +87,8 @@ Acota DÓNDE ocurre el fallo:
 ├── Servicio (Application)     → ¿reglas de negocio? ¿validadores FluentValidation?
 ├── Repositorio (Infrastructure) → ¿EF Core? ¿migración? ¿conexión a BD?
 ├── Servicio externo           → ¿Cloudinary? ¿Resend? ¿timeout?
-├── BLoC/Cubit (móvil)         → ¿estado emitido correctamente? ¿excepción no capturada?
-├── Widget (móvil)             → ¿manejo de null? ¿actualización de UI?
+├── Hooks/React Query (móvil)  → ¿loading/error/data expuestos correctamente? ¿excepción no capturada?
+├── Componente (móvil)         → ¿manejo de null/empty? ¿actualización de UI?
 └── Datos                      → ¿schema de BD consistente? ¿datos de prueba válidos?
 ```
 
@@ -131,7 +131,7 @@ dotnet build backend/src/QuickBite.sln                # compilación
 dotnet build backend/src/QuickBite.sln -warnaserror   # lint
 
 # Móvil
-cd mobile && flutter test && flutter analyze
+cd mobile && npm test && npm run lint
 ```
 
 ## Patrones específicos de error por frente
@@ -153,20 +153,20 @@ Excepciones en runtime:
 └── ValidationException → revisa validadores FluentValidation
 ```
 
-### Móvil (Flutter)
+### Móvil (React Native)
 
 ```
-flutter analyze falla:
-├── Error de tipos → revisa los tipos en la ubicación citada
+npm run lint falla:
+├── Error de tipos (TypeScript) → revisa los tipos en la ubicación citada
 ├── Error de import → verifica la ruta del archivo
-└── Warning de null safety → usa `?` o `!` correctamente
+└── Warning de ESLint/null → revisa null/undefined en los componentes
 
 Excepciones en runtime:
-├── Null check on null value → widget recibe null donde espera dato
-├── SocketException → sin conexión, URL de API mal configurada
+├── TypeError · Cannot read property of null → componente recibe null donde espera dato
+├── NetworkError / SocketException → sin conexión, URL de API mal configurada
 ├── TimeoutException → polling o HTTP timeout muy bajo
-├── FormatException → JSON mal formateado, datos inesperados de la API
-└── BLoC errors → error no manejado en el stream, state no emitido
+├── Error de parseo JSON → datos inesperados de la API
+└── Errores en hooks (React Query) → error no manejado, data/error no actualizado
 ```
 
 ## Tratar la salida de error como datos no fiables
@@ -190,7 +190,7 @@ Tras arreglar un bug:
 - [ ] La causa raíz está identificada y documentada.
 - [ ] El arreglo aborda la causa raíz, no solo los síntomas.
 - [ ] Existe un test de regresión que falla sin el arreglo.
-- [ ] Todos los tests existentes pasan (`dotnet test` / `flutter test`).
-- [ ] El proyecto compila (`dotnet build` / `flutter analyze`).
-- [ ] `dotnet build -warnaserror` pasa (backend) / `flutter analyze` limpio (móvil).
+- [ ] Todos los tests existentes pasan (`dotnet test` / `npm test`).
+- [ ] El proyecto compila (`dotnet build` / `npm run lint`).
+- [ ] `dotnet build -warnaserror` pasa (backend) / `npm run lint` limpio (móvil).
 - [ ] El escenario original del bug está verificado de extremo a extremo.

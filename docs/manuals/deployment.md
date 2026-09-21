@@ -42,7 +42,7 @@ Las decisiones canónicas que afectan al despliegue y la operación (redundancia
 
 | Componente | Comunicación |
 | :--- | :--- |
-| App móvil Flutter | HTTPS con autenticación JWT hacia la API |
+| App móvil React Native | HTTPS con autenticación JWT hacia la API |
 | Panel admin Blazor | HTTPS con autenticación JWT hacia la API |
 | API REST | HTTPS hacia base de datos, Cloudinary y Resend |
 | Cron jobs | HTTPS hacia el endpoint de salud de la API |
@@ -198,7 +198,7 @@ Ambos apuntan al endpoint de salud de la API.
 ### 4.1. Preparación del Entorno Local
 
 1. Instalar el SDK de .NET 8.
-2. Instalar el SDK de Flutter.
+2. Instalar Node.js 20+ y el entorno de React Native (Android SDK con Android Studio).
 3. Clonar el repositorio.
 4. Configurar el archivo de variables de entorno local (excluido del control de versiones).
 5. Configurar la base de datos local en un contenedor.
@@ -487,7 +487,7 @@ Cualquier nueva funcionalidad debe:
 | Rol | Responsabilidades |
 | :--- | :--- |
 | Desarrollo backend | Mantener la API, aplicar migraciones, corregir defectos, mantener pruebas |
-| Desarrollo móvil | Mantener la app Flutter, compilar APKs, corregir defectos |
+| Desarrollo móvil | Mantener la app React Native, compilar APKs, corregir defectos |
 | Desarrollo web | Mantener el panel Blazor, corregir defectos |
 | QA | Ejecutar pruebas, reportar defectos, verificar correcciones |
 | DevOps | Mantener CI/CD, gestionar despliegues, monitorear el entorno, gestionar backups |

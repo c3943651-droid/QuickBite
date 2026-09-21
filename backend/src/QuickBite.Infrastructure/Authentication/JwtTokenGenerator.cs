@@ -23,13 +23,18 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
         var now = DateTime.UtcNow;
         var expira = now.AddMinutes(_settings.AccessTokenExpirationMinutes);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(ClaimTypes.Role, RolNombre(user.Rol)),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new(ClaimTypes.Role, RolNombre(user.Rol)),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        if (!string.IsNullOrWhiteSpace(user.Nombre))
+        {
+            claims.Add(new Claim("name", user.Nombre));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret.PadRight(32, '0')));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

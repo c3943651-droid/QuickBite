@@ -48,7 +48,9 @@ public partial class Create
         try
         {
             await using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
-            var result = await CloudinaryService.UploadImageAsync(stream, file.Name);
+            var buffer = new byte[stream.Length];
+            await stream.ReadAsync(buffer, 0, buffer.Length);
+            var result = await CloudinaryService.UploadImageAsync(buffer, file.Name);
             if (!result.Success)
             {
                 ErrorMessage = result.Error;

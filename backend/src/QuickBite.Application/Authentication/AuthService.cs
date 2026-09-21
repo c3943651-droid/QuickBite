@@ -117,6 +117,17 @@ public sealed class AuthService : IAuthService
         var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
         var refreshToken = await IssueRefreshTokenAsync(user.Id, client, cancellationToken);
 
+        await _unitOfWork.Audits.AddAsync(new AuditAction
+        {
+            UsuarioId = user.Id,
+            Accion = "login",
+            Entidad = "sesion",
+            EntidadId = user.Id,
+            IpOrigen = client.IpOrigen,
+            UserAgent = client.UserAgent,
+            CreadoEn = DateTime.UtcNow
+        }, cancellationToken);
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new AuthResponse

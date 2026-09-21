@@ -5,8 +5,8 @@ Invoca la skill debugging-and-error-recovery.
 
 Sigue la regla "detén la línea": deja de añadir funciones, conserva la evidencia y diagnostica con el checklist de triage.
 
-1. REPRODUCE el fallo de forma fiable (dotnet test, flutter test, o comprobación manual con logs)
-2. LOCALIZA la capa que falla (compilación, controlador, servicio de aplicación, repositorio, repositorio remoto/local, BLoC/Cubit, widget)
+1. REPRODUCE el fallo de forma fiable (dotnet test, npm test, o comprobación manual con logs)
+2. LOCALIZA la capa que falla (compilación, controlador, servicio de aplicación, repositorio, repositorio remoto/local, hooks de React Query + stores de Zustand, componente)
 3. REDUCE al caso mínimo que falla
 4. ARREGLA la causa raíz, no el síntoma
 5. PROTEGE con un test de regresión que falle sin el fix
@@ -18,9 +18,9 @@ Comandos para backend:
 - `dotnet build backend/src/QuickBite.sln -warnaserror`
 
 Comandos para móvil:
-- `flutter test` (desde mobile/)
-- `flutter analyze`
+- `npm test` (desde mobile/)
+- `npm run lint`
 
 Patrones de error comunes en .NET: excepciones no capturadas, validación de DTOs, dependencias faltantes en DI, autenticación JWT, EF Core.
-Patrones de error comunes en Flutter: estados no emitidos en BLoC, excepciones en repositorios, widgets sin manejar null.
+Patrones de error comunes en React Native: errores no capturados en hooks/React Query, excepciones en repositorios, componentes sin manejar null/empty.
 """

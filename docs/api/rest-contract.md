@@ -294,10 +294,10 @@ en_camino → entregado
 
 | Endpoint | Cliente | Frecuencia | Decisión |
 |----------|---------|------------|----------|
-| `GET /orders/{id}/status` | App móvil (cliente) | 10 segundos | D-01 |
+| `GET /orders/{id}/status` | App móvil RN (cliente) | 10 segundos | D-01 |
 | `GET /admin/dashboard` | Panel admin | 30 segundos | D-01 |
 | `GET /admin/orders` | Panel admin | 30 segundos | D-01 |
-| `GET /delivery/available` | App móvil (repartidor) | 30 segundos | D-01 |
+| `GET /delivery/available` | App móvil RN (repartidor) | 30 segundos | D-01 |
 
 **Reglas de polling:**
 - Inicia al entrar a la pantalla

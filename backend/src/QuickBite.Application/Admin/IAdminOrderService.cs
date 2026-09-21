@@ -2,6 +2,7 @@ using QuickBite.Application.Admin.Dtos;
 using QuickBite.Application.Catalog.Dtos;
 using QuickBite.Application.Orders.Dtos;
 using QuickBite.Domain.Enums;
+using QuickBite.Shared.Dashboard;
 namespace QuickBite.Application.Admin;
 public interface IAdminOrderService
 {
@@ -10,5 +11,5 @@ public interface IAdminOrderService
     Task<OrderResponse> UpdateStatusAsync(Guid orderId, OrderStatus status, string? comentario = null, CancellationToken ct = default);
     Task CancelAsync(Guid orderId, string motivo, CancellationToken ct = default);
     Task AssignAsync(Guid orderId, Guid repartidorId, AssignmentOrigin origin, CancellationToken ct = default);
-    Task<object> DashboardAsync(CancellationToken ct = default);
+    Task<DashboardDataDto> DashboardAsync(CancellationToken ct = default);
 }

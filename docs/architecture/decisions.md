@@ -49,10 +49,10 @@ Use polling as the only real-time update mechanism. Do not implement Firebase Cl
 
 | Client | Endpoint | Frequency |
 |---|---|---:|
-| Customer mobile app | `GET /orders/{id}/status` | 10 seconds |
+| Customer mobile (RN) app | `GET /orders/{id}/status` | 10 seconds |
 | Admin dashboard | `GET /admin/dashboard` | 30 seconds |
 | Admin order list | `GET /admin/orders` | 30 seconds |
-| Delivery mobile app | `GET /delivery/available` | 30 seconds |
+| Delivery mobile (RN) app | `GET /delivery/available` | 30 seconds |
 
 ### Lifecycle rules
 
@@ -269,7 +269,7 @@ Cloudinary URLs are stored in `productos.imagen_url`. Resend sending is asynchro
 
 ### Context
 
-The mobile app is Android-only and is intended for evaluation and demonstration rather than public store distribution.
+The mobile app (React Native CLI, no Expo) is Android-only and is intended for evaluation and demonstration rather than public store distribution.
 
 ### Decision
 

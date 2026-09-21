@@ -7,7 +7,7 @@ Este proyecto usa **skills reutilizables** alojadas en `.agents/skills/<nombre>/
 `QuickBite` es un sistema de gestión de pedidos para **una sola sucursal** de un restaurante de comida rápida. Monorepo con tres frentes:
 
 - **Backend .NET 8** (`backend/`): API REST en Clean Architecture + panel admin Blazor WebAssembly. Stack: ASP.NET Core, Entity Framework Core, PostgreSQL 15 (Supabase), JWT, Cloudinary (imágenes), Resend (correos).
-- **App móvil Flutter** (`mobile/`): clientes y repartidores. Estado con BLoC/Cubit, repositorios remotos y locales, patrón Repository e inyección de dependencias.
+- **App móvil React Native** (`mobile/`): clientes y repartidores. React Native CLI (sin Expo), TypeScript, estado con React Query + Zustand, repositorios remotos y locales, patrón Repository e inyección de dependencias.
 - **Panel admin Blazor** (`backend/src/QuickBite.AdminBlazor/`): SPA en el navegador con MudBlazor, consume la misma API.
 
 - **Fuente de verdad de diseño:** los specs viven en `docs/` (Markdown, numerados `00`…`13`). Léelas antes de implementar. Ver especialmente `docs/02 — Arquitectura del Sistema.md` y `docs/06 — Backend .NET Guía de Implementación.md`.
@@ -27,13 +27,14 @@ dotnet format backend/src/QuickBite.sln --verify-no-changes  # formato
 
 > Prefijo por defecto para trabajar en el backend: ejecuta los comandos desde `backend/` o usa las rutas completas como arriba.
 
-### Móvil (Flutter)
+### Móvil (React Native)
 
 ```bash
 cd mobile
-flutter analyze        # lint estático
-flutter test           # suite de tests
-dart format --output=none --set-exit-if-changed .   # formato
+npm install                # instala dependencias
+npm run lint               # lint estático (eslint)
+npm test                   # suite de tests (jest)
+npx tsc --noEmit           # chequeo de tipos
 ```
 
 ## Capas del backend (Clean Architecture)
@@ -112,7 +113,7 @@ Ante cada petición:
 - Sin comentarios innecesarios; el código debe explicarse solo.
 - Clean Architecture: las dependencias fluyen hacia el núcleo; el dominio no conoce infraestructura ni presentación.
 - Patrones del backend: Repository, Unit of Work, DTO, Result Pattern, Dependency Injection, Options Pattern.
-- Patrones del móvil: BLoC/Cubit, Repository, Dependency Injection, Singleton para servicios compartidos.
+- Patrones del móvil: React Query + Zustand, Repository, Dependency Injection, Singleton para servicios compartidos.
 - Errores con `Result` y tipados, no excepciones silenciosas ni pánicos.
-- Cero lógica de negocio en controladores, en widgets y en los servicios de API del panel: la lógica vive en Application (backend) y en BLoCs/repositorios (móvil).
-- Todos los tests deben pasar, con `dotnet build -warnaserror` limpio en backend y `flutter analyze` en móvil antes de terminar.
+- Cero lógica de negocio en controladores, en widgets/pantallas y en los servicios de API del panel: la lógica vive en Application (backend) y en hooks/repositorios (móvil).
+- Todos los tests deben pasar, con `dotnet build -warnaserror` limpio en backend y `npm run lint` + `npx tsc --noEmit` en móvil antes de terminar.

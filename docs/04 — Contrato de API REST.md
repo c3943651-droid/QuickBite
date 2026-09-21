@@ -1,7 +1,7 @@
 **Versión:** 5.0
 **Fecha:** 14/09/2026
 **Estado:** Aprobado
-**Audiencia:** Backend, móvil, web
+**Audiencia:** Backend, móvil (React Native), web
 **Depende de:** 00, 01, 02, 03
 **Referenciado por:** 06, 07, 07.1, 08, 08.1, 12
 
@@ -9,7 +9,7 @@
 
 ## 1. Introducción
 
-Este documento define el contrato de comunicación entre los clientes (app móvil y panel web) y la API REST de QuickBite. Describe las convenciones generales, todos los endpoints agrupados por recurso, y las reglas de negocio asociadas.
+Este documento define el contrato de comunicación entre los clientes (app móvil React Native y panel web) y la API REST de QuickBite. Describe las convenciones generales, todos los endpoints agrupados por recurso, y las reglas de negocio asociadas.
 
 Los ejemplos de solicitud y respuesta se describen mediante tablas de campos. El artefacto OpenAPI 3.0 completo se mantiene como archivo separado (`openapi.yaml`) y se referencia desde este documento.
 
@@ -108,10 +108,10 @@ Los siguientes endpoints son consultados periódicamente por los clientes. Las f
 
 | Endpoint | Cliente | Frecuencia |
 | :--- | :--- | :--- |
-| GET /orders/{id}/status | App móvil (cliente) | 10 segundos |
+| GET /orders/{id}/status | App móvil RN (cliente) | 10 segundos |
 | GET /admin/dashboard | Panel admin | 30 segundos |
 | GET /admin/orders | Panel admin | 30 segundos |
-| GET /delivery/available | App móvil (repartidor) | 30 segundos |
+| GET /delivery/available | App móvil RN (repartidor) | 30 segundos |
 
 ---
 

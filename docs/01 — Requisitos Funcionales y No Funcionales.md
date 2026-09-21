@@ -225,7 +225,7 @@ Las decisiones transversales (enumeración de usuarios, doble flujo de asignaci�
 | RNF-06.2 | Documentación de la API mediante Swagger/OpenAPI. | Endpoint accesible |
 | RNF-06.3 | Cobertura de pruebas. | ≥ 70 % en lógica de negocio |
 | RNF-06.4 | Despliegue automatizado con pruebas en cada push. | CI/CD funcional |
-| RNF-06.5 | Análisis estático sin advertencias en Flutter. | Análisis limpio |
+| RNF-06.5 | Análisis estático sin advertencias en la app React Native (eslint + TypeScript). | Análisis limpio |
 
 ### RNF-07 — Compatibilidad e Interoperabilidad
 

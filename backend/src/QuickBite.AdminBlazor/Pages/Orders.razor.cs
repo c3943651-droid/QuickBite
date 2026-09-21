@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 using QuickBite.AdminBlazor.Components;
 using QuickBite.AdminBlazor.Models.Catalog;
@@ -14,6 +15,7 @@ public partial class Orders : IAsyncDisposable
     [Inject] private IDialogService DialogService { get; set; } = default!;
     [Inject] private ISnackbar Snackbar { get; set; } = default!;
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     private MudDataGrid<AdminOrderListItem> _grid = default!;
     private string _search = "";
@@ -32,12 +34,32 @@ public partial class Orders : IAsyncDisposable
 
     private CancellationTokenSource? _cts;
     private PeriodicTimer? _timer;
+    private int _visibilityHandle;
+    private bool _isPageVisible = true;
 
     protected override async Task OnInitializedAsync()
     {
         var repartidores = await OrderService.GetDeliveryPersonsAsync();
         Repartidores = repartidores ?? Array.Empty<DeliveryPersonItem>();
         StartPolling();
+        await StartVisibilityTrackingAsync();
+    }
+
+    private async Task StartVisibilityTrackingAsync()
+    {
+        try
+        {
+            _visibilityHandle = await JSRuntime.InvokeAsync<int>("quickbite.onVisibilityChange", DotNetObjectReference.Create(this));
+        }
+        catch
+        {
+        }
+    }
+
+    [JSInvokable]
+    public void HandlePageVisibilityChanged(bool visible)
+    {
+        _isPageVisible = visible;
     }
 
     protected async Task<GridData<AdminOrderListItem>> LoadServerData(GridState<AdminOrderListItem> state)
@@ -65,6 +87,7 @@ public partial class Orders : IAsyncDisposable
             {
                 while (await _timer.WaitForNextTickAsync(_cts.Token))
                 {
+                    if (!_isPageVisible) continue;
                     await InvokeAsync(async () => await RefreshWithBackoffAsync());
                 }
             }
@@ -242,6 +265,15 @@ public partial class Orders : IAsyncDisposable
         _cts?.Cancel();
         _cts?.Dispose();
         _timer?.Dispose();
-        await Task.CompletedTask;
+        if (_visibilityHandle != 0)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("quickbite.offVisibilityChange", _visibilityHandle);
+            }
+            catch
+            {
+            }
+        }
     }
 }
