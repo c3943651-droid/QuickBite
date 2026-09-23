@@ -131,22 +131,34 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_validar_transicion_pedido BEFORE UPDATE ON pedidos
   FOR EACH ROW EXECUTE FUNCTION validar_transicion_pedido();
 
+CREATE OR REPLACE FUNCTION validar_asignacion_repartidor()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.repartidor_id IS DISTINCT FROM OLD.repartidor_id THEN
+    IF NEW.estado <> 'listo' THEN
+      RAISE EXCEPTION 'Solo se pueden asignar repartidores a pedidos en estado ''listo'' (estado actual: %)', NEW.estado;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_validar_asignacion_repartidor BEFORE UPDATE ON pedidos
+  FOR EACH ROW EXECUTE FUNCTION validar_asignacion_repartidor();
+
 CREATE OR REPLACE FUNCTION registrar_historial_pedido()
 RETURNS TRIGGER AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
     INSERT INTO pedido_historial_estados (pedido_id, estado_anterior, estado_nuevo, usuario_id)
     VALUES (NEW.id, NULL, NEW.estado, NEW.cliente_id);
-  ELSIF TG_OP = 'UPDATE' AND OLD.estado IS DISTINCT FROM NEW.estado THEN
-    INSERT INTO pedido_historial_estados (pedido_id, estado_anterior, estado_nuevo, usuario_id)
-    VALUES (NEW.id, OLD.estado, NEW.estado, NEW.cliente_id);
   END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_registrar_historial_pedido
-  AFTER INSERT OR UPDATE ON pedidos
+  AFTER INSERT ON pedidos
   FOR EACH ROW EXECUTE FUNCTION registrar_historial_pedido();
 
 DO $$

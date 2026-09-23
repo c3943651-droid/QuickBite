@@ -362,7 +362,7 @@ La asignación de repartidor utiliza una única llamada de guardado para garanti
 
 | Servicio | Interfaz | Implementación | Responsabilidad |
 | :--- | :--- | :--- | :--- |
-| Cloudinary | ImageService | CloudinaryImageService | Subida y eliminación de imágenes |
+| Supabase Storage | ImageService | Supabase StorageImageService | Subida y eliminación de imágenes |
 | Resend | EmailService | ResendEmailService | Envío de correos transaccionales |
 | Monitoreo | — | Middleware de WatchDog | Logs y excepciones en tiempo real |
 
@@ -512,12 +512,12 @@ Los códigos de estado usados por la API son los definidos en el documento 04.
 
 ## 11. Servicios Externos
 
-### 11.1. Cloudinary
+### 11.1. Supabase Storage
 
 | Aspecto | Definición |
 | :--- | :--- |
 | Uso | Subida y eliminación de imágenes de productos |
-| Flujo | El panel admin sube la imagen; la API la reenvía a Cloudinary; se obtiene la URL; se guarda en el producto |
+| Flujo | El panel admin sube la imagen; la API la reenvía a Supabase Storage; se obtiene la URL; se guarda en el producto |
 | Transformaciones | Aplicadas desde la URL para optimizar la descarga |
 | Eliminación | No se elimina automáticamente al eliminar un producto |
 
@@ -746,7 +746,7 @@ No hay un entorno de producción separado del de demo.
 
 - Tipo de servicio: Web Service.
 - Comando de inicio: ejecutable principal de la API.
-- Variables de entorno: cadena de conexión, JWT secret, credenciales de Cloudinary, API key de Resend.
+- Variables de entorno: cadena de conexión, JWT secret, credenciales de Supabase Storage, API key de Resend.
 - Health check: endpoint de salud.
 - Auto-despliegue: desde la rama principal.
 - Cron jobs externos: dos, redundantes (ver 05#D-11).
@@ -766,7 +766,7 @@ La estrategia de sincronización de migraciones está definida en 05#D-10.
 | Doble flujo de asignación | Método compartido con parámetro de origen | 05#D-03 |
 | Enumeración de usuarios diferenciada | Comportamiento asimétrico en autenticación | 05#D-04 |
 | Lógica en triggers | Servicios delegan en el motor | 05#D-05 |
-| Cloudinary y Resend | Servicios externos en capa de infraestructura | 05#D-06 |
+| Supabase Storage y Resend | Servicios externos en capa de infraestructura | 05#D-06 |
 | Pagos simulados | Sin integración con pasarelas | 05#D-08 |
 | Modelo mono-sucursal | Sin tablas ni campos de sucursal | 05#D-09 |
 | Sincronización EF Core ↔ Supabase | Estrategia de migraciones | 05#D-10 |

@@ -4,7 +4,7 @@ using QuickBite.Application.Admin;
 using QuickBite.Domain.Entities;
 using QuickBite.Domain.Enums;
 using QuickBite.Domain.Repositories;
-using QuickBite.Shared.Dashboard;
+using QuickBite.Application.Admin.Dtos;
 
 namespace QuickBite.Tests.Unit.Application;
 

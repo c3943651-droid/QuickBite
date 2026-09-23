@@ -592,7 +592,7 @@ No se almacenan datos de tarjeta. Los pagos son simulados (ver 05#D-08). No apli
 | Doble flujo de asignación | Auditoría diferenciada por origen | 05#D-03 |
 | Enumeración de usuarios diferenciada | Protección estricta en recuperación; concesión en registro | 05#D-04 |
 | Lógica crítica en triggers | Garantía de integridad independientemente de la capa de acceso | 05#D-05 |
-| Cloudinary y Resend | Credenciales en variables de entorno | 05#D-06 |
+| Supabase Storage y Resend | Credenciales en variables de entorno | 05#D-06 |
 | Pagos simulados | Sin almacenamiento de datos de tarjeta | 05#D-08 |
 | Modelo mono-sucursal | Sin superficie multi-tenant | 05#D-09 |
 | Redundancia de cron jobs | Alta disponibilidad contra cold start | 05#D-11 |

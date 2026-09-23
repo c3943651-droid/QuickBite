@@ -32,12 +32,43 @@ public sealed class EmailDispatcher : BackgroundService
 
             try
             {
-                await _sender.SendAsync(message, stoppingToken);
+                await EnviarConReintentosAsync(message, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+        }
+    }
+
+    private async Task EnviarConReintentosAsync(EmailMessage message, CancellationToken cancellationToken)
+    {
+        const int maxIntentos = 3;
+        for (var intento = 1; intento <= maxIntentos; intento++)
+        {
+            try
+            {
+                await _sender.SendAsync(message, cancellationToken);
+                return;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "Falló el envío del correo {Kind} a {To}", message.Kind, message.To);
+                _logger.LogWarning(exception,
+                    "Intento {Intento}/{MaxIntentos}: falló el envío del correo {Kind} a {To}",
+                    intento, maxIntentos, message.Kind, message.To);
+
+                if (intento < maxIntentos)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2 * intento), cancellationToken);
+                }
             }
         }
+
+        _logger.LogError("Se descarta el correo {Kind} a {To} tras {Intentos} intentos fallidos",
+            message.Kind, message.To, maxIntentos);
     }
 }

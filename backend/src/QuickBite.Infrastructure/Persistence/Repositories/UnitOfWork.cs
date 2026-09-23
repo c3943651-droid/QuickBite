@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using QuickBite.Domain.Exceptions;
 using QuickBite.Domain.Repositories;
 using QuickBite.Infrastructure.Persistence.Repositories;
 
@@ -35,7 +37,20 @@ public class UnitOfWork : IUnitOfWork
 
     public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var rows = await _db.SaveChangesAsync(cancellationToken);
-        return rows > 0;
+        try
+        {
+            var rows = await _db.SaveChangesAsync(cancellationToken);
+            return rows > 0;
+        }
+        catch (DbUpdateException ex)
+        {
+            var mapped = PostgresExceptionMapper.Map(ex);
+            if (mapped is not null)
+            {
+                throw mapped;
+            }
+
+            throw;
+        }
     }
 }

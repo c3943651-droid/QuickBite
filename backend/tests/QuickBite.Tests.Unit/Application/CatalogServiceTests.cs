@@ -52,4 +52,57 @@ public class CatalogServiceTests
         item.Motivo.Should().Be("inflacion");
         item.CreadoEn.Should().Be(created);
     }
+
+    [Fact]
+    public async Task UpdateProductAsync_ConImagenUrl_PersisteImagenSobreEntidadRastreada()
+    {
+        var productId = Guid.NewGuid();
+        var product = new Product
+        {
+            Id = productId,
+            Nombre = "Hamburguesa",
+            Precio = 50m,
+            ImagenUrl = "https://img.test/vieja.png",
+            Disponible = true
+        };
+        _products.Setup(p => p.GetTrackedByIdAsync(productId, It.IsAny<CancellationToken>())).ReturnsAsync(product);
+        _products.Setup(p => p.GetByIdAsync(productId, It.IsAny<CancellationToken>())).ReturnsAsync(product);
+
+        var result = await CreateService().UpdateProductAsync(productId, new UpdateProductRequest
+        {
+            ImagenUrl = "https://zkueflkfkvrhyqxobrrm.supabase.co/storage/v1/object/public/catalog-images/nueva.png"
+        });
+
+        product.ImagenUrl.Should().Be("https://zkueflkfkvrhyqxobrrm.supabase.co/storage/v1/object/public/catalog-images/nueva.png");
+        result.ImagenUrl.Should().Be("https://zkueflkfkvrhyqxobrrm.supabase.co/storage/v1/object/public/catalog-images/nueva.png");
+        _products.Verify(p => p.GetTrackedByIdAsync(productId, It.IsAny<CancellationToken>()), Times.Once);
+        _products.Verify(p => p.Update(It.IsAny<Product>()), Times.Never);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateProductAsync_SinImagenUrl_ConservaImagenExistente()
+    {
+        var productId = Guid.NewGuid();
+        var product = new Product
+        {
+            Id = productId,
+            Nombre = "Hamburguesa",
+            Precio = 50m,
+            ImagenUrl = "https://img.test/existente.png",
+            Disponible = true
+        };
+        _products.Setup(p => p.GetTrackedByIdAsync(productId, It.IsAny<CancellationToken>())).ReturnsAsync(product);
+        _products.Setup(p => p.GetByIdAsync(productId, It.IsAny<CancellationToken>())).ReturnsAsync(product);
+
+        var result = await CreateService().UpdateProductAsync(productId, new UpdateProductRequest
+        {
+            Nombre = "Hamburguesa Doble"
+        });
+
+        product.ImagenUrl.Should().Be("https://img.test/existente.png");
+        result.ImagenUrl.Should().Be("https://img.test/existente.png");
+        _products.Verify(p => p.GetTrackedByIdAsync(productId, It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

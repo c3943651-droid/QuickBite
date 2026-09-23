@@ -1,19 +1,39 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using QuickBite.Application.Audit;
 using QuickBite.Application.Notifications;
+
 namespace QuickBite.Api.Controllers;
+
 [ApiController]
 [Route("api/v1/notifications")]
 [Authorize]
 public class NotificationsController : ControllerBase
 {
-    private readonly INotificationService _n; private readonly IAuditService _a;
-    public NotificationsController(INotificationService n, IAuditService a) { _n = n; _a = a; }
-    private Guid Uid => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    [HttpGet] public async Task<IActionResult> List([FromQuery] bool? UnreadOnly, CancellationToken ct) => Ok(await _n.ListAsync(Uid, UnreadOnly, ct));
-    [HttpPatch("{id:guid}/read")] public async Task<IActionResult> Read(Guid id, CancellationToken ct) { await _n.MarkAsReadAsync(id, ct); return NoContent(); }
-    [HttpPatch("read-all")] public async Task<IActionResult> ReadAll(CancellationToken ct) { await _n.MarkAllAsReadAsync(Uid, ct); return NoContent(); }
-    [HttpGet("/api/v1/admin/audit")][Authorize(Roles = "administrador")] public async Task<IActionResult> Audit([FromQuery] Guid? userId, [FromQuery] string? entity, CancellationToken ct) => Ok(await _a.ListAsync(userId, entity, null, null, ct));
+    private readonly INotificationService _notificationService;
+
+    public NotificationsController(INotificationService notificationService)
+    {
+        _notificationService = notificationService;
+    }
+
+    private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    [HttpGet]
+    public async Task<IActionResult> List([FromQuery] bool? unreadOnly, CancellationToken cancellationToken)
+        => Ok(await _notificationService.ListAsync(CurrentUserId, unreadOnly, cancellationToken));
+
+    [HttpPatch("{id:guid}/read")]
+    public async Task<IActionResult> Read(Guid id, CancellationToken cancellationToken)
+    {
+        await _notificationService.MarkAsReadAsync(id, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPatch("read-all")]
+    public async Task<IActionResult> ReadAll(CancellationToken cancellationToken)
+    {
+        await _notificationService.MarkAllAsReadAsync(CurrentUserId, cancellationToken);
+        return NoContent();
+    }
 }

@@ -1,4 +1,9 @@
+using QuickBite.Domain.Enums;
+
 namespace QuickBite.Application.Admin.Dtos;
+
+public sealed record UpdateOrderStatusRequest { public OrderStatus Estado { get; init; } public string? Comentario { get; init; } }
+public sealed record AssignDeliveryRequest { public Guid RepartidorId { get; init; } public AssignmentOrigin? Origin { get; init; } }
 
 public sealed record AdminOrderListItemResponse(
     Guid Id,

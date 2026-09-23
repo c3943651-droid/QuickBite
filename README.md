@@ -8,30 +8,28 @@ QuickBite digitaliza el catálogo, el carrito, los pedidos, la asignación de re
 
 ## 🧱 Arquitectura general
 
-Monorepo con tres frentes que consumen una única API REST:
+Monorepo con dos frentes que consumen una única API REST:
 
 | Frente | Tecnología | Ubicación |
 |---|---|---|
 | **API REST** | ASP.NET Core 8, Clean Architecture | `backend/src/QuickBite.sln` |
-| **App móvil** (clientes y repartidores) | React Native (CLI, sin Expo), TypeScript | `mobile/` |
-| **Panel admin** | Blazor WebAssembly + MudBlazor | `backend/src/QuickBite.AdminBlazor/` |
+| **App móvil** (clientes y repartidores) | Flutter (en migración desde React Native) | `mobile/` |
 
-**Stack del backend:** .NET 8 · Entity Framework Core · PostgreSQL 15 (Supabase) · JWT · Cloudinary (imágenes) · Resend (correos).
+**Stack del backend:** .NET 8 · Entity Framework Core · PostgreSQL 15 (Supabase) · JWT · Supabase Storage (imágenes) · Resend (correos).
 
 ```
-┌──────────────┐   ┌──────────────┐
-│ App móvil    │   │ Panel admin  │
-│ React Native │   │ Blazor (SPA) │
-└──────┬───────┘   └──────┬───────┘
-       │         HTTPS + JWT       │
-       └───────────┬───────────────┘
-                   ▼
-          ┌─────────────────┐    ┌───────────┐
-          │  API REST .NET 8 │───▶│ PostgreSQL│
-          │  (Clean Arch)    │    └───────────┘
-          └───┬─────┬────┬──┘
-              │     │    └──▶ Resend (correos)
-              │     └──────▶ Cloudinary (imágenes)
+┌──────────────┐
+│ App móvil    │
+│ (Flutter)    │
+└──────┬───────┘
+       │   HTTPS + JWT
+       ▼
+┌─────────────────┐    ┌───────────┐
+│  API REST .NET 8 │───▶│ PostgreSQL│
+│  (Clean Arch)    │    └───────────┘
+└───┬─────┬────┬──┘
+    │     │    └──▶ Resend (correos)
+    │     └──────▶ Supabase Storage (imágenes)
 ```
 
 ## ✅ Funcionalidades principales
@@ -48,14 +46,13 @@ QuickBite/
 │   ├── src/
 │   │   ├── QuickBite.Domain          # Entidades, interfaces de repositorio, reglas puras
 │   │   ├── QuickBite.Application     # Servicios, DTOs, validadores
-│   │   ├── QuickBite.Infrastructure  # EF Core, repositorios, Cloudinary/Resend
+│   │   ├── QuickBite.Infrastructure  # EF Core, repositorios, Supabase Storage/Resend
 │   │   ├── QuickBite.Api             # API REST (controladores, JWT, middleware)
-│   │   ├── QuickBite.AdminBlazor     # Panel admin Blazor WebAssembly
-│   │   └── QuickBite.Shared          # DTOs compartidos con el panel
+│   │   └── QuickBite.Shared          # DTOs compartidos entre capas y clientes
 │   └── tests/
-│       ├── QuickBite.Tests.Unit/         # xUnit (Application, Domain)
+│       ├── QuickBite.Tests.Unit/         # xUnit (Application, Domain, Infrastructure)
 │       └── QuickBite.Tests.Integration/  # xUnit (Api, Infrastructure)
-├── mobile/                     # App React Native (CLI, sin Expo)
+├── mobile/                     # App Flutter (en migración desde React Native)
 ├── docs/                       # Especificaciones del sistema (00…13)
 └── AGENTS.md                   # Guía para agentes de IA
 ```
@@ -65,36 +62,28 @@ Las capas siguen **Clean Architecture**: las dependencias fluyen hacia el núcle
 ## 🚀 Requisitos previos
 
 - .NET SDK 8 (`dotnet --version` → 8.x)
-- Node.js 20+ y npm (para la app móvil React Native)
+- Flutter SDK 3.x (para la app móvil, en migración)
 - PostgreSQL 15 (local, o una instancia de Supabase)
-- Una cuenta en Cloudinary y Resend (para el entorno completo)
+- Un proyecto de Supabase (Postgres + Storage) y una cuenta en Resend (para el entorno completo)
 
 ## 🔧 Puesta en marcha
 
 ### 1. Backend (API)
 
 ```bash
+# Puesta en marcha del backend
 cd backend
 dotnet restore src/QuickBite.sln
 dotnet build src/QuickBite.sln
 dotnet run --project src/QuickBite.Api/
 ```
 
-Configura las variables de entorno / `appsettings` (conexión a PostgreSQL, JWT secret, credenciales de Cloudinary y Resend). La API queda disponible en `http://localhost:<puerto>` con Swagger en `/swagger`.
+Configura las variables de entorno / `appsettings` (conexión a PostgreSQL, JWT secret, `Supabase:ServiceRoleKey` y credenciales de Resend). La API queda disponible en `http://localhost:<puerto>` con Swagger en `/swagger`.
 
-### 2. Panel admin (Blazor)
-
-```bash
-cd backend
-dotnet run --project src/QuickBite.AdminBlazor/
-```
-
-### 3. App móvil (React Native)
+### 2. App móvil (Flutter)
 
 ```bash
-cd mobile
-npm install
-npm run android        # (o npm run ios)
+# La app está en migración desde React Native; los comandos se documentarán al incorporar el frontend.
 ```
 
 ## 🧪 Pruebas
@@ -105,9 +94,6 @@ dotnet test backend/tests/QuickBite.Tests.Unit/
 
 # Backend — integración (requiere PostgreSQL)
 dotnet test backend/tests/QuickBite.Tests.Integration/
-
-# Móvil
-cd mobile && npm test
 ```
 
 ## 📚 Documentación
@@ -123,8 +109,8 @@ Las especificaciones del sistema viven en [`docs/`](docs/), numeradas del `00` a
 | `04` | Contrato de API REST |
 | `05` | Decisiones canónicas y simplificaciones |
 | `06` | Backend .NET — guía de implementación |
-| `07` / `07.1` | App móvil React Native — arquitectura y pantallas |
-| `08` / `08.1` | Panel admin Blazor — arquitectura y páginas |
+| `07` / `07.1` | App móvil Flutter — arquitectura y pantallas |
+| `08` / `08.1` | Panel admin Blazor — arquitectura y páginas (obsoleto; el panel se eliminó) |
 | `09` | Diseño UI/UX y sistema de componentes |
 | `10` | Seguridad |
 | `11` | Despliegue, operación y mantenimiento |

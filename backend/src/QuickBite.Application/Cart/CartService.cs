@@ -16,9 +16,9 @@ public sealed class CartService : ICartService
     {
         var cart = await _uow.Carts.GetActiveByUserIdAsync(userId, ct);
         if (cart != null) return cart;
-        // create via product repo? Use direct cart creation - fallback create new
+
         cart = new Domain.Entities.Cart { UsuarioId = userId };
-        // Need to persist - use _uow.Carts.Add? No Add in interface, but we can handle via repository extension? Use Cart add via context through cart item? For now return new and handle in AddItem
+        await _uow.Carts.AddAsync(cart, ct);
         return cart;
     }
     public async Task<CartResponse> GetAsync(Guid userId, CancellationToken ct = default)
@@ -33,21 +33,13 @@ public sealed class CartService : ICartService
         if (!product.Disponible) throw new BusinessRuleException("Producto no disponible");
         if (product.Inventario != null && product.Inventario.Stock < req.Cantidad) throw new BusinessRuleException("Stock insuficiente");
         var cart = await GetOrCreateAsync(userId, ct);
-        // ensure cart persisted if new
-        if (cart.Id == Guid.Empty) cart.Id = Guid.NewGuid();
         var item = new CartItem { CarritoId = cart.Id, ProductoId = req.ProductoId, Cantidad = req.Cantidad, Observaciones = req.Observaciones };
         foreach (var optId in req.OpcionesIds)
         {
             var opt = product.Opciones.FirstOrDefault(o => o.Id == optId && o.Activo) ?? throw new NotFoundException("Opcion", optId);
             item.Opciones.Add(new CartItemOption { OpcionId = optId });
         }
-        // If cart is new, need to add cart with item - simplify: add item via repository (which will create cart if not exists via FK)
-        try { await _uow.Carts.AddItemAsync(cart.Id, item, ct); }
-        catch
-        {
-            // fallback: ensure cart exists by adding via product update pattern
-            cart.Items.Add(item);
-        }
+        await _uow.Carts.AddItemAsync(cart.Id, item, ct);
         await _uow.SaveChangesAsync(ct);
         var updated = await _uow.Carts.GetActiveByUserIdAsync(userId, ct);
         return ToResponse(updated ?? cart);

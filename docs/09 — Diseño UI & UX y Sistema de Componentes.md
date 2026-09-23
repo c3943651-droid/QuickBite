@@ -456,7 +456,7 @@ El sistema de diseño se aplica con adaptaciones específicas por plataforma.
 | Polling | Indicador sutil de "Actualizando..." | 05#D-01 |
 | Pagos simulados | No hay campos de tarjeta | 05#D-08 |
 | Modelo mono-sucursal | Sin selector de sucursal | 05#D-09 |
-| Cloudinary | Imágenes optimizadas y cacheadas | 05#D-06 |
+| Supabase Storage | Imágenes optimizadas y cacheadas | 05#D-06 |
 
 ---
 

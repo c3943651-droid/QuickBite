@@ -31,7 +31,7 @@ Las decisiones canónicas que afectan al despliegue y la operación (redundancia
 | API REST | .NET 8 | Render (Web Service) | Gratuito |
 | Panel admin | Blazor WebAssembly | Render (Static Site) | Gratuito |
 | Base de datos | PostgreSQL 15 | Supabase | Gratuito |
-| Imágenes | Almacenamiento en la nube | Cloudinary | Gratuito |
+| Imágenes | Almacenamiento en la nube | Supabase Storage | Gratuito |
 | Correos | API de correo | Resend | Gratuito |
 | CI/CD | GitHub Actions | GitHub | Gratuito |
 | Monitoreo | WatchDog.NET + Serilog | Auto-hospedado | Open source |
@@ -44,10 +44,10 @@ Las decisiones canónicas que afectan al despliegue y la operación (redundancia
 | :--- | :--- |
 | App móvil React Native | HTTPS con autenticación JWT hacia la API |
 | Panel admin Blazor | HTTPS con autenticación JWT hacia la API |
-| API REST | HTTPS hacia base de datos, Cloudinary y Resend |
+| API REST | HTTPS hacia base de datos, Supabase Storage y Resend |
 | Cron jobs | HTTPS hacia el endpoint de salud de la API |
 
-**Servicios externos integrados:** Cloudinary (imágenes), Resend (correos).
+**Servicios externos integrados:** Supabase Storage (imágenes), Resend (correos).
 
 **Servicios externos no integrados:** Firebase (en ninguna forma), SendGrid, pasarelas de pago.
 
@@ -105,7 +105,7 @@ Todos los servicios utilizados tienen niveles gratuitos suficientes para el alca
 **Mitigación de límites:**
 
 - Optimización de consultas.
-- Imágenes almacenadas en Cloudinary, no en base de datos.
+- Imágenes almacenadas en Supabase Storage, no en base de datos.
 - Exportación manual periódica de la base de datos.
 
 ### 3.4. Sincronización de Migraciones
@@ -120,12 +120,12 @@ La estrategia para alinear EF Core con el esquema existente se documenta en 05#D
 
 **Regla adicional:** los triggers, funciones y vistas no son gestionados por EF Core. Se mantienen en la base de datos a través del script SQL.
 
-### 3.5. Almacenamiento de Imágenes (Cloudinary)
+### 3.5. Almacenamiento de Imágenes (Supabase Storage)
 
 | Aspecto | Definición |
 | :--- | :--- |
 | Uso | Imágenes de productos |
-| Flujo | El panel admin sube la imagen; la API la reenvía a Cloudinary; se guarda la URL resultante |
+| Flujo | El panel admin sube la imagen; la API la reenvía a Supabase Storage; se guarda la URL resultante |
 | Transformaciones | Aplicadas desde la URL para optimizar la descarga |
 | Eliminación | No se elimina automáticamente al eliminar un producto |
 
@@ -213,7 +213,7 @@ Ambos apuntan al endpoint de salud de la API.
 
 ### 4.3. Configuración de Servicios Externos
 
-1. Crear cuenta en Cloudinary y obtener credenciales.
+1. Crear cuenta en Supabase Storage y obtener credenciales.
 2. Crear cuenta en Resend y obtener la clave de API.
 3. Configurar los cron jobs redundantes.
 
@@ -502,7 +502,7 @@ En un proyecto de alcance académico, los roles pueden ser asumidos por los mism
 | :--- | :--- | :--- |
 | Polling | Análisis del impacto y mitigaciones | 05#D-01 |
 | Lógica en triggers | Backups incluyen funciones y triggers | 05#D-05 |
-| Cloudinary y Resend | Configuración de credenciales | 05#D-06 |
+| Supabase Storage y Resend | Configuración de credenciales | 05#D-06 |
 | APK firmado | Procedimiento de generación y firma | 05#D-07 |
 | Pagos simulados | Sin dependencias externas de pago | 05#D-08 |
 | Modelo mono-sucursal | Despliegue de una sola instancia | 05#D-09 |

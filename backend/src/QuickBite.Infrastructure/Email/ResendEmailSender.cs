@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.Logging;
 using QuickBite.Application.Configuration;
 using Resend;
@@ -41,15 +42,17 @@ public sealed class ResendEmailSender : IEmailSender
 
     private string BuildHtml(EmailMessage message)
     {
+        var nombre = WebUtility.HtmlEncode(message.Nombre);
+
         if (message.Kind == EmailKind.Welcome)
         {
-            return $"<h2>¡Bienvenido a QuickBite, {message.Nombre}!</h2>" +
+            return $"<h2>¡Bienvenido a QuickBite, {nombre}!</h2>" +
                    "<p>Tu cuenta ha sido creada correctamente. Ya puedes realizar pedidos.</p>";
         }
 
-        var link = $"{_settings.ResetUrlBase}?token={message.ResetToken}";
+        var link = $"{_settings.ResetUrlBase}?token={Uri.EscapeDataString(message.ResetToken ?? string.Empty)}";
         return $"<h2>Recuperación de contraseña</h2>" +
-               $"<p>Hola {message.Nombre}, recibimos una solicitud para restablecer tu contraseña.</p>" +
+               $"<p>Hola {nombre}, recibimos una solicitud para restablecer tu contraseña.</p>" +
                $"<p><a href=\"{link}\">Restablecer contraseña</a></p>" +
                "<p>El enlace expira en 1 hora. Si no solicitaste este cambio, ignora este correo.</p>";
     }

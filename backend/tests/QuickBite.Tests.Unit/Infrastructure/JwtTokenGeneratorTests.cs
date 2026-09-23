@@ -42,6 +42,22 @@ public class JwtTokenGeneratorTests
         accessToken.ExpiraEn.Should().BeAfter(DateTime.UtcNow.AddMinutes(55));
     }
 
+    [Fact]
+    public void Constructor_LanzaSiElSecretoEsMenorA32Caracteres()
+    {
+        var settings = new JwtSettings
+        {
+            Secret = "corto",
+            Issuer = "QuickBite",
+            Audience = "QuickBiteClients",
+            AccessTokenExpirationMinutes = 60
+        };
+
+        var act = () => new JwtTokenGenerator(settings);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
     [Theory]
     [InlineData(UserRole.Cliente, "cliente")]
     [InlineData(UserRole.Repartidor, "repartidor")]

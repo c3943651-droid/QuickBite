@@ -10,31 +10,22 @@ public class SmokeDependencyInjectionTests
 {
     private static IConfiguration BuildConfiguration()
     {
-        const string json = """
-            {
-              "ConnectionStrings": {
-                "DefaultConnection": "Host=localhost;Database=quickbite_smoke;Username=postgres;Password=postgres"
-              },
-              "Jwt": {
-                "Secret": "clave-super-secreta-para-smoke-tests-123456",
-                "Issuer": "QuickBite",
-                "Audience": "QuickBiteClients",
-                "AccessTokenExpirationMinutes": 60,
-                "RefreshTokenExpirationDays": 7
-              },
-              "Resend": {
-                "ApiKey": ""
-              },
-              "Cloudinary": {
-                "CloudName": "smoke",
-                "ApiKey": "smoke",
-                "ApiSecret": "smoke"
-              }
-            }
-            """;
+        var values = new Dictionary<string, string?>
+        {
+            ["ConnectionStrings:DefaultConnection"] = "Host=localhost;Database=quickbite_smoke;Username=postgres;Password=postgres",
+            ["Jwt:Secret"] = "clave-super-secreta-para-smoke-tests-123456",
+            ["Jwt:Issuer"] = "QuickBite",
+            ["Jwt:Audience"] = "QuickBiteClients",
+            ["Jwt:AccessTokenExpirationMinutes"] = "60",
+            ["Jwt:RefreshTokenExpirationDays"] = "7",
+            ["Resend:ApiKey"] = "",
+            ["Supabase:ProjectUrl"] = "https://smoke.supabase.co",
+            ["Supabase:ServiceRoleKey"] = "",
+            ["Supabase:Bucket"] = "catalog-images"
+        };
 
         return new ConfigurationBuilder()
-            .AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(json)))
+            .AddInMemoryCollection(values)
             .Build();
     }
 

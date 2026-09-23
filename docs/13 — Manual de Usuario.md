@@ -395,7 +395,7 @@ Las decisiones canónicas (polling, pagos simulados, historial de búsquedas loc
 1. Tocar "+ Nuevo producto".
 2. Completar el formulario:
    - Nombre, descripción, precio, categoría.
-   - Imagen (subida a Cloudinary).
+   - Imagen (subida a Supabase Storage).
    - Stock inicial y stock mínimo.
    - Disponibilidad.
    - Opciones personalizables.

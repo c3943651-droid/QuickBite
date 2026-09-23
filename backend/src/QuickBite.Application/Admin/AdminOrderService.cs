@@ -3,8 +3,8 @@ using QuickBite.Application.Catalog.Dtos;
 using QuickBite.Application.Orders.Dtos;
 using QuickBite.Domain.Entities;
 using QuickBite.Domain.Enums;
+using QuickBite.Domain.Exceptions;
 using QuickBite.Domain.Repositories;
-using QuickBite.Shared.Dashboard;
 namespace QuickBite.Application.Admin;
 public sealed class AdminOrderService : IAdminOrderService
 {
@@ -86,7 +86,15 @@ public sealed class AdminOrderService : IAdminOrderService
         var o = await _uow.Orders.GetByIdAsync(orderId, ct);
         return new OrderResponse(o!.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn);
     }
-    public async Task CancelAsync(Guid orderId, string motivo, CancellationToken ct = default) { await _uow.Orders.CancelOrderAsync(orderId, motivo, null, ct); await _uow.SaveChangesAsync(ct); }
+    public async Task CancelAsync(Guid orderId, string motivo, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(motivo))
+        {
+            throw new ValidationException("motivo", "El motivo de cancelación es obligatorio.");
+        }
+        await _uow.Orders.CancelOrderAsync(orderId, motivo, null, ct);
+        await _uow.SaveChangesAsync(ct);
+    }
     public async Task AssignAsync(Guid orderId, Guid repartidorId, AssignmentOrigin origin, CancellationToken ct = default) { await _uow.Orders.AssignDeliveryPersonAsync(orderId, repartidorId, origin, ct); await _uow.SaveChangesAsync(ct); }
     public async Task<DashboardDataDto> DashboardAsync(CancellationToken ct = default)
     {

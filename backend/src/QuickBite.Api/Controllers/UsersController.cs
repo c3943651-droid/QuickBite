@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuickBite.Application.Users;
 using QuickBite.Application.Users.Dtos;
+using QuickBite.Api.Configuration;
 
 namespace QuickBite.Api.Controllers;
 
@@ -42,7 +43,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("addresses")]
-    [Authorize(Roles = "cliente")]
+    [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> GetAddresses(CancellationToken cancellationToken)
     {
         var addresses = await _userService.GetAddressesAsync(CurrentUserId, cancellationToken);
@@ -50,7 +51,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("addresses")]
-    [Authorize(Roles = "cliente")]
+    [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> CreateAddress([FromBody] CreateAddressRequest request, CancellationToken cancellationToken)
     {
         var address = await _userService.CreateAddressAsync(CurrentUserId, request, cancellationToken);
@@ -58,7 +59,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("addresses/{id:guid}")]
-    [Authorize(Roles = "cliente")]
+    [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> UpdateAddress(Guid id, [FromBody] UpdateAddressRequest request, CancellationToken cancellationToken)
     {
         var address = await _userService.UpdateAddressAsync(CurrentUserId, id, request, cancellationToken);
@@ -66,7 +67,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("addresses/{id:guid}")]
-    [Authorize(Roles = "cliente")]
+    [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> DeleteAddress(Guid id, CancellationToken cancellationToken)
     {
         await _userService.DeleteAddressAsync(CurrentUserId, id, cancellationToken);
@@ -74,7 +75,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPatch("addresses/{id:guid}/set-default")]
-    [Authorize(Roles = "cliente")]
+    [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> SetDefaultAddress(Guid id, CancellationToken cancellationToken)
     {
         var address = await _userService.SetDefaultAddressAsync(CurrentUserId, id, cancellationToken);

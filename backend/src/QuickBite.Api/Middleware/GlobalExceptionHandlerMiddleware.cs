@@ -1,7 +1,6 @@
 using System.Net;
 using System.Text.Json;
 using QuickBite.Domain.Exceptions;
-using QuickBite.Shared;
 
 namespace QuickBite.Api.Middleware;
 
@@ -9,6 +8,7 @@ public sealed class GlobalExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger;
+    private readonly bool _showExceptionDetails;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -18,10 +18,12 @@ public sealed class GlobalExceptionHandlerMiddleware
 
     public GlobalExceptionHandlerMiddleware(
         RequestDelegate next,
-        ILogger<GlobalExceptionHandlerMiddleware> logger)
+        ILogger<GlobalExceptionHandlerMiddleware> logger,
+        IWebHostEnvironment environment)
     {
         _next = next;
         _logger = logger;
+        _showExceptionDetails = environment.IsDevelopment();
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -33,11 +35,11 @@ public sealed class GlobalExceptionHandlerMiddleware
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception for {Method} {Path}", context.Request.Method, context.Request.Path);
-            await HandleExceptionAsync(context, ex);
+            await HandleExceptionAsync(context, ex, _showExceptionDetails);
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static async Task HandleExceptionAsync(HttpContext context, Exception exception, bool showExceptionDetails)
     {
         var (statusCode, error, details) = MapException(exception);
 
@@ -46,7 +48,9 @@ public sealed class GlobalExceptionHandlerMiddleware
             Timestamp = DateTime.UtcNow,
             Status = statusCode,
             Error = error,
-            Message = exception.Message,
+            Message = showExceptionDetails || statusCode < 500
+                ? exception.Message
+                : "Ocurrió un error inesperado. Inténtelo de nuevo más tarde.",
             Path = context.Request.Path,
             Details = details
         };
@@ -90,21 +94,6 @@ public sealed class GlobalExceptionHandlerMiddleware
             ForbiddenException => (
                 (int)HttpStatusCode.Forbidden,
                 "Forbidden",
-                null
-            ),
-            ArgumentException => (
-                (int)HttpStatusCode.BadRequest,
-                "Bad Request",
-                null
-            ),
-            UnauthorizedAccessException => (
-                (int)HttpStatusCode.Unauthorized,
-                "Unauthorized",
-                null
-            ),
-            KeyNotFoundException => (
-                (int)HttpStatusCode.NotFound,
-                "Not Found",
                 null
             ),
             _ => (

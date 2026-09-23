@@ -2,7 +2,6 @@ using QuickBite.Application.Admin.Dtos;
 using QuickBite.Application.Catalog.Dtos;
 using QuickBite.Application.Orders.Dtos;
 using QuickBite.Domain.Enums;
-using QuickBite.Shared.Dashboard;
 namespace QuickBite.Application.Admin;
 public interface IAdminOrderService
 {

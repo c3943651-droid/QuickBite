@@ -1,8 +1,10 @@
 using QuickBite.Application.Delivery;
+using QuickBite.Application.Delivery.Dtos;
 using QuickBite.Application.Orders.Dtos;
 using QuickBite.Domain.Enums;
 using QuickBite.Domain.Exceptions;
 using QuickBite.Domain.Repositories;
+using QuickBite.Domain.Repositories.Models;
 namespace QuickBite.Application.Delivery;
 public sealed class DeliveryService : IDeliveryService
 {
@@ -41,10 +43,10 @@ public sealed class DeliveryService : IDeliveryService
         var hist = orders.Where(o => o.Estado == OrderStatus.Entregado || o.Estado == OrderStatus.Cancelado).Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn)).ToList();
         return hist;
     }
-    public async Task<object> StatsAsync(Guid repartidorId, CancellationToken ct = default)
+    public async Task<DeliveryPersonStatsDto> StatsAsync(Guid repartidorId, CancellationToken ct = default)
     {
         var stats = await _uow.DeliveryPeople.GetStatsAsync(repartidorId, ct);
-        if (stats == null) return new { entregasTotales = 0, entregasDelMes = 0, promedioMinutos = 0 };
-        return stats;
+        if (stats == null) return new DeliveryPersonStatsDto(repartidorId, 0, 0, 0, 0, 0);
+        return new DeliveryPersonStatsDto(stats.DeliveryPersonId, stats.EntregasTotales, stats.EntregasDelMes, stats.TiempoPromedioEntregaMinutos, stats.PedidosAsignadosActivos, stats.Cancelaciones);
     }
 }

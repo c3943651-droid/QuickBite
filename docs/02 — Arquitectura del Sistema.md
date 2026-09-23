@@ -30,10 +30,10 @@ QuickBite se organiza en cuatro niveles lógicos.
 
 - El cliente móvil se comunica con la API por HTTPS con autenticación JWT.
 - El panel web se comunica con la API por HTTPS con autenticación JWT.
-- La API se comunica con la base de datos, con Cloudinary y con Resend.
+- La API se comunica con la base de datos, con Supabase Storage y con Resend.
 - La API no se comunica directamente con Firebase ni con pasarelas de pago.
 
-**Servicios externos integrados:** Cloudinary (imágenes), Resend (correos transaccionales).
+**Servicios externos integrados:** Supabase Storage (imágenes), Resend (correos transaccionales).
 
 **Servicios externos no integrados:** Firebase (ninguna forma), SendGrid, pasarelas de pago.
 
@@ -61,7 +61,7 @@ La API se organiza en cuatro capas concéntricas, con dependencias dirigidas hac
 | Presentación | Controladores, middleware, filtros, configuración de Swagger, CORS y JWT |
 | Aplicación | Servicios de aplicación, DTOs, validadores, mapeos, orquestación |
 | Dominio | Entidades de dominio, interfaces de repositorios, reglas puras |
-| Infraestructura | DbContext, repositorios, migraciones, servicios externos (Cloudinary, Resend) |
+| Infraestructura | DbContext, repositorios, migraciones, servicios externos (Supabase Storage, Resend) |
 
 Adicionalmente existe un proyecto compartido (`Shared`) que contiene DTOs reutilizados por el panel Blazor.
 
@@ -234,7 +234,7 @@ El detalle de la estrategia de seguridad reside en el documento 10.
 | REST | Simplicidad, cacheabilidad, stateless por naturaleza |
 | DTOs | Desacoplamiento del modelo de dominio, evita exponer campos sensibles |
 | Triggers en base de datos | Garantía de integridad independientemente de la capa de acceso |
-| Cloudinary | Evita el almacenamiento efímero de Render, ofrece optimización y CDN |
+| Supabase Storage | Evita el almacenamiento efímero de Render, ofrece optimización y CDN |
 | Resend | Correos transaccionales con límite gratuito suficiente |
 | Render | Hosting gratuito con despliegue desde repositorio |
 | Supabase | PostgreSQL gestionado con backups automáticos |
@@ -254,7 +254,7 @@ El sistema se despliega en servicios gratuitos.
 | API REST | Render | Web Service |
 | Panel Blazor | Render | Static Site |
 | Base de datos | Supabase | PostgreSQL gestionado |
-| Imágenes | Cloudinary | Almacenamiento y CDN |
+| Imágenes | Supabase Storage | Almacenamiento y CDN |
 | Correos | Resend | API de correo |
 | CI/CD | GitHub Actions | Pipelines |
 | Monitoreo | WatchDog.NET + Serilog | Auto-hospedado |
@@ -293,7 +293,7 @@ Las extensiones futuras (multi-sucursal, marketplace, notificaciones push, etc.)
 | Doble flujo de asignación de repartidor | Método compartido en servicio de aplicación | 05#D-03 |
 | Enumeración de usuarios diferenciada | Comportamiento asimétrico en endpoints de auth | 05#D-04 |
 | Lógica crítica en triggers de base de datos | Reparto de responsabilidades entre API y motor | 05#D-05 |
-| Cloudinary y Resend | Servicios externos en capa de infraestructura | 05#D-06 |
+| Supabase Storage y Resend | Servicios externos en capa de infraestructura | 05#D-06 |
 | Modelo mono-sucursal | Ausencia de tablas y campos de sucursal | 05#D-09 |
 | Redundancia de cron jobs | Doble configuración de monitoreo externo | 05#D-11 |
 

@@ -21,9 +21,15 @@ public class CartRepository : ICartRepository
             .AsNoTracking()
             .Include(c => c.Items)
                 .ThenInclude(i => i.Opciones)
+                    .ThenInclude(o => o.Opcion)
             .Include(c => c.Items)
                 .ThenInclude(i => i.Producto)
             .FirstOrDefaultAsync(c => c.UsuarioId == userId && c.Estado == CartStatus.Activo, cancellationToken);
+    }
+
+    public async Task AddAsync(Cart cart, CancellationToken cancellationToken = default)
+    {
+        await _db.Carritos.AddAsync(cart, cancellationToken);
     }
 
     public async Task AddItemAsync(Guid cartId, CartItem item, CancellationToken cancellationToken = default)

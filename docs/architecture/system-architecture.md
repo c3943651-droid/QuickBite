@@ -30,7 +30,7 @@ QuickBite se organiza en **cuatro niveles lógicos** con comunicación exclusiva
           ┌────────────────┼────────────────┐
           ▼                ▼                ▼
    ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-   │  PostgreSQL │  │ Cloudinary  │  │   Resend    │
+   │  PostgreSQL │  │ Supabase Storage  │  │   Resend    │
    │   (Supabase)│  │  (Imágenes) │  │  (Correos)  │
    └─────────────┘  └─────────────┘  └─────────────┘
 ```
@@ -268,7 +268,7 @@ UI (Componentes) → Hooks/Eventos → React Query + Zustand → Repositorio →
 | **REST** | Simplicidad, cacheable, stateless por naturaleza |
 | **DTOs** | Desacoplamiento dominio, evita exponer campos sensibles |
 | **Triggers BD** | Garantía integridad independiente de capa acceso |
-| **Cloudinary** | Evita almacenamiento efímero Render, optimización + CDN |
+| **Supabase Storage** | Evita almacenamiento efímero Render, optimización + CDN |
 | **Resend** | Correos transaccionales free tier suficiente |
 | **Render** | Hosting gratuito con deploy desde repo |
 | **Supabase** | PostgreSQL managed con backups automáticos |
@@ -284,7 +284,7 @@ UI (Componentes) → Hooks/Eventos → React Query + Zustand → Repositorio →
 | API REST | Render | Web Service | Auto-suspend 15min, cold start 30-60s |
 | Panel Blazor | Render | Static Site | SPA redirect a index.html, CDN global |
 | Base de Datos | Supabase | PostgreSQL 15 | 500MB, backups diarios, SSL |
-| Imágenes | Cloudinary | Cloud Storage | Free tier, transformaciones URL |
+| Imágenes | Supabase Storage | Cloud Storage | Free tier, transformaciones URL |
 | Correos | Resend | Email API | Free tier, async, 2 templates |
 | CI/CD | GitHub Actions | Pipelines | Free tier, contenedores PostgreSQL |
 | Monitoreo | WatchDog + Serilog | Self-hosted | Logs JSON, retención 30 días |
@@ -324,7 +324,7 @@ UI (Componentes) → Hooks/Eventos → React Query + Zustand → Repositorio →
 | D-03 Doble flujo asignación | Método compartido en servicio aplicación | 05#D-03 |
 | D-04 Enum usuarios | Comportamiento asimétrico en auth | 05#D-04 |
 | D-05 Lógica en triggers | Reparto responsabilidades API ↔ BD | 05#D-05 |
-| D-06 Cloudinary/Resend | Servicios externos en infraestructura | 05#D-06 |
+| D-06 Supabase Storage/Resend | Servicios externos en infraestructura | 05#D-06 |
 | D-09 Mono-sucursal | Sin tablas/campos sucursal | 05#D-09 |
 | D-11 Cron jobs redundantes | Doble configuración monitoreo externo | 05#D-11 |
 

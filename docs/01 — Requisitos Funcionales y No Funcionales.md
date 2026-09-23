@@ -447,7 +447,7 @@ Los demás requisitos nuevos (RF-02.6, RF-02.7, RF-04.4) se implementan con endp
 | Doble flujo de asignación de repartidor | RF-05.4, RF-08.2, RF-11.2 | 05#D-03 |
 | Enumeración de usuarios diferenciada | RF-01.1, RF-01.3 | 05#D-04 |
 | Lógica crítica en triggers de base de datos | RF-03.7, RF-06.3, RF-08.4 | 05#D-05 |
-| Cloudinary y Resend | RF-01.3, RF-02.1, RF-06.2 | 05#D-06 |
+| Supabase Storage y Resend | RF-01.3, RF-02.1, RF-06.2 | 05#D-06 |
 | APK firmado | RNF-07.1 | 05#D-07 |
 | Pagos simulados | RF-03.6 | 05#D-08 |
 | Modelo mono-sucursal | Todos | 05#D-09 |

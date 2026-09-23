@@ -1123,7 +1123,7 @@ INSERT INTO categorias (nombre, descripcion, orden) VALUES
 | Tabla `dispositivos_push` no usada | Se conserva, no se mapea en ORM, no se puebla | 05#D-02 |
 | Doble flujo de asignación de repartidor | Auditoría diferenciada con acciones `asignacion_auto` y `asignacion_asistida` | 05#D-03 |
 | Lógica crítica en triggers | Reglas de estado, stock y contadores en el motor | 05#D-05 |
-| Cloudinary | Campo `imagen_url` almacena URL externa | 05#D-06 |
+| Supabase Storage | Campo `imagen_url` almacena URL externa | 05#D-06 |
 | Modelo mono-sucursal | No hay tablas `sucursales` ni campos `sucursal_id` | 05#D-09 |
 
 ---

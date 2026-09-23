@@ -9,4 +9,6 @@ public sealed record CreateProductOptionRequest { public string Nombre { get; in
 public sealed record UpdateProductOptionRequest { public string? Nombre { get; init; } public decimal? PrecioAdicional { get; init; } public bool? Activo { get; init; } }
 public sealed record ProductPriceHistoryResponse(Guid Id, decimal PrecioAnterior, decimal PrecioNuevo, string? Usuario, string? Motivo, DateTime CreadoEn);
 public sealed record ProductFilterRequest { public Guid? CategoriaId { get; init; } public string? Search { get; init; } public bool? Disponible { get; init; } public decimal? PrecioMin { get; init; } public decimal? PrecioMax { get; init; } public string? Orden { get; init; } public int Page { get; init; } = 1; public int Limit { get; init; } = 10; }
+public sealed record SetAvailabilityRequest { public bool Disponible { get; init; } }
+public sealed record AdjustStockRequest { public int Stock { get; init; } public string? Motivo { get; init; } }
 public sealed record PagedResponse<T>(IReadOnlyList<T> Data, int Total, int Page, int Limit, int TotalPages);

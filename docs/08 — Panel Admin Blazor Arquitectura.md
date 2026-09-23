@@ -88,7 +88,7 @@ El panel forma parte del monorepo, dentro de la solución .NET del backend.
 | /orders | Pedidos | Lista de pedidos con filtros (polling cada 30 s) |
 | /orders/{id} | Detalle de pedido | Vista completa, cambio de estado, asignación de repartidor |
 | /products | Productos | Lista de productos, acciones |
-| /products/create | Crear producto | Formulario de creación con subida a Cloudinary |
+| /products/create | Crear producto | Formulario de creación con subida a Supabase Storage |
 | /products/{id}/edit | Editar producto | Formulario de edición |
 | /products/{id}/price-history | Historial de precios | Tabla de cambios |
 | /categories | Categorías | Lista de categorías |
@@ -425,7 +425,7 @@ Las funcionalidades no incluidas en v1.0 se documentan como extensiones futuras 
 | Polling reemplaza notificaciones push | Polling en dashboard y lista de pedidos | 05#D-01 |
 | Doble flujo de asignación | Asignación manual desde el panel | 05#D-03 |
 | Lógica en triggers | Cambios de estado y stock delegados al motor | 05#D-05 |
-| Cloudinary | Subida de imágenes de productos | 05#D-06 |
+| Supabase Storage | Subida de imágenes de productos | 05#D-06 |
 | Pagos simulados | Visualización de método de pago simulado | 05#D-08 |
 | Modelo mono-sucursal | Sin selector de sucursal | 05#D-09 |
 | Sincronización EF Core ↔ Supabase | Sin impacto directo en el panel | 05#D-10 |

@@ -4,11 +4,10 @@ Este proyecto usa **skills reutilizables** alojadas en `.agents/skills/<nombre>/
 
 ## El proyecto
 
-`QuickBite` es un sistema de gestión de pedidos para **una sola sucursal** de un restaurante de comida rápida. Monorepo con tres frentes:
+`QuickBite` es un sistema de gestión de pedidos para **una sola sucursal** de un restaurante de comida rápida. Monorepo con **dos frentes** (el panel admin Blazor se eliminó; el foco actual es la API):
 
-- **Backend .NET 8** (`backend/`): API REST en Clean Architecture + panel admin Blazor WebAssembly. Stack: ASP.NET Core, Entity Framework Core, PostgreSQL 15 (Supabase), JWT, Cloudinary (imágenes), Resend (correos).
-- **App móvil React Native** (`mobile/`): clientes y repartidores. React Native CLI (sin Expo), TypeScript, estado con React Query + Zustand, repositorios remotos y locales, patrón Repository e inyección de dependencias.
-- **Panel admin Blazor** (`backend/src/QuickBite.AdminBlazor/`): SPA en el navegador con MudBlazor, consume la misma API.
+- **Backend .NET 8** (`backend/`): API REST en Clean Architecture. Stack: ASP.NET Core, Entity Framework Core, PostgreSQL 15 (Supabase), JWT, Supabase Storage (imágenes de productos), Resend (correos).
+- **App móvil** (`mobile/`): clientes y repartidores. En migración de React Native a **Flutter** (sin código en el repo todavía). Patrón Repository e inyección de dependencias.
 
 - **Fuente de verdad de diseño:** los specs viven en `docs/` (Markdown, numerados `00`…`13`). Léelas antes de implementar. Ver especialmente `docs/02 — Arquitectura del Sistema.md` y `docs/06 — Backend .NET Guía de Implementación.md`.
 
@@ -27,15 +26,10 @@ dotnet format backend/src/QuickBite.sln --verify-no-changes  # formato
 
 > Prefijo por defecto para trabajar en el backend: ejecuta los comandos desde `backend/` o usa las rutas completas como arriba.
 
-### Móvil (React Native)
+### Móvil (Flutter — en migración)
 
 ```bash
-cd mobile
-npm install                # instala dependencias
-npm run lint               # lint estático (eslint)
-npm test                   # suite de tests (jest)
-npx tsc --noEmit           # chequeo de tipos
-```
+# La app se está migrando de React Native a Flutter; los comandos se documentarán al incorporar el frontend.
 
 ## Capas del backend (Clean Architecture)
 
@@ -43,10 +37,9 @@ npx tsc --noEmit           # chequeo de tipos
 backend/src/QuickBite.sln
   ├── QuickBite.Domain          ← entidades, interfaces de repositorio, reglas puras (no depende de nada)
   ├── QuickBite.Application     ← servicios, DTOs, validadores, orquestación
-  ├── QuickBite.Infrastructure  ← EF Core, repositorios, migraciones, Cloudinary/Resend
+  ├── QuickBite.Infrastructure  ← EF Core, repositorios, migraciones, Supabase Storage/Resend
   ├── QuickBite.Api             ← controladores, middleware, JWT, Swagger, CORS
-  ├── QuickBite.AdminBlazor     ← panel admin Blazor WebAssembly
-  └── QuickBite.Shared          ← DTOs compartidos con el panel
+  └── QuickBite.Shared          ← DTOs compartidos entre capas y clientes
 backend/tests/QuickBite.Tests.Unit/         ← xUnit (Application, Domain)
 backend/tests/QuickBite.Tests.Integration/  ← xUnit (Api, Infrastructure)
 ```
@@ -115,5 +108,5 @@ Ante cada petición:
 - Patrones del backend: Repository, Unit of Work, DTO, Result Pattern, Dependency Injection, Options Pattern.
 - Patrones del móvil: React Query + Zustand, Repository, Dependency Injection, Singleton para servicios compartidos.
 - Errores con `Result` y tipados, no excepciones silenciosas ni pánicos.
-- Cero lógica de negocio en controladores, en widgets/pantallas y en los servicios de API del panel: la lógica vive en Application (backend) y en hooks/repositorios (móvil).
+- Cero lógica de negocio en controladores y en pantallas/widgets: la lógica vive en Application (backend) y en repositorios (móvil).
 - Todos los tests deben pasar antes de cerrar: `dotnet test backend/tests/QuickBite.Tests.Unit/` y `dotnet test backend/tests/QuickBite.Tests.Integration/` (requiere PostgreSQL) en backend, con `dotnet build -warnaserror` limpio, y `npm run lint` + `npx tsc --noEmit` en móvil.

@@ -111,6 +111,12 @@ public class ProductRepository : IProductRepository
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
+    public async Task<Product?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _db.Productos
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
+
     public async Task AddAsync(Product product, CancellationToken cancellationToken = default)
     {
         await _db.Productos.AddAsync(product, cancellationToken);

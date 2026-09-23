@@ -56,6 +56,7 @@ public static class DependencyInjection
 
         var emailSettings = BuildEmailSettings(configuration);
         services.AddSingleton(emailSettings);
+        services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
         if (!string.IsNullOrWhiteSpace(emailSettings.ApiKey))
         {
             services.AddResend(options => options.ApiToken = emailSettings.ApiKey);
@@ -68,7 +69,10 @@ public static class DependencyInjection
 
         services.AddHostedService<EmailDispatcher>();
         services.AddHttpClient();
-        services.AddSingleton<IImageService, CloudinaryImageService>();
+
+        services.Configure<SupabaseStorageOptions>(
+            configuration.GetSection(SupabaseStorageOptions.SectionName));
+        services.AddSingleton<IImageService, SupabaseStorageImageService>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();

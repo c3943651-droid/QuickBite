@@ -3,6 +3,7 @@ using QuickBite.Domain.Entities;
 using QuickBite.Domain.Enums;
 using QuickBite.Domain.Exceptions;
 using QuickBite.Domain.Repositories;
+using QuickBite.Domain.Rules;
 namespace QuickBite.Application.Orders;
 public sealed class OrderService : IOrderService
 {
@@ -12,13 +13,30 @@ public sealed class OrderService : IOrderService
     {
         var cart = await _uow.Carts.GetActiveByUserIdAsync(userId, ct) ?? throw new BusinessRuleException("Carrito vacio");
         if (!cart.Items.Any()) throw new BusinessRuleException("Carrito vacio");
-        var order = new Order { ClienteId = userId, DireccionId = req.DireccionId, DireccionEntregaSnapshot = req.DireccionSnapshot ?? "", MetodoPago = req.MetodoPago.ToLower() == "tarjeta" ? PaymentMethodType.Tarjeta : PaymentMethodType.Efectivo, NumeroPedido = $"QB-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}", Estado = OrderStatus.Pendiente };
+        var order = new Order { ClienteId = userId, DireccionId = req.DireccionId, DireccionEntregaSnapshot = req.DireccionSnapshot ?? "", MetodoPago = ParseMetodoPago(req.MetodoPago), NumeroPedido = $"QB-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}", Estado = OrderStatus.Pendiente };
         foreach (var ci in cart.Items)
         {
-            order.Items.Add(new OrderItem { ProductoId = ci.ProductoId, Cantidad = ci.Cantidad, PrecioUnitario = ci.Producto?.Precio ?? 0, Subtotal = (ci.Producto?.Precio ?? 0) * ci.Cantidad });
-            order.Subtotal += (ci.Producto?.Precio ?? 0) * ci.Cantidad;
+            var unitPrice = ci.Producto?.Precio ?? 0m;
+            var item = new OrderItem
+            {
+                ProductoId = ci.ProductoId,
+                NombreProducto = ci.Producto?.Nombre ?? string.Empty,
+                Cantidad = ci.Cantidad,
+                PrecioUnitario = unitPrice,
+                Subtotal = OrderCalculationRules.CalculateOrderItemSubtotal(unitPrice, ci.Cantidad, ci.Opciones.Select(o => o.Opcion?.PrecioAdicional ?? 0m))
+            };
+            foreach (var opcion in ci.Opciones.Where(o => o.Opcion is not null))
+            {
+                item.Opciones.Add(new OrderItemOption
+                {
+                    NombreOpcion = opcion.Opcion!.Nombre,
+                    PrecioAdicional = opcion.Opcion.PrecioAdicional
+                });
+            }
+            order.Items.Add(item);
         }
-        order.Total = order.Subtotal + order.CostoEnvio;
+        order.Subtotal = OrderCalculationRules.CalculateOrderSubtotal(order.Items);
+        order.Total = OrderCalculationRules.CalculateOrderTotal(order.Subtotal, order.CostoEnvio);
         await _uow.Orders.AddAsync(order, ct);
         await _uow.Carts.ClearCartAsync(cart.Id, ct);
         await _uow.SaveChangesAsync(ct);
@@ -45,8 +63,17 @@ public sealed class OrderService : IOrderService
     {
         var o = await _uow.Orders.GetByIdAsync(orderId, ct) ?? throw new NotFoundException("Pedido", orderId);
         if (o.ClienteId != userId) throw new ForbiddenException();
-        if (o.Estado != OrderStatus.Pendiente && o.Estado != OrderStatus.Confirmado) throw new BusinessRuleException("No se puede cancelar en este estado");
         await _uow.Orders.CancelOrderAsync(orderId, motivo, userId, ct);
         await _uow.SaveChangesAsync(ct);
+    }
+
+    private static PaymentMethodType ParseMetodoPago(string? metodoPago)
+    {
+        return metodoPago?.Trim().ToLowerInvariant() switch
+        {
+            "tarjeta" => PaymentMethodType.Tarjeta,
+            "efectivo" => PaymentMethodType.Efectivo,
+            _ => throw new ValidationException("metodoPago", "El método de pago debe ser 'efectivo' o 'tarjeta'.")
+        };
     }
 }

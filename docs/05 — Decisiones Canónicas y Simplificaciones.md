@@ -26,7 +26,7 @@ Este documento centraliza **todas las decisiones transversales** de QuickBite v1
 | D-03 | Doble flujo de asignación de repartidor | Lógica de negocio |
 | D-04 | Enumeración de usuarios diferenciada | Seguridad |
 | D-05 | Lógica crítica en triggers de PostgreSQL | Arquitectura |
-| D-06 | Cloudinary y Resend como servicios externos | Servicios externos |
+| D-06 | Supabase Storage y Resend como servicios externos | Servicios externos |
 | D-07 | Distribución por APK firmado | Distribución móvil |
 | D-08 | Pagos simulados | Modelo de negocio |
 | D-09 | Modelo mono-sucursal | Modelo de negocio |
@@ -306,7 +306,7 @@ Las siguientes reglas viven exclusivamente en el motor de la base de datos:
 
 ---
 
-## D-06 — Cloudinary y Resend como servicios externos
+## D-06 — Supabase Storage y Resend como servicios externos
 
 ### Contexto
 
@@ -318,15 +318,15 @@ Se integran dos servicios externos gratuitos:
 
 | Servicio | Propósito | Uso |
 | :--- | :--- | :--- |
-| Cloudinary | Almacenamiento y optimización de imágenes | Imágenes de productos |
+| Supabase Storage | Almacenamiento y optimización de imágenes | Imágenes de productos |
 | Resend | Envío de correos transaccionales | Bienvenida y recuperación de contraseña |
 
-**Cloudinary:**
+**Supabase Storage:**
 
 - El campo `imagen_url` de productos almacena la URL externa.
-- La app móvil y el panel admin consumen imágenes desde Cloudinary.
-- Cloudinary aplica transformaciones automáticas (compresión, redimensionado).
-- La eliminación de un producto no elimina automáticamente la imagen de Cloudinary.
+- La app móvil y el panel admin consumen imágenes desde Supabase Storage.
+- Supabase Storage aplica transformaciones automáticas (compresión, redimensionado).
+- La eliminación de un producto no elimina automáticamente la imagen de Supabase Storage.
 
 **Resend:**
 
@@ -336,8 +336,8 @@ Se integran dos servicios externos gratuitos:
 
 ### Justificación
 
-- Cloudinary evita el problema del almacenamiento efímero de Render.
-- Cloudinary ofrece optimización automática y CDN global.
+- Supabase Storage evita el problema del almacenamiento efímero de Render.
+- Supabase Storage ofrece optimización automática y CDN global.
 - Resend permite demostrar un flujo completo de recuperación de contraseña.
 - Ambas integraciones aportan valor técnico al proyecto.
 - Los límites gratuitos son suficientes para el alcance.
@@ -349,7 +349,7 @@ Se integran dos servicios externos gratuitos:
 - 02 (servicios externos en capa de infraestructura)
 - 03 (campo imagen_url como URL externa; tokens de recuperación)
 - 04 (endpoints que devuelven imagen_url)
-- 06 (implementación de servicios de Cloudinary y Resend)
+- 06 (implementación de servicios de Supabase Storage y Resend)
 - 08 (subida de imágenes desde el panel)
 - 08.1 (formulario de producto con subida de imagen)
 - 11 (configuración de credenciales y límites del free tier)
@@ -630,7 +630,7 @@ Reglas:
 | D-03 | Doble flujo de asignación | Lógica | 00, 01, 03, 04, 06, 10, 12 |
 | D-04 | Enumeración de usuarios diferenciada | Seguridad | 01, 04, 06, 10, 12 |
 | D-05 | Lógica crítica en triggers | Arquitectura | 02, 03, 06, 10, 12 |
-| D-06 | Cloudinary y Resend | Servicios externos | 00, 01, 02, 03, 04, 06, 08, 08.1, 11, 12 |
+| D-06 | Supabase Storage y Resend | Servicios externos | 00, 01, 02, 03, 04, 06, 08, 08.1, 11, 12 |
 | D-07 | APK firmado | Distribución | 00, 01, 07, 11, 13 |
 | D-08 | Pagos simulados | Modelo de negocio | 00, 01, 03, 04, 07.1, 10, 13 |
 | D-09 | Modelo mono-sucursal | Modelo de negocio | 00, 01, 02, 03, 04, 07, 07.1, 08, 08.1, 13 |

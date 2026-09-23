@@ -169,7 +169,7 @@ Esta lista es **vinculante**. Un agente o desarrollador no debe crear ninguno de
 | Componentes UI web | MudBlazor | Estable |
 | Autenticación | JWT + Refresh Tokens | — |
 | Hashing | BCrypt | Coste 12 |
-| Imágenes | Cloudinary | Free tier |
+| Imágenes | Supabase Storage | Free tier |
 | Correos | Resend | Free tier |
 | Base de datos gestionada | Supabase | Free tier |
 | Hosting API | Render (Web Service) | Free tier |
@@ -192,9 +192,9 @@ QuickBite se organiza en cuatro niveles lógicos:
 | Lógica de negocio | API REST .NET 8 |
 | Persistencia | PostgreSQL en Supabase |
 
-**Comunicación:** Los clientes se comunican con la API exclusivamente por HTTPS con autenticación JWT. La API se comunica con la base de datos, con Cloudinary (imágenes) y con Resend (correos). El panel admin consume la misma API que la app móvil.
+**Comunicación:** Los clientes se comunican con la API exclusivamente por HTTPS con autenticación JWT. La API se comunica con la base de datos, con Supabase Storage (imágenes) y con Resend (correos). El panel admin consume la misma API que la app móvil.
 
-**Servicios externos integrados:** Cloudinary (imágenes de productos), Resend (correos transaccionales).
+**Servicios externos integrados:** Supabase Storage (imágenes de productos), Resend (correos transaccionales).
 
 **Servicios externos no integrados:** Firebase (en ninguna forma), SendGrid, pasarelas de pago.
 
@@ -258,7 +258,7 @@ QuickBite se organiza en cuatro niveles lógicos:
 | Doble flujo de asignación | Incluye dos endpoints | 05#D-03 |
 | Enumeración de usuarios diferenciada | Comportamiento asimétrico en auth | 05#D-04 |
 | Lógica crítica en triggers | Reparto de responsabilidades | 05#D-05 |
-| Cloudinary y Resend | Servicios externos integrados | 05#D-06 |
+| Supabase Storage y Resend | Servicios externos integrados | 05#D-06 |
 | APK firmado | Sin Google Play | 05#D-07 |
 | Pagos simulados | Sin pasarelas reales | 05#D-08 |
 | Modelo mono-sucursal | Sin sucursales ni marketplace | 05#D-09 |

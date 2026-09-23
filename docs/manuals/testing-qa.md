@@ -107,7 +107,7 @@ Las decisiones canónicas que afectan a las pruebas (lógica en triggers, pollin
 - Repositorios que interactúan con el ORM y la base de datos.
 - **Triggers de PostgreSQL** (ver sección 4.7).
 - Flujos que involucran múltiples servicios.
-- Integración con Cloudinary (con mock o cuenta de prueba).
+- Integración con Supabase Storage (con mock o cuenta de prueba).
 - Integración con Resend (con mock o cuenta de prueba).
 
 **Casos específicos del backend:**
@@ -488,7 +488,7 @@ Dado que el proyecto incluye una demostración, se realizan ensayos previos.
 | Doble flujo de asignación | Pruebas por ambos flujos con auditoría diferenciada | 05#D-03 |
 | Enumeración de usuarios diferenciada | Pruebas de comportamiento asimétrico; timing attack como limitación conocida | 05#D-04 |
 | Lógica en triggers | Cobertura por integración; sin duplicación en C# | 05#D-05 |
-| Cloudinary y Resend | Pruebas con mock o cuenta de prueba | 05#D-06 |
+| Supabase Storage y Resend | Pruebas con mock o cuenta de prueba | 05#D-06 |
 | APK firmado | Ausencia de pruebas de despliegue en tienda | 05#D-07 |
 | Pagos simulados | Pruebas sin dependencias externas de pago | 05#D-08 |
 | Modelo mono-sucursal | Pruebas sin aislamiento multi-tenant | 05#D-09 |

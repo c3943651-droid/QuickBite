@@ -26,7 +26,7 @@ This document is the single source of truth for QuickBite's cross-cutting decisi
 | D-03 | Two delivery-assignment flows | Business logic |
 | D-04 | Differentiated user-enumeration behavior | Security |
 | D-05 | Critical logic in PostgreSQL triggers | Architecture |
-| D-06 | Cloudinary and Resend as external services | External services |
+| D-06 | Supabase Storage and Resend as external services | External services |
 | D-07 | Signed APK distribution | Mobile distribution |
 | D-08 | Simulated payments | Business model |
 | D-09 | Single-branch model | Business model |
@@ -234,7 +234,7 @@ Guarantees integrity, atomicity, and defense in depth; avoids dead or divergent 
 
 ---
 
-## 8. D-06 — Cloudinary and Resend as External Services
+## 8. D-06 — Supabase Storage and Resend as External Services
 
 ### Context
 
@@ -246,16 +246,16 @@ Integrate exactly two external services:
 
 | Service | Purpose |
 |---|---|
-| Cloudinary | Product-image storage, optimization, and CDN delivery |
+| Supabase Storage | Product-image storage, optimization, and CDN delivery |
 | Resend | Welcome and password-recovery email |
 
-Cloudinary URLs are stored in `productos.imagen_url`. Resend sending is asynchronous and must not block API responses.
+Supabase Storage URLs are stored in `productos.imagen_url`. Resend sending is asynchronous and must not block API responses.
 
 ### Consequences
 
 - No local image persistence in the API.
 - No Firebase, SendGrid, or payment-gateway dependency.
-- Product deletion does not automatically delete the Cloudinary asset.
+- Product deletion does not automatically delete the Supabase Storage asset.
 - External credentials live only in environment variables/secrets.
 - Integration tests use mocks or test accounts.
 
@@ -456,7 +456,7 @@ Store only the latest searches locally on the device, with a suggested limit of 
 | D-03 | Two assignment flows | Shared service + differentiated audit |
 | D-04 | User enumeration | Auth response behavior |
 | D-05 | Database triggers | Integrity and integration-test strategy |
-| D-06 | Cloudinary/Resend | External-service boundaries |
+| D-06 | Supabase Storage/Resend | External-service boundaries |
 | D-07 | Signed APK | Mobile release process |
 | D-08 | Simulated payments | Checkout scope and compliance |
 | D-09 | Single branch | Data model and client scope |

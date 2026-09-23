@@ -1998,7 +1998,7 @@ Los siguientes requisitos funcionales se implementan sin añadir endpoints nuevo
 | Registro de dispositivo no implementado | Endpoint ausente | 05#D-01, 05#D-02 |
 | Doble flujo de asignación de repartidor | Dos endpoints con lógica compartida y auditoría diferenciada | 05#D-03 |
 | Enumeración de usuarios diferenciada | Registro revela, recuperación oculta | 05#D-04 |
-| Cloudinary | Campo imagen_url como URL externa | 05#D-06 |
+| Supabase Storage | Campo imagen_url como URL externa | 05#D-06 |
 | Resend | Envío de correo en registro y recuperación | 05#D-06 |
 | Pagos simulados | Método de pago sin procesamiento real | 05#D-08 |
 | Modelo mono-sucursal | Sin endpoints de sucursales ni filtros por sucursal | 05#D-09 |

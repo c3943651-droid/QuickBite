@@ -15,7 +15,9 @@ public sealed class CatalogService : ICatalogService
         _imageService = imageService;
     }
 
-    public IImageService GetImageService() => _imageService;
+    public async Task<string> UploadImageAsync(Stream stream, string fileName, CancellationToken ct = default)
+        => await _imageService.UploadAsync(stream, fileName, ct);
+
     private static CategoryResponse ToCat(Category c) => new(c.Id, c.Nombre, c.Descripcion, c.Orden, c.Activo);
     private static ProductOptionResponse ToOpt(ProductOption o) => new(o.Id, o.Nombre, o.PrecioAdicional, o.Activo);
     private static ProductListItemResponse ToList(Product p) => new(p.Id, p.Nombre, p.Descripcion, p.Precio, p.ImagenUrl, p.Disponible, p.Categoria == null ? null : new CategoryResponse(p.Categoria.Id, p.Categoria.Nombre, p.Categoria.Descripcion, p.Categoria.Orden, p.Categoria.Activo), p.Inventario?.Stock, p.Inventario?.StockMinimo);
@@ -96,7 +98,7 @@ public sealed class CatalogService : ICatalogService
     }
     public async Task<ProductDetailResponse> UpdateProductAsync(Guid id, UpdateProductRequest req, Guid? userId = null, CancellationToken ct = default)
     {
-        var p = await _uow.Products.GetByIdAsync(id, ct) ?? throw new NotFoundException("Producto", id);
+        var p = await _uow.Products.GetTrackedByIdAsync(id, ct) ?? throw new NotFoundException("Producto", id);
         var oldPrice = p.Precio;
         if (req.Nombre != null) p.Nombre = req.Nombre.Trim();
         if (req.Descripcion != null) p.Descripcion = req.Descripcion?.Trim();
@@ -109,7 +111,6 @@ public sealed class CatalogService : ICatalogService
             p.PreciosHistoricos.Add(new ProductPriceHistory { ProductoId = p.Id, PrecioAnterior = oldPrice, PrecioNuevo = p.Precio, UsuarioId = userId, Motivo = "cambio precio" });
         }
         p.ActualizadoEn = DateTime.UtcNow;
-        _uow.Products.Update(p);
         await _uow.SaveChangesAsync(ct);
         var upd = await _uow.Products.GetByIdAsync(id, ct);
         return ToDetail(upd!);

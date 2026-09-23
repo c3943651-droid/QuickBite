@@ -10,7 +10,7 @@ public class OrderPipelineTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task Health_Pipeline_Smoke()
     {
         var r = await _c.GetAsync("/health");
-        // HealthController is at /api/v1/health
+        // health checks also served at /api/v1/health
         var r2 = await _c.GetAsync("/api/v1/health");
         (r.IsSuccessStatusCode || r2.IsSuccessStatusCode).Should().BeTrue();
     }
