@@ -8,12 +8,12 @@ QuickBite digitaliza el catálogo, el carrito, los pedidos, la asignación de re
 
 ## 🧱 Arquitectura general
 
-Monorepo con dos frentes que consumen una única API REST:
+Monorepo (al día de hoy solo la API REST; la app móvil aún no tiene código en el repo):
 
 | Frente | Tecnología | Ubicación |
 |---|---|---|
 | **API REST** | ASP.NET Core 8, Clean Architecture | `backend/src/QuickBite.sln` |
-| **App móvil** (clientes y repartidores) | Flutter (en migración desde React Native) | `mobile/` |
+| **App móvil** (clientes y repartidores) | Flutter (en migración desde React Native) | `mobile/` (próximamente) |
 
 **Stack del backend:** .NET 8 · Entity Framework Core · PostgreSQL 15 (Supabase) · JWT · Supabase Storage (imágenes) · Resend (correos).
 
@@ -52,16 +52,27 @@ QuickBite/
 │   └── tests/
 │       ├── QuickBite.Tests.Unit/         # xUnit (Application, Domain, Infrastructure)
 │       └── QuickBite.Tests.Integration/  # xUnit (Api, Infrastructure)
-├── mobile/                     # App Flutter (en migración desde React Native)
-├── docs/                       # Especificaciones del sistema (00…13)
-└── AGENTS.md                   # Guía para agentes de IA
+├── docs/                       # Especificaciones del sistema (numeradas 00…13 y organizadas por categoría)
+│   ├── api/                         # Contrato de API REST
+│   ├── architecture/                # Arquitectura, modelo de datos, decisiones
+│   ├── design/                      # Diseño UI/UX
+│   └── manuals/                     # Despliegue, pruebas y calidad, manual de usuario
+├── .agents/                     # Skills, reglas y scripts para agentes de IA
+│   ├── skills/                       # Skills reutilizables (spec, TDD, code review, …)
+│   ├── rules/                        # Reglas (p. ej. git-workflow-rules.md)
+│   └── scripts/                      # Scripts automatizados (p. ej. git-auto.sh)
+├── .opencode/                   # Configuración y skills de opencode (symlink a .agents/skills)
+├── global.json                  # SDK de .NET fijado (8.0.400…)
+└── AGENTS.md                    # Guía para agentes de IA
 ```
+
+> ℹ️ El panel admin Blazor se eliminó y la app móvil está en migración a Flutter; el foco actual del repo es la API REST.
 
 Las capas siguen **Clean Architecture**: las dependencias fluyen hacia el núcleo y el dominio no conoce infraestructura ni presentación.
 
 ## 🚀 Requisitos previos
 
-- .NET SDK 8 (`dotnet --version` → 8.x)
+- .NET SDK 8 (`dotnet --version` → 8.x; la versión concreta está fijada en `global.json`)
 - Flutter SDK 3.x (para la app móvil, en migración)
 - PostgreSQL 15 (local, o una instancia de Supabase)
 - Un proyecto de Supabase (Postgres + Storage) y una cuenta en Resend (para el entorno completo)
@@ -98,7 +109,7 @@ dotnet test backend/tests/QuickBite.Tests.Integration/
 
 ## 📚 Documentación
 
-Las especificaciones del sistema viven en [`docs/`](docs/), numeradas del `00` al `13`:
+Las especificaciones del sistema viven en [`docs/`](docs/), numeradas del `00` al `13` (las últimas además se reorganizan por categoría en `docs/api/`, `docs/architecture/`, `docs/design/` y `docs/manuals/`):
 
 | Doc | Contenido |
 |---|---|
@@ -116,6 +127,13 @@ Las especificaciones del sistema viven en [`docs/`](docs/), numeradas del `00` a
 | `11` | Despliegue, operación y mantenimiento |
 | `12` | Pruebas y calidad |
 | `13` | Manual de usuario |
+
+| Carpeta | Documentos reorganizados |
+|---|---|
+| `docs/architecture/` | `system-architecture.md` (02), `database-model.md` (03), `decisions.md` (05) |
+| `docs/api/` | `rest-contract.md` (04) |
+| `docs/design/` | `ui-ux-system.md` (09) |
+| `docs/manuals/` | `deployment.md` (11), `testing-qa.md` (12), `user-guide.md` (13) |
 
 > ⚠️ Estas especificaciones son la **fuente de verdad del diseño**. Antes de implementar cualquier funcionalidad, lee el documento correspondiente.
 
