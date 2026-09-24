@@ -6,6 +6,7 @@ import { Loader2, Plus, Trash2 } from "lucide-react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
@@ -409,7 +410,7 @@ export function ProductFormDialog({ open, onOpenChange, productId }: ProductForm
               ) : null}
 
               <div className="space-y-2">
-                <FormLabel className="text-sm font-medium">Imagen</FormLabel>
+                <Label className="text-sm font-medium">Imagen</Label>
                 <div className="flex items-center gap-3">
                   {watchedImageUrl ? (
                     <img
