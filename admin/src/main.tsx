@@ -1,10 +1,11 @@
 import { StrictMode, Suspense, lazy } from "react"
 import { createRoot } from "react-dom/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom"
 import { Toaster } from "sonner"
 import "./index.css"
 import { AppLayout } from "@/components/layout/app-layout"
+import { AppErrorBoundary } from "@/components/error-boundary"
 import { AuthProvider } from "@/lib/auth/auth-context"
 import { RequireAuth } from "@/lib/auth/require-auth"
 
@@ -23,6 +24,7 @@ const DeliveryPerformanceReportPage = lazy(() => import("@/app/reports/delivery-
 const AuditPage = lazy(() => import("@/app/audit/page"))
 const ConfigPage = lazy(() => import("@/app/config/page"))
 const ProfilePage = lazy(() => import("@/app/profile/page"))
+const NotFoundPage = lazy(() => import("@/app/not-found/page"))
 
 const queryClient = new QueryClient()
 
@@ -49,8 +51,20 @@ function AppRoutes() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
+  )
+}
+
+function AppRoot() {
+  const location = useLocation()
+  return (
+    <AppErrorBoundary resetKey={location.pathname}>
+      <Suspense fallback={null}>
+        <AppRoutes />
+      </Suspense>
+      <Toaster richColors position="top-center" />
+    </AppErrorBoundary>
   )
 }
 
@@ -59,10 +73,7 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <Suspense fallback={null}>
-            <AppRoutes />
-          </Suspense>
-          <Toaster richColors position="top-center" />
+          <AppRoot />
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>

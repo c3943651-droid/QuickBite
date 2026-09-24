@@ -36,6 +36,12 @@ export function persistsSession(auth: AuthResponse): void {
   sessionStorage.setItem(USER_KEY, JSON.stringify(auth.user))
 }
 
+export function patchStoredUser(patch: Partial<UserSummary>): void {
+  const current = getStoredUser()
+  if (!current) return
+  sessionStorage.setItem(USER_KEY, JSON.stringify({ ...current, ...patch }))
+}
+
 export function clearSession(): void {
   sessionStorage.removeItem(ACCESS_TOKEN_KEY)
   sessionStorage.removeItem(REFRESH_TOKEN_KEY)

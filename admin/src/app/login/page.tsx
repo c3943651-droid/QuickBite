@@ -1,8 +1,10 @@
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useNavigate, Navigate } from "react-router-dom"
+import { Navigate, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
+import { Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -13,6 +15,15 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
   Form,
   FormControl,
   FormField,
@@ -22,6 +33,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth/auth-context"
+import { forgotPassword } from "@/lib/api/auth"
 
 const loginSchema = z.object({
   email: z.string().email("Ingresa un email válido"),
@@ -30,13 +42,26 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>
 
+const forgotSchema = z.object({
+  email: z.string().email("Ingresa un email válido"),
+})
+
+type ForgotValues = z.infer<typeof forgotSchema>
+
 export default function LoginPage() {
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false)
+  const [forgotOpen, setForgotOpen] = useState(false)
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
+  })
+
+  const forgotForm = useForm<ForgotValues>({
+    resolver: zodResolver(forgotSchema),
+    defaultValues: { email: "" },
   })
 
   if (isAuthenticated) {
@@ -53,6 +78,19 @@ export default function LoginPage() {
         description: "Verifica tus datos e inténtalo de nuevo.",
       })
     }
+  }
+
+  async function onForgot(values: ForgotValues) {
+    try {
+      await forgotPassword({ email: values.email })
+    } catch {
+      // Respuesta genérica para no revelar si el correo existe.
+    }
+    toast.success(
+      "Si el correo existe, recibirás las instrucciones para recuperar tu contraseña.",
+    )
+    setForgotOpen(false)
+    forgotForm.reset()
   }
 
   return (
@@ -90,12 +128,27 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Contraseña</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
-                        autoComplete="current-password"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          autoComplete="current-password"
+                          className="pr-10"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                          className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
+                          onClick={() => setShowPassword((value) => !value)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="size-4" />
+                          ) : (
+                            <Eye className="size-4" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -110,9 +163,64 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
+
+          <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+            <DialogTrigger asChild>
+              <Button
+                type="button"
+                variant="link"
+                className="mt-3 h-auto p-0 text-xs text-muted-foreground"
+              >
+                ¿Olvidaste tu contraseña?
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Recuperar contraseña</DialogTitle>
+                <DialogDescription>
+                  Escribe tu correo para recibir las instrucciones de recuperación.
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...forgotForm}>
+                <form
+                  id="forgot-password-form"
+                  onSubmit={forgotForm.handleSubmit(onForgot)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={forgotForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="admin@quickbite.com"
+                            autoComplete="email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </form>
+              </Form>
+              <DialogFooter>
+                <Button
+                  type="submit"
+                  form="forgot-password-form"
+                  disabled={forgotForm.formState.isSubmitting}
+                >
+                  {forgotForm.formState.isSubmitting ? "Enviando…" : "Enviar instrucciones"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardContent>
         <CardFooter className="text-muted-foreground text-xs">
-          ¿Olvidaste tu contraseña? Recupérala desde la app móvil o por correo.
+          Panel exclusivo para administradores de QuickBite.
         </CardFooter>
       </Card>
     </div>

@@ -6,6 +6,7 @@ import {
   getAccessToken,
   getRefreshToken,
   getStoredUser,
+  patchStoredUser,
   persistsSession,
 } from "@/lib/auth/storage"
 
@@ -20,6 +21,7 @@ interface AuthContextValue {
   isAuthenticated: boolean
   login: (credentials: LoginCredentials) => Promise<void>
   logout: () => Promise<void>
+  patchUser: (patch: Partial<UserSummary>) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -52,6 +54,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [])
 
+  const patchUser = useCallback((patch: Partial<UserSummary>) => {
+    setUser((current) => {
+      if (!current) return current
+      const next = { ...current, ...patch }
+      patchStoredUser(next)
+      return next
+    })
+  }, [])
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -59,8 +70,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isAuthenticated: Boolean(accessToken && user),
       login,
       logout,
+      patchUser,
     }),
-    [user, accessToken, login, logout],
+    [user, accessToken, login, logout, patchUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
