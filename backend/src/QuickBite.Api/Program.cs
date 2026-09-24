@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuickBite.Api.Configuration;
 using QuickBite.Api.Filters;
 using QuickBite.Api.Health;
 using QuickBite.Api.Middleware;
@@ -38,6 +39,8 @@ try
 
     builder.Services.Configure<JwtSettings>(
         builder.Configuration.GetSection(JwtSettings.SectionName));
+    builder.Services.Configure<CorsSettings>(
+        builder.Configuration.GetSection(CorsSettings.SectionName));
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
@@ -95,6 +98,27 @@ try
 
     builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>());
     builder.Services.AddEndpointsApiExplorer();
+
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AdminFrontend", policy =>
+        {
+            var corsSettings = builder.Configuration
+                .GetSection(CorsSettings.SectionName)
+                .Get<CorsSettings>() ?? new CorsSettings();
+
+            var origins = corsSettings.AllowedOrigins
+                .Where(origin => !string.IsNullOrWhiteSpace(origin))
+                .ToArray();
+
+            if (origins.Length > 0)
+            {
+                policy.WithOrigins(origins);
+            }
+
+            policy.AllowAnyHeader().AllowAnyMethod();
+        });
+    });
     builder.Services.AddSwaggerGen(options =>
     {
         options.SwaggerDoc("v1", new OpenApiInfo
@@ -148,6 +172,7 @@ try
 
     app.UseForwardedHeaders();
     app.UseHttpsRedirection();
+    app.UseCors("AdminFrontend");
     if (!app.Environment.IsDevelopment())
     {
         app.UseHsts();
