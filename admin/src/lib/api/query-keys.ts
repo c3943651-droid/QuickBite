@@ -18,6 +18,7 @@ export const queryKeys = {
   inventory: ["admin", "inventory"] as const,
   deliveryPersons: {
     all: ["admin", "delivery-persons"] as const,
+    availableUsers: ["admin", "delivery-persons", "available-users"] as const,
     detail: (id: string) => ["admin", "delivery-persons", "detail", id] as const,
     history: (id: string) => ["admin", "delivery-persons", "detail", id, "history"] as const,
   },
