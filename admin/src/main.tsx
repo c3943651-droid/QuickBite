@@ -1,15 +1,70 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode, Suspense, lazy } from "react"
+import { createRoot } from "react-dom/client"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
+import { Toaster } from "sonner"
+import "./index.css"
+import { AppLayout } from "@/components/layout/app-layout"
+import { AuthProvider } from "@/lib/auth/auth-context"
+import { RequireAuth } from "@/lib/auth/require-auth"
+
+const LoginPage = lazy(() => import("@/app/login/page"))
+const DashboardPage = lazy(() => import("@/app/dashboard/page"))
+const OrdersPage = lazy(() => import("@/app/orders/page"))
+const ProductsPage = lazy(() => import("@/app/products/page"))
+const DeliveryPersonsPage = lazy(() => import("@/app/delivery-persons/page"))
+const CategoriesPage = lazy(() => import("@/app/categories/page"))
+const InventoryPage = lazy(() => import("@/app/inventory/page"))
+const ReportsPage = lazy(() => import("@/app/reports/page"))
+const SalesByDayReportPage = lazy(() => import("@/app/reports/sales-by-day/page"))
+const TopProductsReportPage = lazy(() => import("@/app/reports/top-products/page"))
+const TopClientsReportPage = lazy(() => import("@/app/reports/top-clients/page"))
+const DeliveryPerformanceReportPage = lazy(() => import("@/app/reports/delivery-performance/page"))
+const AuditPage = lazy(() => import("@/app/audit/page"))
+const ConfigPage = lazy(() => import("@/app/config/page"))
+const ProfilePage = lazy(() => import("@/app/profile/page"))
 
 const queryClient = new QueryClient()
 
-createRoot(document.getElementById('root')!).render(
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<RequireAuth />}>
+        <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/delivery-persons" element={<DeliveryPersonsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/reports/sales-by-day" element={<SalesByDayReportPage />} />
+          <Route path="/reports/top-products" element={<TopProductsReportPage />} />
+          <Route path="/reports/top-clients" element={<TopClientsReportPage />} />
+          <Route path="/reports/delivery-performance" element={<DeliveryPerformanceReportPage />} />
+          <Route path="/audit" element={<AuditPage />} />
+          <Route path="/config" element={<ConfigPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <AuthProvider>
+        <BrowserRouter>
+          <Suspense fallback={null}>
+            <AppRoutes />
+          </Suspense>
+          <Toaster richColors position="top-center" />
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,
 )
