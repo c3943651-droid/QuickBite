@@ -1,10 +1,11 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
@@ -34,6 +35,7 @@ import {
   useUpdateCategory,
   type CategoryResponse,
 } from "@/lib/api/admin/categories"
+import { CategoryIconPicker } from "@/components/features/categories/category-icon-picker"
 import { getApiErrorMessage } from "@/lib/api/error"
 
 const categoryFormSchema = z.object({
@@ -75,6 +77,7 @@ export function CategoryFormDialog({ open, onOpenChange, category }: CategoryDia
     resolver: zodResolver(categoryFormSchema),
     defaultValues: EMPTY_VALUES,
   })
+  const [icon, setIcon] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -84,12 +87,14 @@ export function CategoryFormDialog({ open, onOpenChange, category }: CategoryDia
       orden: category?.orden ?? EMPTY_VALUES.orden,
       activo: category?.activo ?? EMPTY_VALUES.activo,
     })
+    setIcon(category?.icon ?? null)
   }, [open, category, form])
 
   async function onSubmit(values: CategoryFormValues) {
     const base = {
       nombre: values.nombre,
       descripcion: values.descripcion || null,
+      icon: icon || null,
       orden: values.orden,
     }
 
@@ -124,6 +129,11 @@ export function CategoryFormDialog({ open, onOpenChange, category }: CategoryDia
 
         <Form {...form}>
           <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Ícono de Categoría</Label>
+              <CategoryIconPicker value={icon} onChange={setIcon} />
+            </div>
+
             <FormField
               control={form.control}
               name="nombre"
@@ -146,6 +156,8 @@ export function CategoryFormDialog({ open, onOpenChange, category }: CategoryDia
                   <FormLabel>Descripción</FormLabel>
                   <FormControl>
                     <Textarea
+                      rows={3}
+                      className="resize-none"
                       placeholder="Descripción opcional"
                       {...field}
                       value={field.value ?? ""}
@@ -202,10 +214,16 @@ export function CategoryFormDialog({ open, onOpenChange, category }: CategoryDia
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" disabled={isPending} onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-9 px-4 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                disabled={isPending}
+                onClick={() => onOpenChange(false)}
+              >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isPending}>
+              <Button type="submit" className="h-9 px-4" disabled={isPending}>
                 {isPending ? "Guardando…" : isEditing ? "Guardar cambios" : "Crear categoría"}
               </Button>
             </DialogFooter>

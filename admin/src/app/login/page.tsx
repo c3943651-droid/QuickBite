@@ -6,14 +6,7 @@ import { Navigate, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Brand } from "@/components/common/brand"
 import {
   Dialog,
   DialogContent,
@@ -94,26 +87,59 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">QuickBite Admin</CardTitle>
-          <CardDescription>Inicia sesión para gestionar el restaurante</CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="grid min-h-screen lg:grid-cols-2">
+      <div className="hidden flex-col justify-between bg-zinc-900 p-12 lg:flex">
+        <Brand />
+
+        <div className="max-w-md space-y-4">
+          <h2 className="text-4xl leading-tight font-semibold tracking-tight text-white">
+            Tu restaurante,
+            <br />
+            gestionado con precisión.
+          </h2>
+          <p className="text-lg text-zinc-400">
+            Panel de administración para pedidos, productos, repartidores y reportes en un
+            solo lugar.
+          </p>
+        </div>
+
+        <p className="text-xs text-zinc-500">
+          © {new Date().getFullYear()} QuickBite · Administración del restaurante
+        </p>
+      </div>
+
+      <div className="flex min-h-screen items-center justify-center bg-white p-6">
+        <div className="w-full max-w-sm space-y-8">
+          <div className="lg:hidden">
+            <Brand compact tone="light" />
+          </div>
+
+          <div className="space-y-2 text-center lg:text-left">
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              Iniciar sesión
+            </h1>
+            <p className="text-sm text-zinc-500">
+              Accede a tu panel de gestión
+            </p>
+          </div>
+
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="login-form space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="font-medium text-zinc-700">Email</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="admin@quickbite.com"
                         autoComplete="email"
+                        className="border-zinc-200 bg-zinc-50 focus-visible:border-zinc-900 focus-visible:ring-zinc-900/20"
                         {...field}
                       />
                     </FormControl>
@@ -126,14 +152,14 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
+                    <FormLabel className="font-medium text-zinc-700">Contraseña</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           autoComplete="current-password"
-                          className="pr-10"
+                          className="border-zinc-200 bg-zinc-50 pr-10 focus-visible:border-zinc-900 focus-visible:ring-zinc-900/20"
                           {...field}
                         />
                         <button
@@ -156,7 +182,7 @@ export default function LoginPage() {
               />
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full bg-zinc-900 font-medium text-white transition-all duration-200 shadow-sm hover:bg-zinc-800"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? "Iniciando sesión…" : "Iniciar sesión"}
@@ -164,65 +190,68 @@ export default function LoginPage() {
             </form>
           </Form>
 
-          <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
-            <DialogTrigger asChild>
-              <Button
-                type="button"
-                variant="link"
-                className="mt-3 h-auto p-0 text-xs text-muted-foreground"
-              >
-                ¿Olvidaste tu contraseña?
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Recuperar contraseña</DialogTitle>
-                <DialogDescription>
-                  Escribe tu correo para recibir las instrucciones de recuperación.
-                </DialogDescription>
-              </DialogHeader>
-              <Form {...forgotForm}>
-                <form
-                  id="forgot-password-form"
-                  onSubmit={forgotForm.handleSubmit(onForgot)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={forgotForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="admin@quickbite.com"
-                            autoComplete="email"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
-              <DialogFooter>
+          <div className="text-center">
+            <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+              <DialogTrigger asChild>
                 <Button
-                  type="submit"
-                  form="forgot-password-form"
-                  disabled={forgotForm.formState.isSubmitting}
+                  type="button"
+                  variant="link"
+                  className="h-auto p-0 text-xs text-zinc-500"
                 >
-                  {forgotForm.formState.isSubmitting ? "Enviando…" : "Enviar instrucciones"}
+                  ¿Olvidaste tu contraseña?
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </CardContent>
-        <CardFooter className="text-muted-foreground text-xs">
-          Panel exclusivo para administradores de QuickBite.
-        </CardFooter>
-      </Card>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Recuperar contraseña</DialogTitle>
+                  <DialogDescription>
+                    Escribe tu correo para recibir las instrucciones de recuperación.
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...forgotForm}>
+                  <form
+                    id="forgot-password-form"
+                    onSubmit={forgotForm.handleSubmit(onForgot)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      control={forgotForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="admin@quickbite.com"
+                              autoComplete="email"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </form>
+                </Form>
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    form="forgot-password-form"
+                    disabled={forgotForm.formState.isSubmitting}
+                  >
+                    {forgotForm.formState.isSubmitting ? "Enviando…" : "Enviar instrucciones"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          <p className="text-center text-xs text-zinc-400">
+            Panel exclusivo para administradores de QuickBite.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

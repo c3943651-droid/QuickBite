@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import { cn } from "cn"
-import { Boxes, History, MoreHorizontal, Pencil, Plus, Power, Search, Trash2 } from "lucide-react"
+import { LayoutGrid, List, Plus, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -11,20 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { DataTable, type DataColumn } from "@/components/common/data-table"
 import { ErrorState } from "@/components/common/error-state"
 import { StatusChip } from "@/components/common/status-chip"
 import { ConfirmDialog } from "@/components/common/confirm-dialog"
 import { ProductFormDialog } from "@/components/features/products/product-form-dialog"
 import { ProductPriceHistoryDialog } from "@/components/features/products/product-price-history-dialog"
-import { StockAdjustDialog } from "@/components/features/inventory/stock-adjust-dialog"
+import {
+  ProductActionsMenu,
+  ProductGrid,
+  ProductGridSkeleton,
+} from "@/components/features/products/product-grid"
 import { useAdminCategories } from "@/lib/api/admin/categories"
 import {
   useAdminProducts,
@@ -50,10 +47,11 @@ export default function ProductsPage() {
   const [limit, setLimit] = useState(25)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<ProductListItem | null>(null)
+  const [view, setView] = useState<"grid" | "list">("grid")
   const [pendingId, setPendingId] = useState<string | null>(null)
-  const [adjustProduct, setAdjustProduct] = useState<ProductListItem | null>(null)
   const [historyProduct, setHistoryProduct] = useState<ProductListItem | null>(null)
   const [deletingProduct, setDeletingProduct] = useState<ProductListItem | null>(null)
+  const [availabilityTarget, setAvailabilityTarget] = useState<ProductListItem | null>(null)
 
   const { data: categorias = [] } = useAdminCategories()
   const setAvailability = useSetAvailability()
@@ -72,6 +70,7 @@ export default function ProductsPage() {
   }, [page, limit, categoriaId, debouncedSearch, estado, sortKey, sortDir])
 
   const { data, isLoading, isFetching, isError, refetch } = useAdminProducts(params)
+  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / limit))
 
   function openCreate() {
     setEditingProduct(null)
@@ -94,16 +93,23 @@ export default function ProductsPage() {
     }
   }
 
-  async function toggleAvailability(product: ProductListItem) {
-    setPendingId(product.id)
+  async function confirmToggleAvailability() {
+    if (!availabilityTarget) return
+    const target = availabilityTarget
+    setPendingId(target.id)
     try {
       await setAvailability.mutateAsync({
-        id: product.id,
-        data: { disponible: !product.disponible },
+        id: target.id,
+        data: { disponible: !target.disponible },
       })
-      toast.success(product.disponible ? "Producto desactivado" : "Producto activado")
+      toast.success(
+        target.disponible
+          ? "Producto desactivado correctamente"
+          : "Producto activado correctamente",
+      )
+      setAvailabilityTarget(null)
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "No se pudo cambiar la disponibilidad"))
+      toast.error(getApiErrorMessage(error, "No se pudo cambiar el estado. Inténtalo de nuevo."))
     } finally {
       setPendingId(null)
     }
@@ -186,42 +192,14 @@ export default function ProductsPage() {
           className="flex justify-end gap-1"
           onClick={(event) => event.stopPropagation()}
         >
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Acciones">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => openEdit(product)}>
-                <Pencil className="size-4" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={pendingId === product.id}
-                onClick={() => void toggleAvailability(product)}
-              >
-                <Power className={cn("size-4", !product.disponible && "text-muted-foreground")} />
-                {product.disponible ? "Desactivar" : "Activar"}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setAdjustProduct(product)}>
-                <Boxes className="size-4" />
-                Ajustar stock
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setHistoryProduct(product)}>
-                <History className="size-4" />
-                Historial de precios
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => setDeletingProduct(product)}
-              >
-                <Trash2 className="size-4" />
-                Eliminar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ProductActionsMenu
+            product={product}
+            onEdit={openEdit}
+            onToggle={setAvailabilityTarget}
+            onHistory={setHistoryProduct}
+            onDelete={setDeletingProduct}
+            disabled={pendingId === product.id}
+          />
         </div>
       ),
     },
@@ -287,6 +265,28 @@ export default function ProductsPage() {
             <SelectItem value="false">No disponibles</SelectItem>
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-0.5 rounded-lg bg-zinc-100 p-0.5">
+          <Button
+            variant={view === "grid" ? "default" : "ghost"}
+            size="icon-sm"
+            aria-label="Vista de cuadrícula"
+            aria-pressed={view === "grid"}
+            className={cn("rounded-[6px]", view !== "grid" && "text-zinc-500")}
+            onClick={() => setView("grid")}
+          >
+            <LayoutGrid className="size-4" />
+          </Button>
+          <Button
+            variant={view === "list" ? "default" : "ghost"}
+            size="icon-sm"
+            aria-label="Vista de lista"
+            aria-pressed={view === "list"}
+            className={cn("rounded-[6px]", view !== "list" && "text-zinc-500")}
+            onClick={() => setView("list")}
+          >
+            <List className="size-4" />
+          </Button>
+        </div>
       </div>
 
       {isError ? (
@@ -295,6 +295,53 @@ export default function ProductsPage() {
           description="Revisa tu conexión o intenta nuevamente."
           onRetry={() => void refetch()}
         />
+      ) : view === "grid" ? (
+        <>
+          {isLoading || isFetching ? (
+            <ProductGridSkeleton />
+          ) : (data?.data ?? []).length > 0 ? (
+            <ProductGrid
+              products={data?.data ?? []}
+              onEdit={openEdit}
+              onToggle={setAvailabilityTarget}
+              onHistory={setHistoryProduct}
+              onDelete={setDeletingProduct}
+              pendingId={pendingId}
+            />
+          ) : (
+            <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 p-8 text-center">
+              <p className="text-sm font-medium text-zinc-600">Sin productos</p>
+              <p className="mt-1 text-sm text-zinc-500">
+                Ajusta los filtros o crea un nuevo producto.
+              </p>
+            </div>
+          )}
+          {(data?.data ?? []).length > 0 ? (
+            <div className="flex items-center justify-between gap-2 pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8"
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                Anterior
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Página {Math.min(page, totalPages)} de {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8"
+                disabled={page >= totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                Siguiente
+              </Button>
+            </div>
+          ) : null}
+        </>
       ) : (
         <DataTable
           columns={columns}
@@ -328,20 +375,35 @@ export default function ProductsPage() {
         stockMinimo={editingProduct?.stockMinimo}
       />
 
-      <StockAdjustDialog
-        open={adjustProduct !== null}
-        onOpenChange={(open) => {
-          if (!open) setAdjustProduct(null)
-        }}
-        product={adjustProduct}
-      />
-
       <ProductPriceHistoryDialog
         open={historyProduct !== null}
         onOpenChange={(open) => {
           if (!open) setHistoryProduct(null)
         }}
         product={historyProduct}
+      />
+
+      <ConfirmDialog
+        open={availabilityTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setAvailabilityTarget(null)
+        }}
+        title={
+          availabilityTarget
+            ? `¿${availabilityTarget.disponible ? "Desactivar" : "Activar"} "${availabilityTarget.nombre}"?`
+            : ""
+        }
+        description={
+          availabilityTarget
+            ? availabilityTarget.disponible
+              ? "Este producto dejará de estar visible para los clientes en el menú digital de forma inmediata."
+              : "El producto volverá a estar disponible para los clientes en el menú digital."
+            : undefined
+        }
+        confirmLabel={availabilityTarget?.disponible ? "Desactivar" : "Activar"}
+        tone={availabilityTarget?.disponible ? "amber" : "default"}
+        loading={setAvailability.isPending}
+        onConfirm={() => void confirmToggleAvailability()}
       />
 
       <ConfirmDialog

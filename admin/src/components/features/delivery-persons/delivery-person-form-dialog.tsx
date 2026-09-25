@@ -3,8 +3,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { z } from "zod"
-import { cn } from "cn"
-import { Bike, CheckCircle2 } from "lucide-react"
+import { Bike } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -135,9 +134,10 @@ export function DeliveryPersonFormDialog({
 
         <Form {...form}>
           <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)} className="space-y-4">
-            {isEditing ? (
-              <FormItem>
-                <FormLabel>Repartidor</FormLabel>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {isEditing ? (
+                <FormItem className="sm:col-span-2">
+                  <FormLabel>Repartidor</FormLabel>
                 <FormControl>
                   <div className="flex min-w-0 items-center gap-3 rounded-md border p-3">
                     <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
@@ -161,51 +161,35 @@ export function DeliveryPersonFormDialog({
                   <FormItem>
                     <FormLabel>Usuario</FormLabel>
                     <FormControl>
-                      <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
-                        {availableUsers.isLoading ? (
-                          <div className="space-y-2">
-                            {Array.from({ length: 3 }).map((_, i) => (
-                              <Skeleton key={i} className="h-12" />
+                      {availableUsers.isLoading ? (
+                        <Skeleton className="h-9 w-full" />
+                      ) : availableUsers.isError ? (
+                        <ErrorState
+                          title="No se pudieron cargar los usuarios"
+                          onRetry={() => void availableUsers.refetch()}
+                        />
+                      ) : (availableUsers.data ?? []).length === 0 ? (
+                        <p className="rounded-lg border border-dashed border-zinc-200 p-3 text-sm text-zinc-400">
+                          No hay usuarios con rol repartidor pendientes de registrar.
+                        </p>
+                      ) : (
+                        <Select
+                          value={field.value || undefined}
+                          onValueChange={(value) => field.onChange(value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar usuario..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableUsers.data?.map((candidate) => (
+                              <SelectItem key={candidate.usuarioId} value={candidate.usuarioId}>
+                                {candidate.nombre}
+                                <span className="text-muted-foreground"> · {candidate.email}</span>
+                              </SelectItem>
                             ))}
-                          </div>
-                        ) : availableUsers.isError ? (
-                          <ErrorState
-                            title="No se pudieron cargar los usuarios"
-                            onRetry={() => void availableUsers.refetch()}
-                          />
-                        ) : (availableUsers.data ?? []).length === 0 ? (
-                          <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                            No hay usuarios con rol repartidor pendientes de registrar.
-                          </p>
-                        ) : (
-                          availableUsers.data?.map((candidate) => {
-                            const selected = field.value === candidate.usuarioId
-                            return (
-                              <button
-                                key={candidate.usuarioId}
-                                type="button"
-                                className={cn(
-                                  "flex w-full items-center justify-between gap-3 rounded-md border p-2.5 text-left transition-colors hover:border-primary/50",
-                                  selected && "border-primary bg-primary/5",
-                                )}
-                                onClick={() => field.onChange(candidate.usuarioId)}
-                              >
-                                <span className="min-w-0">
-                                  <span className="block truncate text-sm font-medium">
-                                    {candidate.nombre}
-                                  </span>
-                                  <span className="block truncate text-xs text-muted-foreground">
-                                    {candidate.email}
-                                  </span>
-                                </span>
-                                {selected ? (
-                                  <CheckCircle2 className="size-4 shrink-0 text-primary" />
-                                ) : null}
-                              </button>
-                            )
-                          })
-                        )}
-                      </div>
+                          </SelectContent>
+                        </Select>
+                      )}
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -272,17 +256,19 @@ export function DeliveryPersonFormDialog({
                 )}
               />
             ) : null}
+            </div>
 
             <DialogFooter>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
+                className="h-9 px-4 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
                 disabled={isPending}
                 onClick={() => onOpenChange(false)}
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isPending}>
+              <Button type="submit" className="h-9 px-4" disabled={isPending}>
                 {isPending
                   ? "Guardando…"
                   : isEditing

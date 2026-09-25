@@ -307,7 +307,7 @@ export default function DeliveryPersonsPage() {
         }
         confirmLabel="Desactivar"
         cancelLabel="Cancelar"
-        destructive
+        tone="amber"
         loading={deactivate.isPending}
         onConfirm={() => void confirmDeactivate()}
       />

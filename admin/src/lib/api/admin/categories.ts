@@ -15,6 +15,7 @@ export interface CategoryResponse {
   id: string
   nombre: string
   descripcion: string | null
+  icon: string | null
   orden: number
   activo: boolean
 }

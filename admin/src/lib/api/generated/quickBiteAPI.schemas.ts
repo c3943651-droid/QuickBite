@@ -69,6 +69,8 @@ export interface CreateCategoryRequest {
   nombre?: string | null;
   /** @nullable */
   descripcion?: string | null;
+  /** @nullable */
+  icon?: string | null;
   orden?: number;
 }
 
@@ -199,6 +201,8 @@ export interface UpdateCategoryRequest {
   nombre?: string | null;
   /** @nullable */
   descripcion?: string | null;
+  /** @nullable */
+  icon?: string | null;
   /** @nullable */
   orden?: number | null;
   /** @nullable */

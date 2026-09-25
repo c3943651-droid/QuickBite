@@ -1,8 +1,9 @@
-import { useSyncExternalStore } from "react"
+import { useState, useSyncExternalStore } from "react"
 import { Outlet } from "react-router-dom"
 import { WifiOff } from "lucide-react"
-import { AppHeader } from "./app-header"
+import { cn } from "cn"
 import { AppSidebar } from "./app-sidebar"
+import { AppHeader } from "./app-header"
 
 function subscribe(callback: () => void): () => void {
   window.addEventListener("online", callback)
@@ -19,18 +20,24 @@ function useOnlineStatus(): boolean {
 
 export function AppLayout() {
   const isOnline = useOnlineStatus()
+  const [isOpen, setIsOpen] = useState(true)
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <AppSidebar />
-      <div className="flex min-h-screen flex-col lg:pl-64">
+    <div className="min-h-screen bg-background">
+      <AppSidebar isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <div
+        className={cn(
+          "flex min-h-screen flex-col transition-all duration-300 ease-in-out",
+          isOpen ? "lg:pl-64" : "lg:pl-0",
+        )}
+      >
         {!isOnline ? (
-          <div className="flex items-center justify-center gap-2 border-b bg-amber-500/90 px-4 py-1.5 text-sm font-medium text-white">
+          <div className="flex items-center justify-center gap-2 border-b bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white">
             <WifiOff className="size-4" />
             Sin conexión — los cambios no se sincronizarán
           </div>
         ) : null}
-        <AppHeader />
+        <AppHeader onToggleSidebar={() => setIsOpen((value) => !value)} />
         <main className="flex-1 p-6">
           <Outlet />
         </main>

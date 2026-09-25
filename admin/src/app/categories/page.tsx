@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import { cn } from "cn"
-import { Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { LayoutGrid, List, Pencil, Plus, Power, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DataTable, type DataColumn } from "@/components/common/data-table"
@@ -10,6 +10,10 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/common/error-state"
 import { StatusChip } from "@/components/common/status-chip"
 import { CategoryFormDialog } from "@/components/features/categories/category-form-dialog"
+import {
+  CategoryGrid,
+  CategoryGridSkeleton,
+} from "@/components/features/categories/category-grid"
 import {
   useAdminCategories,
   useDeleteCategory,
@@ -35,8 +39,10 @@ export default function CategoriesPage() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<CategoryResponse | null>(null)
+  const [view, setView] = useState<"grid" | "list">("grid")
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<CategoryResponse | null>(null)
+  const [toggleTarget, setToggleTarget] = useState<CategoryResponse | null>(null)
 
   const { data, isLoading, isError, refetch } = useAdminCategories()
   const updateCategory = useUpdateCategory()
@@ -67,16 +73,21 @@ export default function CategoriesPage() {
     setDialogOpen(true)
   }
 
-  async function toggleActive(category: CategoryResponse) {
-    setPendingId(category.id)
+  async function confirmToggleActive() {
+    if (!toggleTarget) return
+    const target = toggleTarget
+    setPendingId(target.id)
     try {
       await updateCategory.mutateAsync({
-        id: category.id,
-        data: { activo: !category.activo },
+        id: target.id,
+        data: { activo: !target.activo },
       })
-      toast.success(category.activo ? "Categoría desactivada" : "Categoría activada")
+      toast.success(
+        target.activo ? "Categoría desactivada correctamente" : "Categoría activada correctamente",
+      )
+      setToggleTarget(null)
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "No se pudo cambiar el estado"))
+      toast.error(getApiErrorMessage(error, "No se pudo cambiar el estado. Inténtalo de nuevo."))
     } finally {
       setPendingId(null)
     }
@@ -149,7 +160,7 @@ export default function CategoriesPage() {
             size="sm"
             aria-label={category.activo ? "Desactivar" : "Activar"}
             disabled={pendingId === category.id}
-            onClick={() => void toggleActive(category)}
+            onClick={() => setToggleTarget(category)}
           >
             <Power className={cn("size-4", !category.activo && "text-muted-foreground")} />
           </Button>
@@ -177,20 +188,61 @@ export default function CategoriesPage() {
             Organiza los productos del catálogo.
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" />
-          Nueva categoría
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 rounded-lg bg-zinc-100 p-0.5">
+            <Button
+              variant={view === "grid" ? "default" : "ghost"}
+              size="icon-sm"
+              aria-label="Vista de tarjetas"
+              aria-pressed={view === "grid"}
+              className={cn("rounded-[6px]", view !== "grid" && "text-zinc-500")}
+              onClick={() => setView("grid")}
+            >
+              <LayoutGrid className="size-4" />
+            </Button>
+            <Button
+              variant={view === "list" ? "default" : "ghost"}
+              size="icon-sm"
+              aria-label="Vista de tabla"
+              aria-pressed={view === "list"}
+              className={cn("rounded-[6px]", view !== "list" && "text-zinc-500")}
+              onClick={() => setView("list")}
+            >
+              <List className="size-4" />
+            </Button>
+          </div>
+          <Button onClick={openCreate}>
+            <Plus className="size-4" />
+            Nueva categoría
+          </Button>
+        </div>
       </div>
 
-      {isLoading ? (
-        <CategoriesLoadingState />
-      ) : isError ? (
+      {isError ? (
         <ErrorState
           title="No se pudieron cargar las categorías"
           description="Revisa tu conexión o intenta nuevamente."
           onRetry={() => void refetch()}
         />
+      ) : view === "grid" ? (
+        isLoading ? (
+          <CategoryGridSkeleton />
+        ) : (data ?? []).length > 0 ? (
+          <CategoryGrid
+            categories={sortedData}
+            onEdit={openEdit}
+            onToggle={setToggleTarget}
+            onDelete={setDeleteTarget}
+            pendingId={pendingId}
+          />
+        ) : (
+          <div className="mt-4 rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 p-8 text-center">
+            <p className="text-sm font-medium text-zinc-600">Sin categorías</p>
+            <p className="mt-1 text-sm text-zinc-500">Crea tu primera categoría para comenzar.</p>
+          </div>
+        )
+      ) : isLoading ? (
+        <CategoriesLoadingState />
       ) : (
         <DataTable
           columns={columns}
@@ -211,6 +263,29 @@ export default function CategoriesPage() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         category={editing}
+      />
+
+      <ConfirmDialog
+        open={toggleTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setToggleTarget(null)
+        }}
+        title={
+          toggleTarget
+            ? `¿${toggleTarget.activo ? "Desactivar" : "Activar"} "${toggleTarget.nombre}"?`
+            : ""
+        }
+        description={
+          toggleTarget
+            ? toggleTarget.activo
+              ? "Esta categoría dejará de mostrarse en el catálogo digital de forma inmediata."
+              : "La categoría volverá a estar disponible en el catálogo digital."
+            : undefined
+        }
+        confirmLabel={toggleTarget?.activo ? "Desactivar" : "Activar"}
+        tone={toggleTarget?.activo ? "amber" : "default"}
+        loading={updateCategory.isPending}
+        onConfirm={() => void confirmToggleActive()}
       />
 
       <ConfirmDialog

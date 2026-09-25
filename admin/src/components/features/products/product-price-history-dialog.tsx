@@ -1,3 +1,4 @@
+import { History } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -60,10 +60,13 @@ export function ProductPriceHistoryDialog({
             onRetry={() => void refetch()}
           />
         ) : (data ?? []).length === 0 ? (
-          <EmptyState
-            title="Sin cambios de precio"
-            description="Este producto no ha tenido cambios de precio."
-          />
+          <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 p-8 text-center">
+            <History className="mx-auto mb-2 size-8 text-zinc-400" />
+            <p className="text-sm font-medium text-zinc-600">Sin cambios de precio</p>
+            <p className="mt-1 text-sm text-zinc-500">
+              Este producto no ha tenido cambios de precio.
+            </p>
+          </div>
         ) : (
           <Table>
             <TableHeader>
