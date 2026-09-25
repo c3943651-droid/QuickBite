@@ -69,6 +69,8 @@ export interface CreateCategoryRequest {
   nombre?: string | null;
   /** @nullable */
   descripcion?: string | null;
+  /** @nullable */
+  icon?: string | null;
   orden?: number;
 }
 
@@ -200,6 +202,8 @@ export interface UpdateCategoryRequest {
   /** @nullable */
   descripcion?: string | null;
   /** @nullable */
+  icon?: string | null;
+  /** @nullable */
   orden?: number | null;
   /** @nullable */
   activo?: boolean | null;
@@ -306,9 +310,5 @@ precioMax?: number;
 orden?: string;
 page?: number;
 limit?: number;
-};
-
-export type GetApiV1NotificationsParams = {
-unreadOnly?: boolean;
 };
 

@@ -13,6 +13,12 @@ public static class PostgresExceptionMapper
             return null;
         }
 
+        if (pg.SqlState == "23503")
+        {
+            return new ConflictException(
+                "No se puede eliminar el registro porque tiene elementos asociados. Reasigna o elimínalos primero.");
+        }
+
         return pg.MessageText switch
         {
             var message when message.StartsWith("Transición de estado no permitida", StringComparison.Ordinal) =>

@@ -5,9 +5,9 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import { Toaster } from "sonner"
 import "./index.css"
 import { AppLayout } from "@/components/layout/app-layout"
-import { AppErrorBoundary } from "@/components/error-boundary"
-import { AuthProvider } from "@/lib/auth/auth-context"
-import { RequireAuth } from "@/lib/auth/require-auth"
+import { AppErrorBoundary } from "@/components/common/error-boundary"
+import { AuthProvider } from "@/lib/session/auth-context"
+import { RequireAuth } from "@/lib/session/require-auth"
 
 const LoginPage = lazy(() => import("@/app/login/page"))
 const DashboardPage = lazy(() => import("@/app/dashboard/page"))

@@ -22,6 +22,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { DataTable, type DataColumn } from "@/components/common/data-table"
+import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
 import { useSalesByDay, type SalesByDayItem } from "@/lib/api/admin/reports"
@@ -242,7 +243,7 @@ export default function SalesByDayReportPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+                <Skeleton className="h-64 rounded-lg" />
               ) : chartData.length === 0 ? (
                 <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
                   No hay datos para el rango seleccionado.
@@ -308,7 +309,7 @@ export default function SalesByDayReportPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-48 animate-pulse rounded-lg bg-muted/60" />
+                <Skeleton className="h-48 rounded-lg" />
               ) : total === 0 ? (
                 <EmptyState
                   title="Sin resultados"

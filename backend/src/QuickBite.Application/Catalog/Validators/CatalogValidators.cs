@@ -1,8 +1,8 @@
 using FluentValidation;
 using QuickBite.Application.Catalog.Dtos;
 namespace QuickBite.Application.Catalog.Validators;
-public sealed class CreateCategoryValidator : AbstractValidator<CreateCategoryRequest> { public CreateCategoryValidator() { RuleFor(x => x.Nombre).NotEmpty().MaximumLength(100); RuleFor(x => x.Descripcion).MaximumLength(255); } }
-public sealed class UpdateCategoryValidator : AbstractValidator<UpdateCategoryRequest> { public UpdateCategoryValidator() { RuleFor(x => x.Nombre).MaximumLength(100).When(x => x.Nombre != null); } }
+public sealed class CreateCategoryValidator : AbstractValidator<CreateCategoryRequest> { public CreateCategoryValidator() { RuleFor(x => x.Nombre).NotEmpty().MaximumLength(100); RuleFor(x => x.Descripcion).MaximumLength(255); RuleFor(x => x.Icon).MaximumLength(32); } }
+public sealed class UpdateCategoryValidator : AbstractValidator<UpdateCategoryRequest> { public UpdateCategoryValidator() { RuleFor(x => x.Nombre).MaximumLength(100).When(x => x.Nombre != null); RuleFor(x => x.Icon).MaximumLength(32); } }
 public sealed class CreateProductValidator : AbstractValidator<CreateProductRequest> { public CreateProductValidator() { RuleFor(x => x.Nombre).NotEmpty().MaximumLength(150); RuleFor(x => x.Precio).GreaterThanOrEqualTo(0); RuleFor(x => x.ImagenUrl).MaximumLength(500); } }
 public sealed class UpdateProductValidator : AbstractValidator<UpdateProductRequest> { public UpdateProductValidator() { RuleFor(x => x.Nombre).MaximumLength(150).When(x => x.Nombre != null); RuleFor(x => x.Precio).GreaterThanOrEqualTo(0).When(x => x.Precio != null); } }
 public sealed class CreateOptionValidator : AbstractValidator<CreateProductOptionRequest> { public CreateOptionValidator() { RuleFor(x => x.Nombre).NotEmpty().MaximumLength(100); RuleFor(x => x.PrecioAdicional).GreaterThanOrEqualTo(0); } }

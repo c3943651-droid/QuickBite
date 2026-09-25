@@ -3,7 +3,21 @@ import { defineConfig } from 'orval'
 export default defineConfig({
   quickbite: {
     input: {
-      target: 'https://quickbite-n1bk.onrender.com/swagger/v1/swagger.json',
+      target: './swagger.json',
+      filters: {
+        tags: [
+          'Auth',
+          'Users',
+          'Catalog',
+          'AdminAudit',
+          'AdminCatalog',
+          'AdminConfig',
+          'AdminDashboard',
+          'AdminDelivery',
+          'AdminOrders',
+          'AdminReports',
+        ],
+      },
     },
     output: {
       target: '../src/lib/api/generated',

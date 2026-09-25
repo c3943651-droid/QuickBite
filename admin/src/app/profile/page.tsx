@@ -32,9 +32,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
-import { useAuth } from "@/lib/auth/auth-context"
+import { useAuth } from "@/lib/session/auth-context"
 import { formatDateTime } from "@/lib/format"
 import { getApiErrorMessage } from "@/lib/api/error"
 import {
@@ -241,10 +242,10 @@ export default function ProfilePage() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <Card>
-            <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+            <Skeleton className="h-64 rounded-lg" />
           </Card>
           <Card>
-            <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+            <Skeleton className="h-64 rounded-lg" />
           </Card>
         </div>
       ) : (
@@ -442,8 +443,8 @@ export default function ProfilePage() {
         <CardContent>
           {sessionsLoading ? (
             <div className="space-y-3">
-              <div className="h-16 animate-pulse rounded-lg bg-muted/60" />
-              <div className="h-16 animate-pulse rounded-lg bg-muted/60" />
+              <Skeleton className="h-16 rounded-lg" />
+              <Skeleton className="h-16 rounded-lg" />
             </div>
           ) : sessionsError ? (
             <ErrorState

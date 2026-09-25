@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { Loader2, Plus, Trash2 } from "lucide-react"
+import { Loader2, Plus, Trash2, Upload } from "lucide-react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -86,9 +86,15 @@ export interface ProductFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   productId: string | null
+  stockMinimo?: number | null
 }
 
-export function ProductFormDialog({ open, onOpenChange, productId }: ProductFormDialogProps) {
+export function ProductFormDialog({
+  open,
+  onOpenChange,
+  productId,
+  stockMinimo,
+}: ProductFormDialogProps) {
   const isEditing = productId !== null
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -131,7 +137,7 @@ export function ProductFormDialog({ open, onOpenChange, productId }: ProductForm
             categoriaId: detail.categoria?.id,
             disponible: detail.disponible,
             stockInicial: detail.stock ?? 0,
-            stockMinimo: EMPTY_VALUES.stockMinimo,
+            stockMinimo: stockMinimo ?? EMPTY_VALUES.stockMinimo,
             imagenUrl: detail.imagenUrl ?? undefined,
           }
         : EMPTY_VALUES,
@@ -259,13 +265,13 @@ export function ProductFormDialog({ open, onOpenChange, productId }: ProductForm
         <div className="max-h-[70vh] overflow-y-auto pr-1">
           <Form {...form}>
             <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)} className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-5">
                 <FormField
                   control={form.control}
                   name="nombre"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre</FormLabel>
+                    <FormItem className="sm:col-span-3">
+                      <FormLabel>Nombre del producto</FormLabel>
                       <FormControl>
                         <Input placeholder="Ej. Clásica doble" {...field} />
                       </FormControl>
@@ -278,7 +284,7 @@ export function ProductFormDialog({ open, onOpenChange, productId }: ProductForm
                   control={form.control}
                   name="precio"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="sm:col-span-2">
                       <FormLabel>Precio</FormLabel>
                       <FormControl>
                         <Input
@@ -303,7 +309,12 @@ export function ProductFormDialog({ open, onOpenChange, productId }: ProductForm
                   <FormItem>
                     <FormLabel>Descripción</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Descripción opcional" {...field} />
+                      <Textarea
+                      rows={3}
+                      className="resize-none"
+                      placeholder="Descripción opcional"
+                      {...field}
+                    />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -410,59 +421,90 @@ export function ProductFormDialog({ open, onOpenChange, productId }: ProductForm
               ) : null}
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Imagen</Label>
-                <div className="flex items-center gap-3">
-                  {watchedImageUrl ? (
+                <Label>Imagen del producto</Label>
+
+                {watchedImageUrl ? (
+                  <div className="flex items-center gap-4">
                     <img
                       src={watchedImageUrl}
                       alt="Vista previa del producto"
-                      className="size-20 rounded-md border border-border object-cover"
+                      className="size-14 rounded-lg border border-zinc-200 object-cover"
                     />
-                  ) : (
-                    <div className="flex size-20 items-center justify-center rounded-md border border-dashed text-muted-foreground text-xs">
-                      Sin imagen
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          className="h-auto rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-800 hover:bg-zinc-200"
+                          disabled={uploading}
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
+                          Cambiar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                          disabled={uploading}
+                          onClick={() => form.setValue("imagenUrl", undefined, { shouldDirty: true })}
+                        >
+                          <Trash2 className="size-3.5" />
+                          Eliminar
+                        </Button>
+                      </div>
+                      <p className="text-xs text-zinc-400">
+                        La imagen se almacena en Supabase Storage mediante la API.
+                      </p>
                     </div>
-                  )}
-                  <div className="space-x-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={uploading}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {uploading ? <Loader2 className="size-4 animate-spin" /> : null}
-                      Subir imagen
-                    </Button>
-                    {watchedImageUrl ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => form.setValue("imagenUrl", undefined, { shouldDirty: true })}
-                      >
-                        Quitar
-                      </Button>
-                    ) : null}
                   </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(event) => void handleFileChange(event.target.files?.[0])}
-                  />
-                </div>
-                <p className="text-muted-foreground text-xs">
-                  La imagen se almacena en Supabase Storage mediante la API.
-                </p>
+                ) : (
+                  <label
+                    className="flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border-2 border-dashed border-zinc-200 p-6 text-center transition-colors hover:bg-zinc-50"
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => {
+                      event.preventDefault()
+                      void handleFileChange(event.dataTransfer.files?.[0])
+                    }}
+                  >
+                    {uploading ? (
+                      <Loader2 className="size-5 animate-spin text-zinc-400" />
+                    ) : (
+                      <Upload className="size-5 text-zinc-400" />
+                    )}
+                    <span className="text-sm font-medium text-zinc-700">
+                      {uploading
+                        ? "Subiendo imagen…"
+                        : "Arrastra una imagen o haz clic para seleccionar"}
+                    </span>
+                    <span className="text-xs text-zinc-400">
+                      JPG, PNG o WEBP · se sube a Supabase Storage
+                    </span>
+                  </label>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => void handleFileChange(event.target.files?.[0])}
+                />
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" disabled={isSaving} onClick={() => handleOpenChange(false)}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="h-9 px-4 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                  disabled={isSaving}
+                  onClick={() => handleOpenChange(false)}
+                >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSaving}>
+                <Button type="submit" className="h-9 px-4" disabled={isSaving}>
                   {isSaving
                     ? "Guardando…"
                     : isEditing

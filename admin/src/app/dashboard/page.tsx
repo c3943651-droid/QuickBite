@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/card"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
+import { Skeleton } from "@/components/ui/skeleton"
 import { StatusChip } from "@/components/common/status-chip"
 import { useAdminDashboard } from "@/lib/api/admin/dashboard"
 import { formatCurrency, formatDateTime, formatShortDay } from "@/lib/format"
@@ -71,15 +72,14 @@ function MetricSkeleton() {
   return (
     <Card>
       <CardHeader className="flex flex-row">
-        <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-        <div
-          data-slot="card-action"
-          className="size-9 animate-pulse rounded-lg bg-muted"
-        />
+        <Skeleton className="h-4 w-24 rounded" />
+        <div data-slot="card-action">
+          <Skeleton className="size-9 rounded-lg" />
+        </div>
       </CardHeader>
       <CardContent className="pt-2">
-        <div className="h-7 w-32 animate-pulse rounded bg-muted" />
-        <div className="mt-1 h-4 w-24 animate-pulse rounded bg-muted" />
+        <Skeleton className="h-7 w-32 rounded" />
+        <Skeleton className="mt-1 h-4 w-24 rounded" />
       </CardContent>
     </Card>
   )
@@ -125,10 +125,10 @@ export default function DashboardPage() {
         </div>
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <Card className="xl:col-span-2">
-            <div className="h-80 animate-pulse rounded-lg bg-muted/60" />
+            <Skeleton className="h-80 rounded-lg" />
           </Card>
           <Card>
-            <div className="h-80 animate-pulse rounded-lg bg-muted/60" />
+            <Skeleton className="h-80 rounded-lg" />
           </Card>
         </div>
       </div>

@@ -52,9 +52,18 @@ public class AddressRepository : IAddressRepository
             .Where(a => a.UsuarioId == userId)
             .ToListAsync(cancellationToken);
 
-        foreach (var address in addresses)
+        foreach (var address in addresses.Where(a => a.Id != addressId))
         {
-            address.EsPredeterminada = address.Id == addressId;
+            address.EsPredeterminada = false;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var target = addresses.SingleOrDefault(a => a.Id == addressId);
+        if (target is not null)
+        {
+            target.EsPredeterminada = true;
+            await _db.SaveChangesAsync(cancellationToken);
         }
     }
 }

@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import {
   Bike,
   CircleCheck,
+  Download,
   Gauge,
   RefreshCw,
   type LucideIcon,
@@ -27,15 +28,39 @@ import {
 } from "@/components/ui/card"
 import { DataTable, type DataColumn } from "@/components/common/data-table"
 import { EmptyState } from "@/components/common/empty-state"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/common/error-state"
 import {
   useDeliveryPerformance,
   type DeliveryPerformanceItem,
 } from "@/lib/api/admin/reports"
+import { exportCSV } from "@/lib/csv"
 
 function effectiveRate(item: DeliveryPerformanceItem) {
   if (item.pedidosAsignados === 0) return 0
   return (item.entregasCompletadas / item.pedidosAsignados) * 100
+}
+
+function handleExport(rows: DeliveryPerformanceItem[]) {
+  exportCSV(
+    "desempeno-reparto.csv",
+    [
+      "Repartidor",
+      "Pedidos asignados",
+      "Entregas completadas",
+      "Cancelaciones",
+      "Tiempo promedio (min)",
+      "Efectividad (%)",
+    ],
+    rows.map((item) => [
+      item.nombre,
+      item.pedidosAsignados,
+      item.entregasCompletadas,
+      item.cancelaciones,
+      item.minutosPromedioEntrega,
+      effectiveRate(item).toFixed(1),
+    ]),
+  )
 }
 
 function BarTooltip({
@@ -172,6 +197,15 @@ export default function DeliveryPerformanceReportPage() {
           variant="outline"
           size="sm"
           disabled={isRefetching}
+          onClick={() => handleExport(rows)}
+        >
+          <Download className="size-4" />
+          Exportar CSV
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isRefetching}
           onClick={() => void refetch()}
         >
           <RefreshCw className={cn("size-4", isRefetching && "animate-spin")} />
@@ -218,7 +252,7 @@ export default function DeliveryPerformanceReportPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+                <Skeleton className="h-64 rounded-lg" />
               ) : chartData.length === 0 ? (
                 <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
                   No hay entregas registradas para mostrar.
@@ -262,7 +296,7 @@ export default function DeliveryPerformanceReportPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-48 animate-pulse rounded-lg bg-muted/60" />
+                <Skeleton className="h-48 rounded-lg" />
               ) : rows.length === 0 ? (
                 <EmptyState
                   title="Sin resultados"

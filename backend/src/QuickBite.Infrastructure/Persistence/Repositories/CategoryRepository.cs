@@ -49,4 +49,9 @@ public class CategoryRepository : ICategoryRepository
     {
         _db.Categorias.Update(category);
     }
+
+    public void Delete(Category category)
+    {
+        _db.Categorias.Remove(category);
+    }
 }

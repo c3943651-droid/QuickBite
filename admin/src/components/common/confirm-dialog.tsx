@@ -1,3 +1,5 @@
+import { Loader2 } from "lucide-react"
+import { cn } from "cn"
 import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
@@ -17,9 +19,15 @@ export interface ConfirmDialogProps {
   confirmLabel?: string
   cancelLabel?: string
   destructive?: boolean
+  tone?: "default" | "amber"
   loading?: boolean
   onConfirm: () => void
   className?: string
+}
+
+const toneClasses = {
+  default: "bg-zinc-900 text-white hover:bg-zinc-800",
+  amber: "bg-amber-600 text-white hover:bg-amber-700",
 }
 
 export function ConfirmDialog({
@@ -30,6 +38,7 @@ export function ConfirmDialog({
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
   destructive = false,
+  tone = "default",
   loading = false,
   onConfirm,
   className,
@@ -43,15 +52,21 @@ export function ConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="outline" disabled={loading}>
+            <Button
+              variant="secondary"
+              className="bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+              disabled={loading}
+            >
               {cancelLabel}
             </Button>
           </AlertDialogCancel>
           <Button
             variant={destructive ? "destructive" : "default"}
+            className={cn(!destructive && toneClasses[tone])}
             disabled={loading}
             onClick={() => onConfirm()}
           >
+            {loading ? <Loader2 className="animate-spin" /> : null}
             {loading ? "Procesando…" : confirmLabel}
           </Button>
         </AlertDialogFooter>

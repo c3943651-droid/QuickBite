@@ -29,6 +29,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { DataTable, type DataColumn } from "@/components/common/data-table"
+import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
 import { useTopProducts, type TopProductItem } from "@/lib/api/admin/reports"
@@ -205,7 +206,7 @@ export default function TopProductsReportPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-80 animate-pulse rounded-lg bg-muted/60" />
+                <Skeleton className="h-80 rounded-lg" />
               ) : chartData.length === 0 ? (
                 <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
                   No hay productos con ventas para mostrar.
@@ -269,7 +270,7 @@ export default function TopProductsReportPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-48 animate-pulse rounded-lg bg-muted/60" />
+                <Skeleton className="h-48 rounded-lg" />
               ) : tableRows.length === 0 ? (
                 <EmptyState
                   title="Sin resultados"

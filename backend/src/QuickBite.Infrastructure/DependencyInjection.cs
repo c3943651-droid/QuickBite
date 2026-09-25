@@ -6,7 +6,6 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 using QuickBite.Application.Authentication;
 using QuickBite.Application.Configuration;
 using QuickBite.Application.Email;
-using QuickBite.Domain.Enums;
 using QuickBite.Domain.Repositories;
 using QuickBite.Infrastructure.Authentication;
 using QuickBite.Infrastructure.Email;
@@ -25,18 +24,8 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddSingleton(sp =>
-        {
-            var connectionString = sp.GetRequiredService<IConfiguration>()
-                .GetConnectionString("DefaultConnection");
-            var builder = new NpgsqlDataSourceBuilder(connectionString);
-            builder.MapEnum<UserRole>("rol_usuario");
-            builder.MapEnum<OrderStatus>("estado_pedido");
-            builder.MapEnum<PaymentMethodType>("metodo_pago");
-            builder.MapEnum<DeliveryPersonStatus>("estado_repartidor");
-            builder.MapEnum<NotificationType>("tipo_notificacion");
-            builder.EnableDynamicJson();
-            return builder.Build();
-        });
+            NpgsqlDataSourceFactory.Create(
+                sp.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
 
         services.AddDbContext<QuickBiteDbContext>((sp, options) =>
             options.UseNpgsql(

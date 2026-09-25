@@ -14,8 +14,8 @@ import { DataTable, type DataColumn } from "@/components/common/data-table"
 import { ErrorState } from "@/components/common/error-state"
 import { StatusChip } from "@/components/common/status-chip"
 import { ConfirmDialog } from "@/components/common/confirm-dialog"
-import { DeliveryPersonDialog } from "@/components/features/delivery-person/delivery-person-dialog"
-import { DeliveryPersonDetailDialog } from "@/components/features/delivery-person/delivery-person-detail-dialog"
+import { DeliveryPersonFormDialog } from "@/components/features/delivery-persons/delivery-person-form-dialog"
+import { DeliveryPersonDetailDialog } from "@/components/features/delivery-persons/delivery-person-detail-dialog"
 import { useAdminDeliveryPersons, type DeliveryPersonListItem } from "@/lib/api/admin/orders"
 import {
   DELIVERY_PERSON_STATUS_LIST,
@@ -283,7 +283,7 @@ export default function DeliveryPersonsPage() {
         />
       )}
 
-      <DeliveryPersonDialog
+      <DeliveryPersonFormDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         repartidor={editing}
@@ -307,7 +307,7 @@ export default function DeliveryPersonsPage() {
         }
         confirmLabel="Desactivar"
         cancelLabel="Cancelar"
-        destructive
+        tone="amber"
         loading={deactivate.isPending}
         onConfirm={() => void confirmDeactivate()}
       />

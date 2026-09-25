@@ -300,6 +300,11 @@ namespace QuickBite.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("descripcion");
 
+                    b.Property<string>("Icon")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("icon");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)

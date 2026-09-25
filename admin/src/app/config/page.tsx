@@ -8,6 +8,7 @@ import { AlarmClock, RefreshCw, Store, TriangleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -170,10 +171,10 @@ export default function ConfigPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <Card className="xl:col-span-1">
-            <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+            <Skeleton className="h-64 rounded-lg" />
           </Card>
           <Card className="xl:col-span-2">
-            <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+            <Skeleton className="h-64 rounded-lg" />
           </Card>
         </div>
       ) : missingStateKeys.length > 0 ? (

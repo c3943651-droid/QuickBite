@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   useAdminDeliveryPersons,
   useAssignDeliveryPerson,
@@ -77,7 +78,7 @@ export function AssignDeliveryDialog({
           {isLoading ? (
             <div className="space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-14 animate-pulse rounded-md bg-muted" />
+                <Skeleton key={i} className="h-14" />
               ))}
             </div>
           ) : isError ? (

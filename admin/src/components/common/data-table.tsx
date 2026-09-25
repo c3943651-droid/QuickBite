@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { EmptyState } from "@/components/common/empty-state"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export interface DataColumn<T> {
   key: string
@@ -122,7 +123,7 @@ export function DataTable<T>({
               <TableRow key={`skeleton-${index}`}>
                 {columns.map((column) => (
                   <TableCell key={column.key} className={column.className}>
-                    <div className="h-4 w-full animate-pulse rounded bg-muted" />
+                    <Skeleton className="h-4 w-full" />
                   </TableCell>
                 ))}
               </TableRow>

@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -28,7 +29,7 @@ import { StatusChip } from "@/components/common/status-chip"
 import { ErrorState } from "@/components/common/error-state"
 import { CancelOrderDialog } from "@/components/features/orders/cancel-order-dialog"
 import { AssignDeliveryDialog } from "@/components/features/orders/assign-delivery-dialog"
-import { getNextTransition, isTerminal } from "@/components/features/orders/status-transitions"
+import { getNextTransition, isTerminal } from "@/lib/orders/status-transitions"
 import {
   useAdminOrderDetail,
   useUpdateOrderStatus,
@@ -112,8 +113,8 @@ export function OrderDetailDialog({ orderId, onOpenChange }: OrderDetailDialogPr
 
           {isLoading ? (
             <div className="space-y-4">
-              <div className="h-32 animate-pulse rounded-lg bg-muted/60" />
-              <div className="h-48 animate-pulse rounded-lg bg-muted/60" />
+              <Skeleton className="h-32 rounded-lg" />
+              <Skeleton className="h-48 rounded-lg" />
             </div>
           ) : isError || !order ? (
             <ErrorState

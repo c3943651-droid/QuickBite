@@ -25,6 +25,19 @@ public class PostgresExceptionMapperTests
     }
 
     [Fact]
+    public void Map_ReturnsConflictException_WhenForeignKeyViolation23503()
+    {
+        var mapped = PostgresExceptionMapper.Map(BuildDbUpdateException(
+            "delete or update on table \"categorias\" violates foreign key constraint \"fk_productos_categoria_id\" on table \"productos\"",
+            sqlState: "23503",
+            constraintName: "fk_productos_categoria_id"));
+
+        mapped.Should().NotBeNull();
+        mapped.Should().BeOfType<ConflictException>();
+        ((ConflictException)mapped!).Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
     public void Map_ReturnsNull_WhenInnerExceptionIsNotPostgres()
     {
         var ex = new DbUpdateException("Error guardando cambios.", new InvalidOperationException("sin conexión"));
@@ -34,13 +47,13 @@ public class PostgresExceptionMapperTests
         mapped.Should().BeNull();
     }
 
-    private static DbUpdateException BuildDbUpdateException(string message)
+    private static DbUpdateException BuildDbUpdateException(string message, string sqlState = "P0001", string constraintName = "")
     {
         var postgres = new PostgresException(
             messageText: message,
             severity: "ERROR",
             invariantSeverity: "ERROR",
-            sqlState: "P0001",
+            sqlState: sqlState,
             detail: string.Empty,
             hint: string.Empty,
             position: 0,
@@ -51,7 +64,7 @@ public class PostgresExceptionMapperTests
             tableName: string.Empty,
             columnName: string.Empty,
             dataTypeName: string.Empty,
-            constraintName: string.Empty,
+            constraintName: constraintName,
             file: string.Empty,
             line: string.Empty,
             routine: string.Empty);

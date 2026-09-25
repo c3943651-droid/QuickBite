@@ -91,24 +91,22 @@ export function StockAdjustDialog({ open, onOpenChange, product }: StockAdjustDi
         </DialogHeader>
 
         {product ? (
-          <div className="rounded-lg border p-3">
-            <div className="flex items-center gap-3">
-              {product.imagenUrl ? (
-                <img
-                  src={product.imagenUrl}
-                  alt=""
-                  className="size-10 rounded-md border border-border object-cover"
-                />
-              ) : null}
-              <div className="min-w-0">
-                <p className="truncate font-medium">{product.nombre}</p>
-                <p className="text-muted-foreground text-xs">
-                  Precio: {formatCurrency(product.precio)}
-                  {product.stockMinimo !== null
-                    ? ` · Stock mínimo: ${product.stockMinimo}`
-                    : ""}
-                </p>
-              </div>
+          <div className="flex items-center gap-3 rounded-xl border border-zinc-200/80 bg-zinc-50 p-3">
+            {product.imagenUrl ? (
+              <img
+                src={product.imagenUrl}
+                alt=""
+                className="size-10 rounded-md border border-zinc-200 object-cover"
+              />
+            ) : null}
+            <div className="min-w-0">
+              <p className="truncate font-medium">{product.nombre}</p>
+              <p className="text-muted-foreground text-xs">
+                Precio: {formatCurrency(product.precio)}
+                {product.stockMinimo !== null
+                  ? ` · Stock mínimo: ${product.stockMinimo}`
+                  : ""}
+              </p>
             </div>
           </div>
         ) : null}
@@ -146,6 +144,8 @@ export function StockAdjustDialog({ open, onOpenChange, product }: StockAdjustDi
                   <FormLabel>Motivo</FormLabel>
                   <FormControl>
                     <Textarea
+                      rows={3}
+                      className="resize-none"
                       placeholder="Ej. Recepción de mercancía, merma, inventario físico…"
                       {...field}
                     />
@@ -156,10 +156,16 @@ export function StockAdjustDialog({ open, onOpenChange, product }: StockAdjustDi
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" disabled={adjustStock.isPending} onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-9 px-4 bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                disabled={adjustStock.isPending}
+                onClick={() => onOpenChange(false)}
+              >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={adjustStock.isPending}>
+              <Button type="submit" className="h-9 px-4" disabled={adjustStock.isPending}>
                 {adjustStock.isPending ? "Guardando…" : "Guardar stock"}
               </Button>
             </DialogFooter>
