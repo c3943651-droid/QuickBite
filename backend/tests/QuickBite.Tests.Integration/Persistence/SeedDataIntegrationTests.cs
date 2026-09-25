@@ -35,7 +35,7 @@ public class SeedDataIntegrationTests : PersistenceTestBase
     }
 
     [Fact]
-    public async Task MigrationsSeed_AdminYRepartidorConDatosFijos()
+    public async Task MigrationsSeed_CredencialesDemoDesactivadas()
     {
         if (!CanRun())
         {
@@ -46,7 +46,7 @@ public class SeedDataIntegrationTests : PersistenceTestBase
 
         var admin = await dbContext.Usuarios.SingleAsync(u => u.Id == AdminId);
         admin.Rol.Should().Be(UserRole.Administrador);
-        admin.Activo.Should().BeTrue();
+        admin.Activo.Should().BeFalse();
         admin.PasswordHash.Should().StartWith("$2b$12$");
 
         var repartidor = await dbContext.Repartidores.SingleAsync(r => r.UsuarioId == RepartidorId);

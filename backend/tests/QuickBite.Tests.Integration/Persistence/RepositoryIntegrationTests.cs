@@ -319,7 +319,7 @@ public class RepositoryIntegrationTests : PersistenceTestBase
         (await repository.RevokeSessionAsync(active.Id, userId)).Should().BeFalse();
 
         var repartidores = await repository.GetByRoleAsync(UserRole.Repartidor);
-        repartidores.Should().ContainSingle(r => r.Email == "repartidor@quickbite.com");
+        repartidores.Should().NotContain(r => r.Email == "repartidor@quickbite.com");
     }
 
     [Fact]

@@ -24,6 +24,9 @@ jobs:
     env:
       ConnectionStrings__TestConnection: Host=localhost;Port=5432;Database=quickbite_test;Username=postgres;Password=postgres
       ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=quickbite_test;Username=postgres;Password=postgres
+      Jwt__Secret: test-only-secret-for-ci-with-more-than-32-chars
+      Jwt__Issuer: QuickBite
+      Jwt__Audience: QuickBite.Api
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
