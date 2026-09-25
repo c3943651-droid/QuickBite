@@ -18,8 +18,8 @@ namespace QuickBite.Infrastructure.Persistence.Migrations
                 RETURNS TRIGGER AS $$
                 BEGIN
                   IF TG_OP = 'INSERT' THEN
-                    INSERT INTO pedido_historial_estados (id, pedido_id, estado_anterior, estado_nuevo, usuario_id)
-                    VALUES (gen_random_uuid(), NEW.id, NULL, NEW.estado, NEW.cliente_id);
+                    INSERT INTO pedido_historial_estados (id, pedido_id, estado_anterior, estado_nuevo, usuario_id, creado_en)
+                    VALUES (gen_random_uuid(), NEW.id, NULL, NEW.estado, NEW.cliente_id, now());
                   END IF;
                   RETURN NEW;
                 END;
@@ -42,11 +42,11 @@ namespace QuickBite.Infrastructure.Persistence.Migrations
                 RETURNS TRIGGER AS $$
                 BEGIN
                   IF TG_OP = 'INSERT' THEN
-                    INSERT INTO pedido_historial_estados (id, pedido_id, estado_anterior, estado_nuevo, usuario_id)
-                    VALUES (gen_random_uuid(), NEW.id, NULL, NEW.estado, NEW.cliente_id);
+                    INSERT INTO pedido_historial_estados (id, pedido_id, estado_anterior, estado_nuevo, usuario_id, creado_en)
+                    VALUES (gen_random_uuid(), NEW.id, NULL, NEW.estado, NEW.cliente_id, now());
                   ELSIF TG_OP = 'UPDATE' AND OLD.estado IS DISTINCT FROM NEW.estado THEN
-                    INSERT INTO pedido_historial_estados (id, pedido_id, estado_anterior, estado_nuevo, usuario_id)
-                    VALUES (gen_random_uuid(), NEW.id, OLD.estado, NEW.estado, NEW.cliente_id);
+                    INSERT INTO pedido_historial_estados (id, pedido_id, estado_anterior, estado_nuevo, usuario_id, creado_en)
+                    VALUES (gen_random_uuid(), NEW.id, OLD.estado, NEW.estado, NEW.cliente_id, now());
                   END IF;
                   RETURN NEW;
                 END;

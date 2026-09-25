@@ -261,13 +261,20 @@ static HealthCheckOptions BuildHealthCheckOptions()
         ResponseWriter = async (context, report) =>
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
+            var status = report.Status switch
+            {
+                HealthStatus.Healthy => "healthy",
+                HealthStatus.Degraded => "degraded",
+                _ => "unhealthy"
+            };
+            var database = report.Entries.TryGetValue("database", out var entry)
+                ? entry.Status == HealthStatus.Healthy ? "connected" : "error"
+                : "unknown";
             var payload = new
             {
-                status = report.Status.ToString(),
+                status,
                 timestamp = DateTime.UtcNow,
-                database = report.Entries.TryGetValue("database", out var entry)
-                    ? entry.Status.ToString()
-                    : "Unknown",
+                database,
                 version
             };
 
