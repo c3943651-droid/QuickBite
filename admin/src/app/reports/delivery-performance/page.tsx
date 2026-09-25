@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import {
   Bike,
   CircleCheck,
+  Download,
   Gauge,
   RefreshCw,
   type LucideIcon,
@@ -32,10 +33,33 @@ import {
   useDeliveryPerformance,
   type DeliveryPerformanceItem,
 } from "@/lib/api/admin/reports"
+import { exportCSV } from "@/lib/csv"
 
 function effectiveRate(item: DeliveryPerformanceItem) {
   if (item.pedidosAsignados === 0) return 0
   return (item.entregasCompletadas / item.pedidosAsignados) * 100
+}
+
+function handleExport(rows: DeliveryPerformanceItem[]) {
+  exportCSV(
+    "desempeno-reparto.csv",
+    [
+      "Repartidor",
+      "Pedidos asignados",
+      "Entregas completadas",
+      "Cancelaciones",
+      "Tiempo promedio (min)",
+      "Efectividad (%)",
+    ],
+    rows.map((item) => [
+      item.nombre,
+      item.pedidosAsignados,
+      item.entregasCompletadas,
+      item.cancelaciones,
+      item.minutosPromedioEntrega,
+      effectiveRate(item).toFixed(1),
+    ]),
+  )
 }
 
 function BarTooltip({
@@ -168,6 +192,15 @@ export default function DeliveryPerformanceReportPage() {
             Entregas completadas y tiempos promedio por repartidor.
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isRefetching}
+          onClick={() => handleExport(rows)}
+        >
+          <Download className="size-4" />
+          Exportar CSV
+        </Button>
         <Button
           variant="outline"
           size="sm"

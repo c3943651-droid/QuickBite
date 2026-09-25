@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
 import { cn } from "cn"
-import { Pencil, Plus, Power, Search } from "lucide-react"
+import { Boxes, History, MoreHorizontal, Pencil, Plus, Power, Search, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -11,13 +11,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { DataTable, type DataColumn } from "@/components/common/data-table"
 import { ErrorState } from "@/components/common/error-state"
 import { StatusChip } from "@/components/common/status-chip"
+import { ConfirmDialog } from "@/components/common/confirm-dialog"
 import { ProductFormDialog } from "@/components/features/products/product-form-dialog"
+import { ProductPriceHistoryDialog } from "@/components/features/products/product-price-history-dialog"
+import { StockAdjustDialog } from "@/components/features/inventory/stock-adjust-dialog"
 import { useAdminCategories } from "@/lib/api/admin/categories"
 import {
   useAdminProducts,
+  useDeleteProduct,
   useSetAvailability,
   type ProductListItem,
 } from "@/lib/api/admin/products"
@@ -38,11 +49,15 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(25)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingProduct, setEditingProduct] = useState<ProductListItem | null>(null)
   const [pendingId, setPendingId] = useState<string | null>(null)
+  const [adjustProduct, setAdjustProduct] = useState<ProductListItem | null>(null)
+  const [historyProduct, setHistoryProduct] = useState<ProductListItem | null>(null)
+  const [deletingProduct, setDeletingProduct] = useState<ProductListItem | null>(null)
 
   const { data: categorias = [] } = useAdminCategories()
   const setAvailability = useSetAvailability()
+  const deleteProduct = useDeleteProduct()
 
   const params = useMemo<GetApiV1ProductsParams>(() => {
     const disponible = estado === "" ? undefined : estado === "true"
@@ -59,13 +74,24 @@ export default function ProductsPage() {
   const { data, isLoading, isFetching, isError, refetch } = useAdminProducts(params)
 
   function openCreate() {
-    setEditingId(null)
+    setEditingProduct(null)
     setDialogOpen(true)
   }
 
-  function openEdit(productId: string) {
-    setEditingId(productId)
+  function openEdit(product: ProductListItem) {
+    setEditingProduct(product)
     setDialogOpen(true)
+  }
+
+  async function handleDelete() {
+    if (!deletingProduct) return
+    try {
+      await deleteProduct.mutateAsync({ id: deletingProduct.id })
+      toast.success(`Producto "${deletingProduct.nombre}" eliminado`)
+      setDeletingProduct(null)
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "No se pudo eliminar el producto"))
+    }
   }
 
   async function toggleAvailability(product: ProductListItem) {
@@ -160,24 +186,42 @@ export default function ProductsPage() {
           className="flex justify-end gap-1"
           onClick={(event) => event.stopPropagation()}
         >
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label="Editar"
-            disabled={pendingId === product.id}
-            onClick={() => openEdit(product.id)}
-          >
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label={product.disponible ? "Desactivar" : "Activar"}
-            disabled={pendingId === product.id}
-            onClick={() => void toggleAvailability(product)}
-          >
-            <Power className={cn("size-4", !product.disponible && "text-muted-foreground")} />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Acciones">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => openEdit(product)}>
+                <Pencil className="size-4" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={pendingId === product.id}
+                onClick={() => void toggleAvailability(product)}
+              >
+                <Power className={cn("size-4", !product.disponible && "text-muted-foreground")} />
+                {product.disponible ? "Desactivar" : "Activar"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setAdjustProduct(product)}>
+                <Boxes className="size-4" />
+                Ajustar stock
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setHistoryProduct(product)}>
+                <History className="size-4" />
+                Historial de precios
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setDeletingProduct(product)}
+              >
+                <Trash2 className="size-4" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },
@@ -280,7 +324,37 @@ export default function ProductsPage() {
       <ProductFormDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        productId={editingId}
+        productId={editingProduct?.id ?? null}
+        stockMinimo={editingProduct?.stockMinimo}
+      />
+
+      <StockAdjustDialog
+        open={adjustProduct !== null}
+        onOpenChange={(open) => {
+          if (!open) setAdjustProduct(null)
+        }}
+        product={adjustProduct}
+      />
+
+      <ProductPriceHistoryDialog
+        open={historyProduct !== null}
+        onOpenChange={(open) => {
+          if (!open) setHistoryProduct(null)
+        }}
+        product={historyProduct}
+      />
+
+      <ConfirmDialog
+        open={deletingProduct !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeletingProduct(null)
+        }}
+        title={`Eliminar "${deletingProduct?.nombre ?? "producto"}"`}
+        description="Esta acción elimina el producto del catálogo y no se puede deshacer."
+        confirmLabel="Eliminar"
+        destructive
+        loading={deleteProduct.isPending}
+        onConfirm={() => void handleDelete()}
       />
     </div>
   )

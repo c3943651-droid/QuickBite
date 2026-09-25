@@ -86,9 +86,15 @@ export interface ProductFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   productId: string | null
+  stockMinimo?: number | null
 }
 
-export function ProductFormDialog({ open, onOpenChange, productId }: ProductFormDialogProps) {
+export function ProductFormDialog({
+  open,
+  onOpenChange,
+  productId,
+  stockMinimo,
+}: ProductFormDialogProps) {
   const isEditing = productId !== null
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -131,7 +137,7 @@ export function ProductFormDialog({ open, onOpenChange, productId }: ProductForm
             categoriaId: detail.categoria?.id,
             disponible: detail.disponible,
             stockInicial: detail.stock ?? 0,
-            stockMinimo: EMPTY_VALUES.stockMinimo,
+            stockMinimo: stockMinimo ?? EMPTY_VALUES.stockMinimo,
             imagenUrl: detail.imagenUrl ?? undefined,
           }
         : EMPTY_VALUES,
