@@ -43,7 +43,8 @@ public class PostgresDatabaseFixture : IAsyncLifetime
     public QuickBiteDbContext CreateContext(string? connectionString = null)
     {
         var options = new DbContextOptionsBuilder<QuickBiteDbContext>()
-            .UseNpgsql(connectionString ?? ConnectionString!, npgsql => npgsql.EnableRetryOnFailure())
+            .UseNpgsql(NpgsqlDataSourceFactory.Create(connectionString ?? ConnectionString!),
+                npgsql => npgsql.EnableRetryOnFailure())
             .UseSnakeCaseNamingConvention()
             .Options;
 
