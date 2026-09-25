@@ -1,0 +1,30 @@
+description = "Optimiza el rendimiento — mide primero antes de optimizar"
+
+prompt = """
+Invoca la skill performance-optimization.
+
+Mide antes de optimizar. Nunca optimices sin evidencia de un cuello de botella.
+
+Objetivos de rendimiento de QuickBite (según doc 12):
+- API en lecturas: latencia < 500 ms (percentil 95)
+- API en escrituras: latencia < 3 segundos
+- Tiempo de carga inicial de la app móvil: < 2 segundos en 4G
+- Búsqueda de catálogo: < 500 ms (percentil 95)
+- Tiempo de actualización de estado de pedido (polling): < 5 segundos desde cambio de estado en backend
+- Tiempo de renderizado de páginas del panel admin: < 3 segundos
+- Tiempo de carga del catálogo en panel admin: < 2 segundos
+
+Flujo:
+1. MIDE (establish línea base con métricas concretas o logs)
+2. IDENTIFICA el cuello de botella real (no asumido)
+3. ARREGLA el cuello de botella específico
+4. VERIFICA (mide de nuevo; conserva o revierte)
+5. PROTEGE contra regresión
+
+Una optimización que no supera la línea base se REVIERTE, no se conserva como neutral. Registra cada intento (conservado o revertido).
+
+Herramientas útiles:
+- Backend: MiniProfiler, logging de EF Core, BenchmarkDotNet (si se crea), dotnet-counters
+- Móvil: React Native DevTools, perfilado de rendimiento (React DevTools / performance monitor)
+- Panel admin: DevTools del navegador (Network, Performance)
+"""

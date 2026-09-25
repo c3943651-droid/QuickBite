@@ -1,0 +1,4 @@
+{
+  "$schema": "https://oxc-project.github.io/json-schema/oxlint-config.json",
+  "ignorePatterns": ["src/lib/api/generated/**"]
+}

@@ -1,6 +1,33 @@
 @QuickBite.Api_HostAddress = http://localhost:5017
 
-GET {{QuickBite.Api_HostAddress}}/weatherforecast/
+### Health
+GET {{QuickBite.Api_HostAddress}}/health
 Accept: application/json
 
-###
+### Catálogo — categorías públicas
+GET {{QuickBite.Api_HostAddress}}/api/v1/categories
+Accept: application/json
+
+### Catálogo — productos públicos (filtros opcionales)
+GET {{QuickBite.Api_HostAddress}}/api/v1/products?page=1&limit=10
+Accept: application/json
+
+### Auth — login (la contraseña del seed se define en el entorno local)
+POST {{QuickBite.Api_HostAddress}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@quickbite.com",
+  "password": ""
+}
+
+### Auth — registro de cliente
+POST {{QuickBite.Api_HostAddress}}/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Ana",
+  "email": "ana@example.com",
+  "password": "Ana123!",
+  "rol": "cliente"
+}

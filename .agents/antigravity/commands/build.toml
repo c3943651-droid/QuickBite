@@ -1,0 +1,27 @@
+description = "Implementa el siguiente corte incrementalmente y verifica con .NET"
+
+prompt = """
+Invoca la skill incremental-implementation.
+
+Implementa el cambio en cortes verticales finos, uno a la vez, dejando el proyecto compilable y testeado tras cada corte:
+
+1. Implementa la pieza funcional más pequeña y completa
+2. Prueba: `dotnet test` en el proyecto afectado (o escribe un test si no existe)
+3. Verifica: `dotnet build backend/src/QuickBite.sln` y `dotnet build -warnaserror`
+4. Commit con mensaje descriptivo (Conventional Commits)
+5. Pasa al siguiente corte
+
+Convierte el siguiente paso del plan en código, una capa a la vez, respetando Clean Architecture.
+
+Reglas del proyecto:
+- Backend: .NET 8, Clean Architecture (Domain → Application → Infrastructure → Api), patrón Result, Repository, Unit of Work.
+- Móvil: React Native, React Query + Zustand, Repository, DI.
+- Panel admin: Blazor WebAssembly (MudBlazor), consume la API.
+- Cero lógica de negocio en controladores, widgets o servicios de API.
+- Errores con Result, no excepciones silenciosas.
+- Sin comentarios innecesarios.
+
+Verifica con los comandos del proyecto:
+- Backend: `dotnet build backend/src/QuickBite.sln`, `dotnet test backend/tests/QuickBite.Tests.Unit/`, `dotnet build backend/src/QuickBite.sln -warnaserror`
+- Móvil: `npm run lint`, `npm test`
+"""

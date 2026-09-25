@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\QuickBite.Application\QuickBite.Application.csproj" />
     <ProjectReference Include="..\..\src\QuickBite.Domain\QuickBite.Domain.csproj" />
+    <ProjectReference Include="..\..\src\QuickBite.Infrastructure\QuickBite.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
