@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react"
-import type { UserSummary } from "@/lib/api/types"
+import type { UserSummary } from "@/lib/api/auth"
 import { login as loginApi, logout as logoutApi } from "@/lib/api/auth"
 import {
   clearSession,
@@ -8,7 +8,7 @@ import {
   getStoredUser,
   patchStoredUser,
   persistsSession,
-} from "@/lib/auth/storage"
+} from "@/lib/session/storage"
 
 interface LoginCredentials {
   email: string

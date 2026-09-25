@@ -10,6 +10,7 @@ import { cn } from "cn"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
   SelectContent,
@@ -42,11 +43,11 @@ function OrdersLoadingState() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-9 w-28 animate-pulse rounded-md bg-muted" />
+          <Skeleton key={i} className="h-9 w-28" />
         ))}
       </div>
       <Card className="p-4">
-        <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+        <Skeleton className="h-64 rounded-lg" />
       </Card>
     </div>
   )

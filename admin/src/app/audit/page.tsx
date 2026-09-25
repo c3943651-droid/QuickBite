@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -311,7 +312,7 @@ export default function AuditPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="h-48 animate-pulse rounded-lg bg-muted/60" />
+              <Skeleton className="h-48 rounded-lg" />
             ) : total === 0 ? (
               <EmptyState
                 title="Sin registros"

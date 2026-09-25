@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   useAdminProductPriceHistory,
   type ProductListItem,
@@ -49,7 +50,7 @@ export function ProductPriceHistoryDialog({
         {isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="h-10 animate-pulse rounded-md bg-muted" />
+              <Skeleton key={index} className="h-10" />
             ))}
           </div>
         ) : isError ? (

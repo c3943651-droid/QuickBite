@@ -5,7 +5,7 @@ import type {
   UpdateProfileRequest,
 } from "@/lib/api/generated/quickBiteAPI.schemas"
 import { queryKeys } from "@/lib/api/query-keys"
-import { getRefreshToken } from "@/lib/auth/storage"
+import { getRefreshToken } from "@/lib/session/storage"
 import { customInstance } from "@/lib/api/custom-instance"
 
 export interface UserProfile {

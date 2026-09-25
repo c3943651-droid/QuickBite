@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { DataTable, type DataColumn } from "@/components/common/data-table"
+import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
 import { useTopClients, type TopClientItem } from "@/lib/api/admin/reports"
@@ -141,7 +142,7 @@ export default function TopClientsReportPage() {
               onRetry={() => void refetch()}
             />
           ) : isLoading ? (
-            <div className="h-48 animate-pulse rounded-lg bg-muted/60" />
+            <Skeleton className="h-48 rounded-lg" />
           ) : rows.length === 0 ? (
             <EmptyState
               title="Sin resultados"

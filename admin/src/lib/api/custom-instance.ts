@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { toast } from 'sonner'
-import { clearSession, getAccessToken } from '@/lib/auth/storage'
+import { clearSession, getAccessToken } from '@/lib/session/storage'
 
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,

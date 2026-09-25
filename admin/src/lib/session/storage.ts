@@ -1,4 +1,4 @@
-import type { AuthResponse, UserSummary } from "@/lib/api/types"
+import type { AuthResponse, UserSummary } from "@/lib/api/auth"
 
 const ACCESS_TOKEN_KEY = "quickbite.access_token"
 const REFRESH_TOKEN_KEY = "quickbite.refresh_token"

@@ -32,7 +32,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useAuth } from "@/lib/auth/auth-context"
+import { useAuth } from "@/lib/session/auth-context"
 import { forgotPassword } from "@/lib/api/auth"
 
 const loginSchema = z.object({

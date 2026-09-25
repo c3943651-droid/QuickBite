@@ -308,7 +308,3 @@ page?: number;
 limit?: number;
 };
 
-export type GetApiV1NotificationsParams = {
-unreadOnly?: boolean;
-};
-

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/card"
 import { DataTable, type DataColumn } from "@/components/common/data-table"
 import { EmptyState } from "@/components/common/empty-state"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/common/error-state"
 import {
   useDeliveryPerformance,
@@ -251,7 +252,7 @@ export default function DeliveryPerformanceReportPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-64 animate-pulse rounded-lg bg-muted/60" />
+                <Skeleton className="h-64 rounded-lg" />
               ) : chartData.length === 0 ? (
                 <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
                   No hay entregas registradas para mostrar.
@@ -295,7 +296,7 @@ export default function DeliveryPerformanceReportPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-48 animate-pulse rounded-lg bg-muted/60" />
+                <Skeleton className="h-48 rounded-lg" />
               ) : rows.length === 0 ? (
                 <EmptyState
                   title="Sin resultados"

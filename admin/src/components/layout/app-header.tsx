@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useAuth } from "@/lib/auth/auth-context"
+import { useAuth } from "@/lib/session/auth-context"
 
 function initials(name: string | undefined): string {
   const parts = (name ?? "?").trim().split(/\s+/)

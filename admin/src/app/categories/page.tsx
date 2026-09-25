@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DataTable, type DataColumn } from "@/components/common/data-table"
 import { ConfirmDialog } from "@/components/common/confirm-dialog"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ErrorState } from "@/components/common/error-state"
 import { StatusChip } from "@/components/common/status-chip"
-import { CategoryDialog } from "@/components/features/categories/category-dialog"
+import { CategoryFormDialog } from "@/components/features/categories/category-form-dialog"
 import {
   useAdminCategories,
   useDeleteCategory,
@@ -22,7 +23,7 @@ function CategoriesLoadingState() {
     <Card className="p-4">
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-12 animate-pulse rounded-lg bg-muted/60" />
+          <Skeleton key={i} className="h-12 rounded-lg" />
         ))}
       </div>
     </Card>
@@ -206,7 +207,7 @@ export default function CategoriesPage() {
         />
       )}
 
-      <CategoryDialog
+      <CategoryFormDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         category={editing}

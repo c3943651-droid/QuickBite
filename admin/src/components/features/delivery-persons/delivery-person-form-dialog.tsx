@@ -7,6 +7,7 @@ import { cn } from "cn"
 import { Bike, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogContent,
@@ -63,7 +64,7 @@ export interface DeliveryPersonDialogProps {
   repartidor: DeliveryPersonListItem | null
 }
 
-export function DeliveryPersonDialog({
+export function DeliveryPersonFormDialog({
   open,
   onOpenChange,
   repartidor,
@@ -164,10 +165,7 @@ export function DeliveryPersonDialog({
                         {availableUsers.isLoading ? (
                           <div className="space-y-2">
                             {Array.from({ length: 3 }).map((_, i) => (
-                              <div
-                                key={i}
-                                className="h-12 animate-pulse rounded-md bg-muted"
-                              />
+                              <Skeleton key={i} className="h-12" />
                             ))}
                           </div>
                         ) : availableUsers.isError ? (

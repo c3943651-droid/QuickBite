@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { StatusChip } from "@/components/common/status-chip"
+import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/common/empty-state"
 import { ErrorState } from "@/components/common/error-state"
 import {
@@ -116,7 +117,7 @@ export function DeliveryPersonDetailDialog({
               {isLoading ? (
                 <div className="space-y-2">
                   {Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="h-10 animate-pulse rounded-md bg-muted" />
+                    <Skeleton key={index} className="h-10" />
                   ))}
                 </div>
               ) : isError ? (

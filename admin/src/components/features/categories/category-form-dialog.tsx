@@ -65,7 +65,7 @@ export interface CategoryDialogProps {
   category: CategoryResponse | null
 }
 
-export function CategoryDialog({ open, onOpenChange, category }: CategoryDialogProps) {
+export function CategoryFormDialog({ open, onOpenChange, category }: CategoryDialogProps) {
   const isEditing = category !== null
   const createCategory = useCreateCategory()
   const updateCategory = useUpdateCategory()
