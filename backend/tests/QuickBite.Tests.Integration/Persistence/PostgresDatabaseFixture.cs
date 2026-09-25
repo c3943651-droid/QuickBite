@@ -6,6 +6,8 @@ namespace QuickBite.Tests.Integration.Persistence;
 
 public class PostgresDatabaseFixture : IAsyncLifetime
 {
+    private NpgsqlDataSource? _dataSource;
+
     public bool Available { get; private set; }
     public string? ConnectionString { get; private set; }
     public string? SkipReason { get; private set; }
@@ -42,9 +44,9 @@ public class PostgresDatabaseFixture : IAsyncLifetime
 
     public QuickBiteDbContext CreateContext(string? connectionString = null)
     {
+        _dataSource ??= NpgsqlDataSourceFactory.Create(connectionString ?? ConnectionString!);
         var options = new DbContextOptionsBuilder<QuickBiteDbContext>()
-            .UseNpgsql(NpgsqlDataSourceFactory.Create(connectionString ?? ConnectionString!),
-                npgsql => npgsql.EnableRetryOnFailure())
+            .UseNpgsql(_dataSource, npgsql => npgsql.EnableRetryOnFailure())
             .UseSnakeCaseNamingConvention()
             .Options;
 
