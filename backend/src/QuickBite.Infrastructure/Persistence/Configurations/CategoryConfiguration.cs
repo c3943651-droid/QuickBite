@@ -12,6 +12,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.Property(c => c.Nombre).HasMaxLength(100);
         builder.Property(c => c.Descripcion).HasMaxLength(255);
+        builder.Property(c => c.Icon).HasMaxLength(32);
 
         builder.HasIndex(c => c.Nombre).IsUnique().HasDatabaseName("uq_categorias_nombre");
     }

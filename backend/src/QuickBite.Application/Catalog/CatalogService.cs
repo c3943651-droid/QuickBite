@@ -18,10 +18,10 @@ public sealed class CatalogService : ICatalogService
     public async Task<string> UploadImageAsync(Stream stream, string fileName, CancellationToken ct = default)
         => await _imageService.UploadAsync(stream, fileName, ct);
 
-    private static CategoryResponse ToCat(Category c) => new(c.Id, c.Nombre, c.Descripcion, c.Orden, c.Activo);
+    private static CategoryResponse ToCat(Category c) => new(c.Id, c.Nombre, c.Descripcion, c.Orden, c.Activo, c.Icon);
     private static ProductOptionResponse ToOpt(ProductOption o) => new(o.Id, o.Nombre, o.PrecioAdicional, o.Activo);
-    private static ProductListItemResponse ToList(Product p) => new(p.Id, p.Nombre, p.Descripcion, p.Precio, p.ImagenUrl, p.Disponible, p.Categoria == null ? null : new CategoryResponse(p.Categoria.Id, p.Categoria.Nombre, p.Categoria.Descripcion, p.Categoria.Orden, p.Categoria.Activo), p.Inventario?.Stock, p.Inventario?.StockMinimo);
-    private static ProductDetailResponse ToDetail(Product p) => new(p.Id, p.Nombre, p.Descripcion, p.Precio, p.ImagenUrl, p.Disponible, p.Categoria == null ? null : new CategoryResponse(p.Categoria.Id, p.Categoria.Nombre, p.Categoria.Descripcion, p.Categoria.Orden, p.Categoria.Activo), p.Opciones.Select(ToOpt).ToList(), p.Inventario?.Stock);
+    private static ProductListItemResponse ToList(Product p) => new(p.Id, p.Nombre, p.Descripcion, p.Precio, p.ImagenUrl, p.Disponible, p.Categoria == null ? null : new CategoryResponse(p.Categoria.Id, p.Categoria.Nombre, p.Categoria.Descripcion, p.Categoria.Orden, p.Categoria.Activo, p.Categoria.Icon), p.Inventario?.Stock, p.Inventario?.StockMinimo);
+    private static ProductDetailResponse ToDetail(Product p) => new(p.Id, p.Nombre, p.Descripcion, p.Precio, p.ImagenUrl, p.Disponible, p.Categoria == null ? null : new CategoryResponse(p.Categoria.Id, p.Categoria.Nombre, p.Categoria.Descripcion, p.Categoria.Orden, p.Categoria.Activo, p.Categoria.Icon), p.Opciones.Select(ToOpt).ToList(), p.Inventario?.Stock);
 
     public async Task<IReadOnlyList<CategoryResponse>> GetCategoriesAsync(CancellationToken ct = default)
     {
@@ -36,7 +36,7 @@ public sealed class CatalogService : ICatalogService
     }
     public async Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest req, CancellationToken ct = default)
     {
-        var cat = new Category { Nombre = req.Nombre.Trim(), Descripcion = req.Descripcion?.Trim(), Orden = req.Orden };
+        var cat = new Category { Nombre = req.Nombre.Trim(), Descripcion = req.Descripcion?.Trim(), Orden = req.Orden, Icon = req.Icon?.Trim() };
         await _uow.Categories.AddAsync(cat, ct);
         await _uow.SaveChangesAsync(ct);
         return ToCat(cat);
@@ -46,6 +46,7 @@ public sealed class CatalogService : ICatalogService
         var cat = await _uow.Categories.GetByIdAsync(id, ct) ?? throw new NotFoundException("Categoria", id);
         if (req.Nombre != null) cat.Nombre = req.Nombre.Trim();
         if (req.Descripcion != null) cat.Descripcion = req.Descripcion.Trim();
+        if (req.Icon != null) cat.Icon = req.Icon.Trim();
         if (req.Orden != null) cat.Orden = req.Orden.Value;
         if (req.Activo != null) cat.Activo = req.Activo.Value;
         _uow.Categories.Update(cat);
@@ -115,7 +116,12 @@ public sealed class CatalogService : ICatalogService
         var upd = await _uow.Products.GetByIdAsync(id, ct);
         return ToDetail(upd!);
     }
-    public async Task DeleteProductAsync(Guid id, CancellationToken ct = default) { await _uow.Products.SoftDeleteAsync(id, ct); await _uow.SaveChangesAsync(ct); }
+    public async Task DeleteProductAsync(Guid id, CancellationToken ct = default)
+    {
+        if (!await _uow.Products.ExistsAsync(id, ct)) throw new NotFoundException("Producto", id);
+        await _uow.Products.SoftDeleteAsync(id, ct);
+        await _uow.SaveChangesAsync(ct);
+    }
     public async Task<ProductDetailResponse> SetAvailabilityAsync(Guid id, bool disponible, CancellationToken ct = default)
     {
         var p = await _uow.Products.GetByIdAsync(id, ct) ?? throw new NotFoundException("Producto", id);

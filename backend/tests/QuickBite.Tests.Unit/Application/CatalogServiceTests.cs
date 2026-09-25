@@ -11,17 +11,52 @@ namespace QuickBite.Tests.Unit.Application;
 public class CatalogServiceTests
 {
     private readonly Mock<IProductRepository> _products = new();
+    private readonly Mock<ICategoryRepository> _categories = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IImageService> _imageService = new();
 
     public CatalogServiceTests()
     {
         _unitOfWork.SetupGet(u => u.Products).Returns(_products.Object);
+        _unitOfWork.SetupGet(u => u.Categories).Returns(_categories.Object);
         _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
         _products.Setup(p => p.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
     }
 
     private CatalogService CreateService() => new(_unitOfWork.Object, _imageService.Object);
+
+    [Fact]
+    public async Task CreateCategoryAsync_ConIcono_GuardaYDevuelveElIcono()
+    {
+        var result = await CreateService().CreateCategoryAsync(new CreateCategoryRequest
+        {
+            Nombre = "Donas",
+            Descripcion = "Repostería",
+            Orden = 2,
+            Icon = "🍩"
+        });
+
+        result.Icon.Should().Be("🍩");
+        _categories.Verify(c => c.AddAsync(It.Is<Category>(cat => cat.Icon == "🍩"), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateCategoryAsync_ConIcono_ActualizaYDevuelveElIcono()
+    {
+        var categoryId = Guid.NewGuid();
+        var category = new Category { Id = categoryId, Nombre = "Bebidas", Icon = null };
+        _categories.Setup(c => c.GetByIdAsync(categoryId, It.IsAny<CancellationToken>())).ReturnsAsync(category);
+
+        var result = await CreateService().UpdateCategoryAsync(categoryId, new UpdateCategoryRequest
+        {
+            Icon = "🥤"
+        });
+
+        category.Icon.Should().Be("🥤");
+        result.Icon.Should().Be("🥤");
+        _categories.Verify(c => c.Update(category), Times.Once);
+    }
 
     [Fact]
     public async Task GetPriceHistoryAsync_ProductoNoExiste_LanzaNotFound()
@@ -31,6 +66,29 @@ public class CatalogServiceTests
         var act = () => CreateService().GetPriceHistoryAsync(Guid.NewGuid());
 
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task DeleteProductAsync_ProductoNoExiste_LanzaNotFound()
+    {
+        _products.Setup(p => p.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        var act = () => CreateService().DeleteProductAsync(Guid.NewGuid());
+
+        await act.Should().ThrowAsync<NotFoundException>();
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _products.Verify(p => p.SoftDeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteProductAsync_ProductoExiste_EjecutaSoftDelete()
+    {
+        var productId = Guid.NewGuid();
+
+        await CreateService().DeleteProductAsync(productId);
+
+        _products.Verify(p => p.SoftDeleteAsync(productId, It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
