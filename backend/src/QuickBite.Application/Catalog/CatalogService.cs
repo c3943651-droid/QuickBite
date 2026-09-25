@@ -56,8 +56,11 @@ public sealed class CatalogService : ICatalogService
     public async Task DeleteCategoryAsync(Guid id, CancellationToken ct = default)
     {
         var cat = await _uow.Categories.GetByIdAsync(id, ct) ?? throw new NotFoundException("Categoria", id);
-        cat.Activo = false;
-        _uow.Categories.Update(cat);
+        if (await _uow.Products.ExistsByCategoryAsync(id, ct))
+        {
+            throw new ConflictException("No se puede eliminar la categoría porque tiene productos asociados. Reasigna o elimina los productos primero.");
+        }
+        _uow.Categories.Delete(cat);
         await _uow.SaveChangesAsync(ct);
     }
     public async Task<PagedResponse<ProductListItemResponse>> GetProductsAsync(ProductFilterRequest filter, CancellationToken ct = default)

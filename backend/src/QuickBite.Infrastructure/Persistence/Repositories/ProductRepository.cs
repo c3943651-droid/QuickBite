@@ -132,6 +132,11 @@ public class ProductRepository : IProductRepository
         return await _db.Productos.AsNoTracking().AnyAsync(p => p.Id == id, cancellationToken);
     }
 
+    public async Task<bool> ExistsByCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default)
+    {
+        return await _db.Productos.AsNoTracking().AnyAsync(p => p.CategoriaId == categoryId, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<ProductPriceHistory>> GetPriceHistoryAsync(Guid productId, CancellationToken cancellationToken = default)
     {
         return await _db.ProductosPreciosHistoricos

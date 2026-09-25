@@ -163,4 +163,45 @@ public class CatalogServiceTests
         _products.Verify(p => p.GetTrackedByIdAsync(productId, It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task DeleteCategoryAsync_CategoriaNoExiste_LanzaNotFound()
+    {
+        _categories.Setup(c => c.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((Category?)null);
+
+        var act = () => CreateService().DeleteCategoryAsync(Guid.NewGuid());
+
+        await act.Should().ThrowAsync<NotFoundException>();
+        _categories.Verify(c => c.Delete(It.IsAny<Category>()), Times.Never);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteCategoryAsync_CategoriaConProductos_LanzaConflict()
+    {
+        var categoryId = Guid.NewGuid();
+        var category = new Category { Id = categoryId, Nombre = "Con Productos" };
+        _categories.Setup(c => c.GetByIdAsync(categoryId, It.IsAny<CancellationToken>())).ReturnsAsync(category);
+        _products.Setup(p => p.ExistsByCategoryAsync(categoryId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+
+        var act = () => CreateService().DeleteCategoryAsync(categoryId);
+
+        await act.Should().ThrowAsync<ConflictException>();
+        _categories.Verify(c => c.Delete(It.IsAny<Category>()), Times.Never);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteCategoryAsync_CategoriaSinProductos_EliminaFisicamente()
+    {
+        var categoryId = Guid.NewGuid();
+        var category = new Category { Id = categoryId, Nombre = "Sin Productos" };
+        _categories.Setup(c => c.GetByIdAsync(categoryId, It.IsAny<CancellationToken>())).ReturnsAsync(category);
+        _products.Setup(p => p.ExistsByCategoryAsync(categoryId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+
+        await CreateService().DeleteCategoryAsync(categoryId);
+
+        _categories.Verify(c => c.Delete(category), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

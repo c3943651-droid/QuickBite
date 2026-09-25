@@ -402,4 +402,27 @@ public class RepositoryIntegrationTests : PersistenceTestBase
         resetFound.Usado.Should().BeFalse();
         (await new UserRepository(secondReader).GetPasswordResetTokenByHashAsync("no-existe")).Should().BeNull();
     }
+
+    [Fact]
+    public async Task CategoryRepository_EliminaYCesaDeAparecerEnElListado()
+    {
+        if (!CanRun())
+        {
+            return;
+        }
+
+        await using var dbContext = Db.CreateContext();
+        var category = new Category { Id = Guid.NewGuid(), Nombre = "Efimera", Orden = 99, Activo = true };
+        dbContext.Categorias.Add(category);
+        await dbContext.SaveChangesAsync();
+
+        var repository = new CategoryRepository(dbContext);
+        repository.Delete(category);
+        await dbContext.SaveChangesAsync();
+
+        await using var reader = Db.CreateContext();
+        var readerRepository = new CategoryRepository(reader);
+        (await readerRepository.GetAllAsync()).Should().NotContain(c => c.Id == category.Id);
+        (await readerRepository.GetActiveAsync()).Should().NotContain(c => c.Id == category.Id);
+    }
 }
