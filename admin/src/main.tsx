@@ -14,6 +14,7 @@ const DashboardPage = lazy(() => import("@/app/dashboard/page"))
 const OrdersPage = lazy(() => import("@/app/orders/page"))
 const ProductsPage = lazy(() => import("@/app/products/page"))
 const DeliveryPersonsPage = lazy(() => import("@/app/delivery-persons/page"))
+const UsersPage = lazy(() => import("@/app/users/page"))
 const CategoriesPage = lazy(() => import("@/app/categories/page"))
 const InventoryPage = lazy(() => import("@/app/inventory/page"))
 const ReportsPage = lazy(() => import("@/app/reports/page"))
@@ -39,6 +40,7 @@ function AppRoutes() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/users" element={<UsersPage />} />
           <Route path="/delivery-persons" element={<DeliveryPersonsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/reports/sales-by-day" element={<SalesByDayReportPage />} />

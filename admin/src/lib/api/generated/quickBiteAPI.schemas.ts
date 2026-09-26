@@ -69,8 +69,6 @@ export interface CreateCategoryRequest {
   nombre?: string | null;
   /** @nullable */
   descripcion?: string | null;
-  /** @nullable */
-  icon?: string | null;
   orden?: number;
 }
 
@@ -202,8 +200,6 @@ export interface UpdateCategoryRequest {
   /** @nullable */
   descripcion?: string | null;
   /** @nullable */
-  icon?: string | null;
-  /** @nullable */
   orden?: number | null;
   /** @nullable */
   activo?: boolean | null;
@@ -258,6 +254,15 @@ export interface UpdateProfileRequest {
   telefono?: string | null;
 }
 
+export interface UpdateUserRoleRequest {
+  /** @nullable */
+  rol?: string | null;
+}
+
+export interface UpdateUserStatusRequest {
+  activo?: boolean;
+}
+
 export type GetApiV1AdminAuditParams = {
 userId?: string;
 entity?: string;
@@ -308,6 +313,14 @@ disponible?: boolean;
 precioMin?: number;
 precioMax?: number;
 orden?: string;
+page?: number;
+limit?: number;
+};
+
+export type GetApiV1AdminUsersParams = {
+search?: string;
+rol?: string;
+activo?: boolean;
 page?: number;
 limit?: number;
 };

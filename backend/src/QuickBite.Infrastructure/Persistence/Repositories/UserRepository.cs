@@ -32,6 +32,51 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower(), cancellationToken);
     }
 
+    public async Task<(IReadOnlyList<User> Items, int Total)> GetPagedAsync(
+        string? search,
+        UserRole? rol,
+        bool? activo,
+        int page,
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<User> query = _db.Usuarios
+            .AsNoTracking()
+            .Include(u => u.Repartidor);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(u =>
+                u.Nombre.ToLower().Contains(term) ||
+                u.Email.ToLower().Contains(term) ||
+                (u.Telefono != null && u.Telefono.ToLower().Contains(term)));
+        }
+
+        if (rol.HasValue)
+        {
+            query = query.Where(u => u.Rol == rol.Value);
+        }
+
+        if (activo.HasValue)
+        {
+            query = query.Where(u => u.Activo == activo.Value);
+        }
+
+        var total = await query.CountAsync(cancellationToken);
+        var pageSafe = Math.Max(1, page);
+        var limitSafe = Math.Clamp(limit, 1, 100);
+
+        var items = await query
+            .OrderBy(u => u.Nombre)
+            .ThenBy(u => u.Email)
+            .Skip((pageSafe - 1) * limitSafe)
+            .Take(limitSafe)
+            .ToListAsync(cancellationToken);
+
+        return (items, total);
+    }
+
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
         await _db.Usuarios.AddAsync(user, cancellationToken);

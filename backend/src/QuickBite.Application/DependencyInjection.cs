@@ -63,6 +63,7 @@ public static class DependencyInjection
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IAdminOrderService, AdminOrderService>();
         services.AddScoped<IAdminDeliveryService, AdminDeliveryService>();
+        services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IAdminReportsService, AdminReportsService>();
         services.AddScoped<IDeliveryService, DeliveryService>();
         services.AddScoped<INotificationService, NotificationService>();
