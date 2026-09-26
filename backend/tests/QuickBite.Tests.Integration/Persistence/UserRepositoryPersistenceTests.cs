@@ -49,9 +49,9 @@ public class UserRepositoryPersistenceTests : PersistenceTestBase
         await using var dbContext = Db.CreateContext();
         var repository = new UserRepository(dbContext);
 
-        var clienteActivo = await CrearUsuarioAsync(dbContext, $"Cliente {counter}", $"cliente{counter}@test.com", UserRole.Cliente);
-        var clienteInactivo = await CrearUsuarioAsync(dbContext, $"Cliente Inactivo {counter}", $"cliente-inactivo{counter}@test.com", UserRole.Cliente, activo: false);
-        var admin = await CrearUsuarioAsync(dbContext, $"Admin {counter}", $"admin{counter}@test.com", UserRole.Administrador);
+        var clienteActivo = await CrearUsuarioAsync(dbContext, $"Cliente {counter}", $"usr{counter}@test.com", UserRole.Cliente);
+        var clienteInactivo = await CrearUsuarioAsync(dbContext, $"Cliente Inactivo {counter}", $"usr-inactivo{counter}@test.com", UserRole.Cliente, activo: false);
+        var admin = await CrearUsuarioAsync(dbContext, $"Admin {counter}", $"usr-admin{counter}@test.com", UserRole.Administrador);
 
         try
         {
@@ -92,7 +92,7 @@ public class UserRepositoryPersistenceTests : PersistenceTestBase
         await using var dbContext = Db.CreateContext();
         var repository = new UserRepository(dbContext);
 
-        var user = await CrearUsuarioAsync(dbContext, $"Busqueda {counter}", $"busqueda{counter}@test.com", UserRole.Cliente);
+        var user = await CrearUsuarioAsync(dbContext, $"Busqueda {counter}", $"usr-busqueda{counter}@test.com", UserRole.Cliente);
 
         try
         {
@@ -126,7 +126,7 @@ public class UserRepositoryPersistenceTests : PersistenceTestBase
         {
             for (var i = 0; i < 5; i++)
             {
-                created.Add(await CrearUsuarioAsync(dbContext, $"Paginacion {counter} {i}", $"paginacion-{counter}-{i}@test.com", UserRole.Cliente));
+                created.Add(await CrearUsuarioAsync(dbContext, $"Paginacion {counter} {i}", $"usr-paginacion-{counter}-{i}@test.com", UserRole.Cliente));
             }
 
             var (pageOne, _) = await repository.GetPagedAsync($"Paginacion {counter}", null, null, 1, 2);
