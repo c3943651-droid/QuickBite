@@ -43,7 +43,7 @@ public class InitialAdminSeederPersistenceTests : PersistenceTestBase
             var usuario = await dbContext.Usuarios.SingleAsync(u => u.Email == email);
             usuario.Rol.Should().Be(UserRole.Administrador);
             usuario.Activo.Should().BeTrue();
-            usuario.PasswordHash.Should().StartWith("$2b$12$");
+            usuario.PasswordHash.Should().StartWith("$2a$12$");
             new BcryptPasswordHasher().Verify(password, usuario.PasswordHash).Should().BeTrue();
             new BcryptPasswordHasher().Verify("Clave-Incorrecta", usuario.PasswordHash).Should().BeFalse();
 

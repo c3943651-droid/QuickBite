@@ -304,7 +304,7 @@ FROM usuarios
 ORDER BY created_at;
 ```
 
-El administrador real debe aparecer con `rol = 'Administrador'`, `activo = true` y `hash = $2b$12$`. Ya no deben existir filas con email `%@quickbite.com`.
+El administrador real debe aparecer con `rol = 'Administrador'`, `activo = true` y `hash = $2a$12$` (BCrypt, WorkFactor 12). Ya no deben existir filas con email `%@quickbite.com`.
 
 **Restricción:** el script y el seeder solo deben ejecutarse una vez al habilitar el entorno de producción. Después de crear el administrador real, no volver a definir `ADMIN_PASSWORD` en el entorno.
 
