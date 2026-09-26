@@ -38,7 +38,8 @@ public class CatalogProductPersistenceTests : PersistenceTestBase
         Guid adminId = default;
         try
         {
-            await using var dbContext = Db.CreateContext();
+            await using var dbContext = Db.CreateContext(
+                log: message => _output.WriteLine($"[SQL] {message}"));
             var unitOfWork = new UnitOfWork(dbContext);
             var service = new CatalogService(unitOfWork, new NoOpImageService());
 
