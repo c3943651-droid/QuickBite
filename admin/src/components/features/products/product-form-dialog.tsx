@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
@@ -97,6 +97,7 @@ export function ProductFormDialog({
 }: ProductFormDialogProps) {
   const isEditing = productId !== null
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const uploadInputId = useId()
 
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
@@ -462,6 +463,7 @@ export function ProductFormDialog({
                   </div>
                 ) : (
                   <label
+                    htmlFor={uploadInputId}
                     className="flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border-2 border-dashed border-zinc-200 p-6 text-center transition-colors hover:bg-zinc-50"
                     onDragOver={(event) => event.preventDefault()}
                     onDrop={(event) => {
@@ -487,6 +489,7 @@ export function ProductFormDialog({
 
                 <input
                   ref={fileInputRef}
+                  id={uploadInputId}
                   type="file"
                   accept="image/*"
                   className="hidden"
