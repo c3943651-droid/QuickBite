@@ -288,6 +288,19 @@ en_camino → entregado
 |--------|------|------|-------|-------------|
 | GET | `/admin/audit` | JWT | Admin | Consultar auditoría con filtros |
 
+### 4.15 Gestión de Usuarios (`/admin/users`)
+
+| Método | Ruta | Auth | Roles | Descripción |
+|--------|------|------|-------|-------------|
+| GET | `/admin/users` | JWT | Admin | Listado paginado con filtros (`search`, `rol`, `activo`, `page`, `limit`) |
+| GET | `/admin/users/{id}` | JWT | Admin | Detalle completo del usuario |
+| PUT | `/admin/users/{id}/role` | JWT | Admin | Cambiar rol (`cliente` / `administrador` / `repartidor`) |
+| PUT | `/admin/users/{id}/status` | JWT | Admin | Activar/desactivar; revoca sesiones al desactivar |
+
+**Reglas de seguridad:** rechaza (`403`) cambiar rol o estado de la cuenta propia; `409` si el usuario
+está registrado como repartidor y se intenta cambiar su rol; `404` si el usuario no existe; `422` si el
+rol es inválido. Ver `docs/08.2 — Gestión de Usuarios (Panel Admin).md`.
+
 ---
 
 ## 5. Polling - Endpoints y Frecuencias

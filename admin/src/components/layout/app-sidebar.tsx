@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   ShoppingCart,
   Tags,
+  Users,
   X,
 } from "lucide-react"
 import { cn } from "cn"
@@ -23,6 +24,7 @@ const navSections = [
       { to: "/products", label: "Productos", icon: Package, end: true },
       { to: "/categories", label: "Categorías", icon: Tags, end: true },
       { to: "/inventory", label: "Inventario", icon: Boxes, end: true },
+      { to: "/users", label: "Usuarios", icon: Users, end: true },
     ],
   },
   {
