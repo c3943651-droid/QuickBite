@@ -113,10 +113,8 @@ try
 
             if (origins.Length > 0)
             {
-                policy.WithOrigins(origins);
+                policy.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
             }
-
-            policy.AllowAnyHeader().AllowAnyMethod();
         });
     });
     builder.Services.AddSwaggerGen(options =>
