@@ -7,6 +7,8 @@ namespace QuickBite.Infrastructure.Images;
 
 public sealed class SupabaseStorageImageService : IImageService
 {
+    private const string UnsetServiceRoleKey = "OVERRIDE_VIA_ENVIRONMENT_VARIABLE";
+
     private static readonly HashSet<string> ExtensionesPermitidas = new(StringComparer.OrdinalIgnoreCase)
     {
         ".jpg", ".jpeg", ".png", ".webp", ".gif"
@@ -30,6 +32,11 @@ public sealed class SupabaseStorageImageService : IImageService
         if (string.IsNullOrWhiteSpace(_projectUrl) || string.IsNullOrWhiteSpace(_serviceRoleKey) || string.IsNullOrWhiteSpace(_bucket))
         {
             throw new InvalidOperationException("Supabase Storage no está configurado. Añade Supabase:ProjectUrl, Supabase:ServiceRoleKey y Supabase:Bucket en appsettings.json.");
+        }
+
+        if (_serviceRoleKey == UnsetServiceRoleKey)
+        {
+            throw new InvalidOperationException("Supabase Storage no está configurado. Define la variable de entorno Supabase__ServiceRoleKey en el entorno de despliegue con el service_role key real.");
         }
 
         var extension = GetExtension(fileName);
@@ -65,7 +72,7 @@ public sealed class SupabaseStorageImageService : IImageService
 
     public async Task DeleteAsync(string url, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(_projectUrl) || string.IsNullOrWhiteSpace(_serviceRoleKey) || string.IsNullOrWhiteSpace(_bucket))
+        if (string.IsNullOrWhiteSpace(_projectUrl) || string.IsNullOrWhiteSpace(_serviceRoleKey) || string.IsNullOrWhiteSpace(_bucket) || _serviceRoleKey == UnsetServiceRoleKey)
         {
             return;
         }
