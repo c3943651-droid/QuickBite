@@ -28,10 +28,38 @@ public class SeedDataIntegrationTests : PersistenceTestBase
         await using var dbContext = Db.CreateContext();
 
         (await dbContext.MetodosPago.CountAsync()).Should().Be(2);
-        (await dbContext.ConfiguracionSistema.CountAsync()).Should().Be(5);
+        (await dbContext.ConfiguracionSistema.CountAsync()).Should().Be(10);
         (await dbContext.Categorias.CountAsync()).Should().Be(3);
         (await dbContext.Productos.CountAsync()).Should().Be(7);
         (await dbContext.Inventario.CountAsync()).Should().Be(7);
+    }
+
+    [Fact]
+    public async Task MigrationsSeed_ConfiguracionSistemaIncluyeClavesOperativas()
+    {
+        if (!CanRun())
+        {
+            return;
+        }
+
+        await using var dbContext = Db.CreateContext();
+
+        var porClave = await dbContext.ConfiguracionSistema
+            .AsNoTracking()
+            .ToDictionaryAsync(c => c.Clave);
+
+        porClave.Should().ContainKeys(
+            "restaurante_abierto",
+            "horario_apertura",
+            "horario_cierre",
+            "moneda_simbolo",
+            "moneda_codigo");
+
+        porClave["restaurante_abierto"].Valor.Should().Be("true");
+        porClave["horario_apertura"].Valor.Should().Be("08:00");
+        porClave["horario_cierre"].Valor.Should().Be("22:00");
+        porClave["moneda_simbolo"].Valor.Should().Be("$");
+        porClave["moneda_codigo"].Valor.Should().Be("USD");
     }
 
     [Fact]

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { z } from "zod"
 import { cn } from "cn"
-import { AlarmClock, RefreshCw, Store, TriangleAlert } from "lucide-react"
+import { AlarmClock, RefreshCw, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -41,7 +41,7 @@ const NUMERIC_KEYS: Record<string, { step: string; suffix?: string }> = {
   tiempo_entrega_estimado: { step: "1", suffix: "min" },
   carrito_expiracion_horas: { step: "1", suffix: "h" },
   max_intentos_login: { step: "1" },
-  costo_envio_default: { step: "0.01", suffix: "MXN" },
+  costo_envio_default: { step: "0.01" },
 }
 
 const configFormSchema = z.object({
@@ -60,7 +60,7 @@ type ConfigFormValues = z.infer<typeof configFormSchema>
 function buildDefaults(config: SystemConfigItem[]): ConfigFormValues {
   return {
     abierto: configValue(config, "restaurante_abierto") !== "false",
-    horarioApertura: configValue(config, "horario_apertura") ?? "09:00",
+    horarioApertura: configValue(config, "horario_apertura") ?? "08:00",
     horarioCierre: configValue(config, "horario_cierre") ?? "22:00",
     parametros: Object.fromEntries(
       config
@@ -77,7 +77,7 @@ export default function ConfigPage() {
 
   const form = useForm<ConfigFormValues>({
     resolver: zodResolver(configFormSchema),
-    defaultValues: { abierto: true, horarioApertura: "09:00", horarioCierre: "22:00", parametros: {} },
+    defaultValues: { abierto: true, horarioApertura: "08:00", horarioCierre: "22:00", parametros: {} },
   })
 
   useEffect(() => {
@@ -92,10 +92,10 @@ export default function ConfigPage() {
     return params
   }, [data])
 
-  const missingStateKeys = useMemo(() => {
-    const present = new Set((data ?? []).map((item) => item.clave))
-    return STATE_KEYS.filter((key) => !present.has(key))
-  }, [data])
+  const monedaCodigo = useMemo(
+    () => configValue(data, "moneda_codigo") ?? "USD",
+    [data],
+  )
 
   const paramItems = useMemo(
     () =>
@@ -110,7 +110,7 @@ export default function ConfigPage() {
     const originalAbierto = (original.get("restaurante_abierto") ?? "true") !== "false"
     if (values.abierto !== originalAbierto)
       entries.push({ key: "restaurante_abierto", value: String(values.abierto) })
-    if (values.horarioApertura !== (original.get("horario_apertura") ?? "09:00"))
+    if (values.horarioApertura !== (original.get("horario_apertura") ?? "08:00"))
       entries.push({ key: "horario_apertura", value: values.horarioApertura })
     if (values.horarioCierre !== (original.get("horario_cierre") ?? "22:00"))
       entries.push({ key: "horario_cierre", value: values.horarioCierre })
@@ -177,15 +177,6 @@ export default function ConfigPage() {
             <Skeleton className="h-64 rounded-lg" />
           </Card>
         </div>
-      ) : missingStateKeys.length > 0 ? (
-        <div className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300">
-          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-          <p>
-            El backend no tiene configuradas las claves {missingStateKeys.join(", ")}. Los
-            valores de estado y horario se guardarán al añadirlas a la tabla
-            configuracion_sistema.
-          </p>
-        </div>
       ) : null}
 
       <Form {...form}>
@@ -210,7 +201,7 @@ export default function ConfigPage() {
                   name="abierto"
                   render={({ field }) => (
                     <FormItem className="flex items-center justify-between gap-4">
-                      <div className="space-y-0.5">
+                      <div className="min-w-0 flex-1 space-y-0.5">
                         <FormLabel>Restaurante abierto</FormLabel>
                         <FormDescription>
                           {field.value ? "Recibiendo pedidos" : "Pedidos suspendidos"}
@@ -287,6 +278,10 @@ export default function ConfigPage() {
                   paramItems.map((item) => {
                     const numConfig = NUMERIC_KEYS[item.clave]
                     const label = item.descripcion ?? item.clave
+                    const suffix =
+                      item.clave === "costo_envio_default"
+                        ? monedaCodigo
+                        : numConfig?.suffix
                     return (
                       <FormField
                         key={item.clave}
@@ -306,9 +301,9 @@ export default function ConfigPage() {
                                   disabled={isBusy}
                                   className="max-w-xs"
                                 />
-                                {numConfig?.suffix ? (
+                                {suffix ? (
                                   <span className="text-sm text-muted-foreground">
-                                    {numConfig.suffix}
+                                    {suffix}
                                   </span>
                                 ) : null}
                               </div>

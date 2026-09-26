@@ -29,13 +29,22 @@ public class ConfigRepository : IConfigRepository
             .FirstOrDefaultAsync(c => c.Clave.ToLower() == key.Trim().ToLower(), cancellationToken);
     }
 
-    public async Task UpdateAsync(string key, string value, CancellationToken cancellationToken = default)
+    public async Task UpsertAsync(string key, string value, CancellationToken cancellationToken = default)
     {
+        var normalizedKey = key.Trim();
         var config = await _db.ConfiguracionSistema
-            .FirstOrDefaultAsync(c => c.Clave.ToLower() == key.Trim().ToLower(), cancellationToken);
+            .FirstOrDefaultAsync(c => c.Clave.ToLower() == normalizedKey.ToLower(), cancellationToken);
 
         if (config is null)
         {
+            _db.ConfiguracionSistema.Add(new SystemConfig
+            {
+                Clave = normalizedKey,
+                Valor = value,
+                Editable = true,
+                CreadoEn = DateTime.UtcNow,
+                ActualizadoEn = DateTime.UtcNow,
+            });
             return;
         }
 
