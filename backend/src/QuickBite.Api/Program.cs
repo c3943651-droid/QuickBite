@@ -11,12 +11,10 @@ using QuickBite.Api.Filters;
 using QuickBite.Api.Health;
 using QuickBite.Api.Middleware;
 using QuickBite.Application;
-using QuickBite.Application.Authentication;
 using QuickBite.Application.Configuration;
-using QuickBite.Domain.Entities;
-using QuickBite.Domain.Enums;
 using QuickBite.Infrastructure;
 using QuickBite.Infrastructure.Persistence;
+using QuickBite.Infrastructure.Seeding;
 using Serilog;
 using System.Reflection;
 using System.Security.Claims;
@@ -157,7 +155,14 @@ try
     var app = builder.Build();
 
     await ApplyMigrationsAsync(app.Services);
-    await SeedInitialAdminAsync(app.Services);
+    using (var seedScope = app.Services.CreateScope())
+    {
+        await seedScope.ServiceProvider
+            .GetRequiredService<IInitialAdminSeeder>()
+            .SeedAsync(
+                Environment.GetEnvironmentVariable("ADMIN_EMAIL"),
+                Environment.GetEnvironmentVariable("ADMIN_PASSWORD"));
+    }
 
     app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
@@ -203,53 +208,6 @@ static async Task ApplyMigrationsAsync(IServiceProvider services)
     var db = scope.ServiceProvider.GetRequiredService<QuickBiteDbContext>();
     await db.Database.MigrateAsync();
     logger.LogInformation("Migraciones aplicadas al iniciar.");
-}
-
-static async Task SeedInitialAdminAsync(IServiceProvider services)
-{
-    var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("AdminSeeder");
-    var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL");
-    var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
-
-    if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
-    {
-        logger.LogInformation("ADMIN_EMAIL/ADMIN_PASSWORD no definidas; no se crea cuenta de administrador inicial.");
-        return;
-    }
-
-    if (adminPassword.Length < 8)
-    {
-        throw new InvalidOperationException("ADMIN_PASSWORD debe tener al menos 8 caracteres.");
-    }
-
-    using var scope = services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<QuickBiteDbContext>();
-    var email = adminEmail.Trim();
-
-    var existeAdminActivo = await db.Usuarios.AnyAsync(u => u.Rol == UserRole.Administrador && u.Activo);
-    if (existeAdminActivo)
-    {
-        logger.LogInformation("Ya existe un administrador activo; se omite la creación inicial.");
-        return;
-    }
-
-    if (await db.Usuarios.AnyAsync(u => u.Email == email))
-    {
-        logger.LogWarning("El email {AdminEmail} ya está registrado sin rol administrador; no se crea la cuenta.", email);
-        return;
-    }
-
-    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-    db.Usuarios.Add(new User
-    {
-        Nombre = "Administrador",
-        Email = email,
-        PasswordHash = hasher.Hash(adminPassword),
-        Rol = UserRole.Administrador
-    });
-
-    await db.SaveChangesAsync();
-    logger.LogInformation("Cuenta de administrador inicial creada para {AdminEmail}.", email);
 }
 
 static HealthCheckOptions BuildHealthCheckOptions()

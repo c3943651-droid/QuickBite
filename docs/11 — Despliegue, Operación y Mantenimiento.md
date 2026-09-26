@@ -259,6 +259,55 @@ Ambos apuntan al endpoint de salud de la API.
 5. Confirmar que ambos cron jobs están activos.
 6. Probar los flujos completos desde la app móvil y el panel admin.
 
+### 4.9. Puesta en Marcha con Datos Reales
+
+Antes de operar con cuentas y pedidos reales hay que (1) limpiar los usuarios demo que siembran las migraciones y (2) crear la cuenta de Administrador inicial. La limpieza **no borra la estructura ni los catálogos base** (categorías, productos, inventario, métodos de pago ni configuración del sistema).
+
+**Paso 1 — Limpiar los usuarios de prueba (seed demo).**
+
+Script idempotente: `backend/scripts/limpiar-usuarios-demo.sql`. Borra los usuarios con email `%@quickbite.com` y sus datos dependientes (órdenes, direcciones, carritos, repartidores, notificaciones, tokens), y los registros de auditoría demo. Los catálogos y la configuración quedan intactos.
+
+En **Supabase** (Dashboard → SQL Editor, pegar el contenido del script y ejecutar) o bien vía `psql` de Supabase:
+
+```bash
+psql "$SUPABASE_DB_URL" -f backend/scripts/limpiar-usuarios-demo.sql
+```
+
+En **Render** (la base PostgreSQL del Web Service):
+
+```bash
+psql "$DATABASE_URL" -f backend/scripts/limpiar-usuarios-demo.sql
+```
+
+**Paso 2 — Crear la cuenta de Administrador inicial.**
+
+La API siembra el administrador al arrancar cuando existen las variables `ADMIN_EMAIL` y `ADMIN_PASSWORD`. La contraseña se encripta con BCrypt (WorkFactor 12, `BcryptPasswordHasher`) antes de persistir; no se guarda en texto plano. El proceso:
+
+- Exige contraseña de al menos 8 caracteres (`InvalidOperationException` en caso contrario).
+- Omite la creación si ya existe un administrador activo.
+- Omite la creación si el email ya existe con otro rol.
+
+En **Render**: Web Service → Environment → agregar `ADMIN_EMAIL` y `ADMIN_PASSWORD`, y hacer *Deploy/Restart* una sola vez. Al terminar, eliminar ambas variables para evitar recrear/sobrescribir el administrador en arranques futuros.
+
+En **local** contra la base de producción:
+
+```bash
+ADMIN_EMAIL="admin@quickbite.com" ADMIN_PASSWORD="Contraseña-Fuerte-123" \
+  dotnet run --project backend/src/QuickBite.Api
+```
+
+**Paso 3 — Verificar.**
+
+```sql
+SELECT email, rol, activo, left(password_hash, 7) AS hash, created_at
+FROM usuarios
+ORDER BY created_at;
+```
+
+El administrador real debe aparecer con `rol = 'Administrador'`, `activo = true` y `hash = $2a$12$` (BCrypt, WorkFactor 12). Ya no deben existir filas con email `%@quickbite.com`.
+
+**Restricción:** el script y el seeder solo deben ejecutarse una vez al habilitar el entorno de producción. Después de crear el administrador real, no volver a definir `ADMIN_PASSWORD` en el entorno.
+
 ---
 
 ## 5. Operación
