@@ -1,5 +1,5 @@
 import { cn } from "cn"
-import { History, Loader2, MoreHorizontal, Pencil, Power, Trash2, Utensils, ZoomIn } from "lucide-react"
+import { Eye, History, Loader2, MoreHorizontal, Pencil, Power, Trash2, Utensils, ZoomIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import {
@@ -16,6 +16,7 @@ import type { ProductListItem } from "@/lib/api/admin/products"
 
 export interface ProductActionsMenuProps {
   product: ProductListItem
+  onDetail: (product: ProductListItem) => void
   onEdit: (product: ProductListItem) => void
   onToggle: (product: ProductListItem) => void
   onHistory: (product: ProductListItem) => void
@@ -26,6 +27,7 @@ export interface ProductActionsMenuProps {
 
 export function ProductActionsMenu({
   product,
+  onDetail,
   onEdit,
   onToggle,
   onHistory,
@@ -47,6 +49,11 @@ export function ProductActionsMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => onDetail(product)}>
+          <Eye className="size-4 text-zinc-500" />
+          Ver detalle
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => onEdit(product)}>
           <Pencil className="size-4 text-zinc-500" />
           Editar
@@ -81,6 +88,7 @@ function productStatusBadge(product: ProductListItem) {
 
 export interface ProductGridProps {
   products: ProductListItem[]
+  onDetail: (product: ProductListItem) => void
   onEdit: (product: ProductListItem) => void
   onToggle: (product: ProductListItem) => void
   onHistory: (product: ProductListItem) => void
@@ -91,6 +99,7 @@ export interface ProductGridProps {
 
 export function ProductGrid({
   products,
+  onDetail,
   onEdit,
   onToggle,
   onHistory,
@@ -133,6 +142,7 @@ export function ProductGrid({
               <div className="absolute top-2 right-2">
                 <ProductActionsMenu
                   product={product}
+                  onDetail={onDetail}
                   onEdit={onEdit}
                   onToggle={onToggle}
                   onHistory={onHistory}

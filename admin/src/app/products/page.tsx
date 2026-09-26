@@ -18,6 +18,7 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog"
 import { ProductFormDialog } from "@/components/features/products/product-form-dialog"
 import { ProductPriceHistoryDialog } from "@/components/features/products/product-price-history-dialog"
 import { ImageLightbox } from "@/components/features/products/image-lightbox"
+import { ProductDetailDialog } from "@/components/features/products/product-detail-dialog"
 import {
   ProductActionsMenu,
   ProductGrid,
@@ -52,6 +53,7 @@ export default function ProductsPage() {
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [historyProduct, setHistoryProduct] = useState<ProductListItem | null>(null)
   const [previewProduct, setPreviewProduct] = useState<ProductListItem | null>(null)
+  const [detailProduct, setDetailProduct] = useState<ProductListItem | null>(null)
   const [deletingProduct, setDeletingProduct] = useState<ProductListItem | null>(null)
   const [availabilityTarget, setAvailabilityTarget] = useState<ProductListItem | null>(null)
 
@@ -82,6 +84,11 @@ export default function ProductsPage() {
   function openEdit(product: ProductListItem) {
     setEditingProduct(product)
     setDialogOpen(true)
+  }
+
+  function editFromDetail(product: ProductListItem) {
+    setDetailProduct(null)
+    openEdit(product)
   }
 
   async function handleDelete() {
@@ -196,6 +203,7 @@ export default function ProductsPage() {
         >
           <ProductActionsMenu
             product={product}
+            onDetail={setDetailProduct}
             onEdit={openEdit}
             onToggle={setAvailabilityTarget}
             onHistory={setHistoryProduct}
@@ -304,6 +312,7 @@ export default function ProductsPage() {
           ) : (data?.data ?? []).length > 0 ? (
             <ProductGrid
               products={data?.data ?? []}
+              onDetail={setDetailProduct}
               onEdit={openEdit}
               onToggle={setAvailabilityTarget}
               onHistory={setHistoryProduct}
@@ -389,6 +398,15 @@ export default function ProductsPage() {
       {previewProduct ? (
         <ImageLightbox product={previewProduct} onClose={() => setPreviewProduct(null)} />
       ) : null}
+
+      <ProductDetailDialog
+        open={detailProduct !== null}
+        onOpenChange={(open) => {
+          if (!open) setDetailProduct(null)
+        }}
+        product={detailProduct}
+        onEdit={editFromDetail}
+      />
 
       <ConfirmDialog
         open={availabilityTarget !== null}
