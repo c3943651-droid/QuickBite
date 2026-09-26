@@ -122,6 +122,11 @@ public class ProductRepository : IProductRepository
         await _db.Productos.AddAsync(product, cancellationToken);
     }
 
+    public void AddPriceHistory(ProductPriceHistory history)
+    {
+        _db.ProductosPreciosHistoricos.Add(history);
+    }
+
     public void Update(Product product)
     {
         _db.Productos.Update(product);

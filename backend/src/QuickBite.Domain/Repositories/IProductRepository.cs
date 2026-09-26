@@ -10,6 +10,7 @@ public interface IProductRepository
     Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Product?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task AddAsync(Product product, CancellationToken cancellationToken = default);
+    void AddPriceHistory(ProductPriceHistory history);
     void Update(Product product);
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsByCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default);

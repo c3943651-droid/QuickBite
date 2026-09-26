@@ -112,7 +112,7 @@ public sealed class CatalogService : ICatalogService
         if (req.Precio != null && req.Precio != oldPrice)
         {
             p.Precio = req.Precio.Value;
-            p.PreciosHistoricos.Add(new ProductPriceHistory { ProductoId = p.Id, PrecioAnterior = oldPrice, PrecioNuevo = p.Precio, UsuarioId = userId, Motivo = "cambio precio" });
+            _uow.Products.AddPriceHistory(new ProductPriceHistory { ProductoId = p.Id, PrecioAnterior = oldPrice, PrecioNuevo = p.Precio, UsuarioId = userId, Motivo = "cambio precio" });
         }
         p.ActualizadoEn = DateTime.UtcNow;
         await _uow.SaveChangesAsync(ct);
