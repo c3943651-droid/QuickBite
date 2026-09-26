@@ -17,6 +17,7 @@ import { StatusChip } from "@/components/common/status-chip"
 import { ConfirmDialog } from "@/components/common/confirm-dialog"
 import { ProductFormDialog } from "@/components/features/products/product-form-dialog"
 import { ProductPriceHistoryDialog } from "@/components/features/products/product-price-history-dialog"
+import { ImageLightbox } from "@/components/features/products/image-lightbox"
 import {
   ProductActionsMenu,
   ProductGrid,
@@ -50,6 +51,7 @@ export default function ProductsPage() {
   const [view, setView] = useState<"grid" | "list">("grid")
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [historyProduct, setHistoryProduct] = useState<ProductListItem | null>(null)
+  const [previewProduct, setPreviewProduct] = useState<ProductListItem | null>(null)
   const [deletingProduct, setDeletingProduct] = useState<ProductListItem | null>(null)
   const [availabilityTarget, setAvailabilityTarget] = useState<ProductListItem | null>(null)
 
@@ -306,6 +308,7 @@ export default function ProductsPage() {
               onToggle={setAvailabilityTarget}
               onHistory={setHistoryProduct}
               onDelete={setDeletingProduct}
+              onPreview={setPreviewProduct}
               pendingId={pendingId}
             />
           ) : (
@@ -382,6 +385,10 @@ export default function ProductsPage() {
         }}
         product={historyProduct}
       />
+
+      {previewProduct ? (
+        <ImageLightbox product={previewProduct} onClose={() => setPreviewProduct(null)} />
+      ) : null}
 
       <ConfirmDialog
         open={availabilityTarget !== null}
