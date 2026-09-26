@@ -81,7 +81,10 @@ public class CatalogProductPersistenceTests : PersistenceTestBase
             ProductDetailResponse updated;
             try
             {
-                updated = await service.UpdateProductAsync(created.Id, new UpdateProductRequest
+                await using var updateContext = Db.CreateContext(
+                    log: message => _output.WriteLine($"[SQL-update] {message}"));
+                var updateService = new CatalogService(new UnitOfWork(updateContext), new NoOpImageService());
+                updated = await updateService.UpdateProductAsync(created.Id, new UpdateProductRequest
                 {
                     Nombre = "Combo Reproduccion Produccion v2",
                     Precio = 109.99m,
