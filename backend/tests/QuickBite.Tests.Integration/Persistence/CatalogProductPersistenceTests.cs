@@ -38,8 +38,7 @@ public class CatalogProductPersistenceTests : PersistenceTestBase
         Guid adminId = default;
         try
         {
-            await using var dbContext = Db.CreateContext(
-                log: message => _output.WriteLine($"[SQL] {message}"));
+            await using var dbContext = Db.CreateContext();
             var unitOfWork = new UnitOfWork(dbContext);
             var service = new CatalogService(unitOfWork, new NoOpImageService());
 
@@ -81,8 +80,7 @@ public class CatalogProductPersistenceTests : PersistenceTestBase
             ProductDetailResponse updated;
             try
             {
-                await using var updateContext = Db.CreateContext(
-                    log: message => _output.WriteLine($"[SQL-update] {message}"));
+                await using var updateContext = Db.CreateContext();
                 var updateService = new CatalogService(new UnitOfWork(updateContext), new NoOpImageService());
                 updated = await updateService.UpdateProductAsync(created.Id, new UpdateProductRequest
                 {
@@ -120,7 +118,9 @@ public class CatalogProductPersistenceTests : PersistenceTestBase
             persisted.Inventario.Should().NotBeNull();
             persisted.Inventario!.Stock.Should().Be(10);
             persisted.Inventario.StockMinimo.Should().Be(2);
-            persisted.PreciosHistoricos.Should().ContainSingle(h =>
+
+            var history = await new ProductRepository(reader).GetPriceHistoryAsync(created.Id);
+            history.Should().ContainSingle(h =>
                 h.PrecioAnterior == 99.99m && h.PrecioNuevo == 109.99m && h.UsuarioId == admin.Id);
         }
         finally
