@@ -6,6 +6,7 @@ import { z } from "zod"
 import { cn } from "cn"
 import { AlarmClock, RefreshCw, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { CurrencyInput } from "@/components/ui/currency-input"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -91,11 +92,6 @@ export default function ConfigPage() {
     }
     return params
   }, [data])
-
-  const monedaCodigo = useMemo(
-    () => configValue(data, "moneda_codigo") ?? "USD",
-    [data],
-  )
 
   const paramItems = useMemo(
     () =>
@@ -278,10 +274,6 @@ export default function ConfigPage() {
                   paramItems.map((item) => {
                     const numConfig = NUMERIC_KEYS[item.clave]
                     const label = item.descripcion ?? item.clave
-                    const suffix =
-                      item.clave === "costo_envio_default"
-                        ? monedaCodigo
-                        : numConfig?.suffix
                     return (
                       <FormField
                         key={item.clave}
@@ -292,20 +284,31 @@ export default function ConfigPage() {
                             <FormLabel>{label}</FormLabel>
                             <FormControl>
                               <div className="flex items-center gap-2">
-                                <Input
-                                  type={numConfig ? "number" : "text"}
-                                  step={numConfig?.step}
-                                  inputMode={numConfig ? "numeric" : undefined}
-                                  {...field}
-                                  onChange={(event) => field.onChange(event.target.value)}
-                                  disabled={isBusy}
-                                  className="max-w-xs"
-                                />
-                                {suffix ? (
-                                  <span className="text-sm text-muted-foreground">
-                                    {suffix}
-                                  </span>
-                                ) : null}
+                                {item.clave === "costo_envio_default" ? (
+                                  <CurrencyInput
+                                    value={field.value}
+                                    onValueChange={(value) => field.onChange(String(value))}
+                                    disabled={isBusy}
+                                    className="max-w-xs"
+                                  />
+                                ) : (
+                                  <>
+                                    <Input
+                                      type={numConfig ? "number" : "text"}
+                                      step={numConfig?.step}
+                                      inputMode={numConfig ? "numeric" : undefined}
+                                      {...field}
+                                      onChange={(event) => field.onChange(event.target.value)}
+                                      disabled={isBusy}
+                                      className="max-w-xs"
+                                    />
+                                    {numConfig?.suffix ? (
+                                      <span className="text-sm text-muted-foreground">
+                                        {numConfig.suffix}
+                                      </span>
+                                    ) : null}
+                                  </>
+                                )}
                               </div>
                             </FormControl>
                             <FormMessage />
