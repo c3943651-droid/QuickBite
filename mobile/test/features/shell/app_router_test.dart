@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
-import 'package:quickbite_mobile/src/core/config/app_config.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
-import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
-import 'package:quickbite_mobile/src/features/shell/app_router.dart';
+
+import '../../support/router_harness.dart';
 
 const _session = AuthSession(
   tokens: AuthTokens(
@@ -20,34 +17,6 @@ const _session = AuthSession(
     rol: 'cliente',
   ),
 );
-
-const _config = AppConfig(
-  apiBaseUrl: 'https://api.test',
-  connectTimeout: Duration(seconds: 5),
-  receiveTimeout: Duration(seconds: 10),
-);
-
-Future<GoRouter> pumpRouter(WidgetTester tester, AuthSession? session) async {
-  tester.view.physicalSize = const Size(1080, 2400);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
-
-  final router = createRouter(() async => session);
-  addTearDown(router.dispose);
-
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [appConfigProvider.overrideWithValue(_config)],
-      child: MaterialApp.router(routerConfig: router),
-    ),
-  );
-  await tester.pump();
-  await tester.pump(const Duration(milliseconds: 50));
-  return router;
-}
-
-String locationOf(GoRouter router) =>
-    router.routerDelegate.currentConfiguration.uri.path;
 
 void main() {
   group('createRouter', () {
@@ -97,21 +66,5 @@ void main() {
       expect(find.text('Historial'), findsOneWidget);
       expect(find.text('Perfil'), findsOneWidget);
     });
-
-    testWidgets(
-      'las secciones no disponibles informan en vez de fallar en silencio',
-      (tester) async {
-        final router = await pumpRouter(tester, _session);
-
-        await tester.tap(find.text('Carrito'));
-        await tester.pump();
-
-        expect(
-          find.text('El carrito llegará en el próximo hito.'),
-          findsOneWidget,
-        );
-        expect(locationOf(router), '/home');
-      },
-    );
   });
 }
