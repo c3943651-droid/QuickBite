@@ -8,25 +8,38 @@ import 'logging_interceptor.dart';
 
 typedef SessionRefreshCallback = Future<StoredSession?> Function();
 
+/// Crea un `Dio` con la configuración base de la API, sin interceptores de
+/// sesión. `AuthRemoteDataSource` la usa para los endpoints de autenticación:
+/// la renovación se dispara precisamente porque `AuthInterceptor` recibió un
+/// 401, así que `/auth/refresh` no puede volver a pasar por él.
+Dio buildDio(AppConfig config, [HttpClientAdapter? adapter]) {
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: config.apiBaseUrl,
+      connectTimeout: config.connectTimeout,
+      receiveTimeout: config.receiveTimeout,
+      headers: const {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ),
+  );
+  if (adapter != null) {
+    dio.httpClientAdapter = adapter;
+  }
+  if (config.isDebug) {
+    dio.interceptors.add(LoggingInterceptor());
+  }
+  return dio;
+}
+
 class DioClient {
   DioClient({
     required AppConfig config,
     required TokenStorage tokenStorage,
     SessionRefreshCallback? onRefresh,
-  }) : dio = Dio(
-         BaseOptions(
-           baseUrl: config.apiBaseUrl,
-           connectTimeout: config.connectTimeout,
-           receiveTimeout: config.receiveTimeout,
-           headers: const {
-             'Content-Type': 'application/json',
-             'Accept': 'application/json',
-           },
-         ),
-       ) {
-    if (config.isDebug) {
-      dio.interceptors.add(LoggingInterceptor());
-    }
+    HttpClientAdapter? httpClientAdapter,
+  }) : dio = buildDio(config, httpClientAdapter) {
     dio.interceptors.add(
       AuthInterceptor(
         tokenStorage: tokenStorage,

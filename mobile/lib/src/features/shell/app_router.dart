@@ -12,14 +12,35 @@ import '../catalog/presentation/home_screen.dart';
 import 'splash_screen.dart';
 
 typedef SessionReader = Future<AuthSession?> Function();
+typedef SessionExpiryReader = SessionExpiry Function();
 
-final routerProvider = Provider<GoRouter>(
-  (ref) => createRouter(() => ref.read(sessionProvider.future)),
-);
+final routerProvider = Provider<GoRouter>((ref) {
+  final router = createRouter(
+    () => ref.read(sessionProvider.future),
+    refreshListenable: ref.watch(routerRefreshProvider),
+    readExpiry: () => ref.read(sessionExpiryProvider),
+  );
+  ref.onDispose(router.dispose);
+  return router;
+});
 
-GoRouter createRouter(SessionReader readSession) {
+/// El aviso de sesión expirada (SCR-COM-03) se emite desde el guard: el
+/// redirect es el único punto que sabe que la sesión *desapareció mientras el
+/// usuario navegaba*, que es justo lo que distingue una expiración de un
+/// arranque en frío. `AppSnackbar` se apoya en el `ScaffoldMessenger` raíz, así
+/// que el aviso sobrevive al salto a `/login`.
+void _notifySessionExpired(BuildContext context) {
+  AppSnackbar.showInfo(context, 'Tu sesión ha expirado');
+}
+
+GoRouter createRouter(
+  SessionReader readSession, {
+  Listenable? refreshListenable,
+  SessionExpiryReader? readExpiry,
+}) {
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: refreshListenable,
     redirect: (context, state) async {
       final session = await readSession();
       final isAuthenticated = session != null;
@@ -33,6 +54,10 @@ GoRouter createRouter(SessionReader readSession) {
         return '/home';
       }
       if (!isAuthenticated && location.startsWith('/home')) {
+        if (readExpiry?.call() == SessionExpiry.refreshFailed &&
+            context.mounted) {
+          _notifySessionExpired(context);
+        }
         return '/login';
       }
       return null;

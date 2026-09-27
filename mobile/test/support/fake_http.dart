@@ -7,8 +7,9 @@ import 'package:dio/dio.dart';
 class FakeHttpAdapter implements HttpClientAdapter {
   FakeHttpAdapter();
 
-  final List<RequestOptions> requests = [];
+  final List<RecordedRequest> requests = [];
   final Map<String, FakeRoute> _routes = {};
+  final Map<String, int> _attempts = {};
 
   int closeCalls = 0;
 
@@ -29,7 +30,25 @@ class FakeHttpAdapter implements HttpClientAdapter {
     );
   }
 
-  RequestOptions lastRequest() => requests.last;
+  /// Registra una respuesta distinta por intento: `responses.first` para la
+  /// primera llamada, `responses.last` de forma indefinida. Permite simular
+  /// el 401 inicial seguido del reintento con éxito sobre la misma ruta.
+  void onSequence(String method, String path, List<FakeRoute> responses) {
+    assert(
+      responses.isNotEmpty,
+      'la secuencia necesita al menos una respuesta',
+    );
+    _routes[_key(method, path)] = FakeRoute(sequence: responses);
+  }
+
+  /// Número de llamadas recibidas para un método + ruta.
+  int callsTo(String method, String path) => _attempts[_key(method, path)] ?? 0;
+
+  /// Todas las peticiones recibidas para un método + ruta, en orden.
+  List<RecordedRequest> requestsTo(String method, String path) =>
+      requests.where((r) => r.key == _key(method, path)).toList();
+
+  RecordedRequest lastRequest() => requests.last;
 
   @override
   Future<ResponseBody> fetch(
@@ -37,8 +56,15 @@ class FakeHttpAdapter implements HttpClientAdapter {
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
   ) async {
-    requests.add(options);
-    final route = _routes[_key(options.method, options.path)];
+    // Se guarda una instantánea: el interceptor reutiliza y muta el mismo
+    // `RequestOptions` al reintentar (nuevo header Authorization, flag de
+    // reintento), así que guardar la referencia perdería el estado original.
+    requests.add(RecordedRequest.of(options));
+    final key = _key(options.method, options.path);
+    final attempt = (_attempts[key] ?? 0) + 1;
+    _attempts[key] = attempt;
+
+    final route = _routes[key];
     if (route == null) {
       return ResponseBody.fromString(
         jsonEncode({
@@ -50,9 +76,12 @@ class FakeHttpAdapter implements HttpClientAdapter {
         },
       );
     }
+    final resolved = route.sequence == null
+        ? route
+        : route.sequence![attempt.clamp(1, route.sequence!.length) - 1];
     return ResponseBody.fromString(
-      jsonEncode(route.body),
-      route.statusCode,
+      jsonEncode(resolved.body),
+      resolved.statusCode,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],
       },
@@ -64,24 +93,76 @@ class FakeHttpAdapter implements HttpClientAdapter {
     closeCalls++;
   }
 
-  String _key(String method, String path) => '$method ${_stripQuery(path)}';
+  String _key(String method, String path) => '$method ${stripQuery(path)}';
+}
 
-  String _stripQuery(String path) {
-    final index = path.indexOf('?');
-    return index == -1 ? path : path.substring(0, index);
+String stripQuery(String path) {
+  final index = path.indexOf('?');
+  return index == -1 ? path : path.substring(0, index);
+}
+
+/// Copia inmutable de una petición recibida, para que las aserciones puedan
+/// distinguir la petición original de su reintento.
+class RecordedRequest {
+  RecordedRequest({
+    required this.method,
+    required this.path,
+    required this.data,
+    required this.queryParameters,
+    required this.headers,
+  });
+
+  factory RecordedRequest.of(RequestOptions options) {
+    return RecordedRequest(
+      method: options.method,
+      path: options.path,
+      data: options.data,
+      queryParameters: Map<String, dynamic>.of(options.queryParameters),
+      headers: Map<String, dynamic>.of(options.headers),
+    );
   }
+
+  final String method;
+  final String path;
+  final Object? data;
+  final Map<String, dynamic> queryParameters;
+  final Map<String, dynamic> headers;
+
+  String get key => '$method ${stripQuery(path)}';
 }
 
 class FakeRoute {
   const FakeRoute({
-    required this.body,
-    required this.statusCode,
+    this.body,
+    this.statusCode = 200,
     this.isError = false,
+    this.sequence,
   });
 
   final Object? body;
   final int statusCode;
   final bool isError;
+  final List<FakeRoute>? sequence;
+}
+
+FakeRoute fakeOk(Object body) => FakeRoute(body: body, statusCode: 200);
+
+FakeRoute fakeStatus(int statusCode, [Object? body]) =>
+    FakeRoute(body: body, statusCode: statusCode, isError: statusCode >= 400);
+
+/// Cuerpo de error con la envoltura que emite la API (documento 04 §2.5).
+Map<String, dynamic> errorBodyJson(
+  String message, {
+  int status = 400,
+  String error = 'BadRequest',
+}) {
+  return {
+    'timestamp': '2026-09-26T12:00:00Z',
+    'status': status,
+    'error': error,
+    'message': message,
+    'path': '/api/v1',
+  };
 }
 
 Map<String, dynamic> categoryJson({
