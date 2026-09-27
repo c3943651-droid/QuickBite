@@ -4,10 +4,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_snackbar.dart';
+import '../address/presentation/address_form_screen.dart';
+import '../address/presentation/addresses_screen.dart';
 import '../auth/domain/auth_entities.dart';
 import '../auth/presentation/auth_providers.dart';
+import '../auth/presentation/edit_profile_screen.dart';
+import '../auth/presentation/forgot_password_screen.dart';
 import '../auth/presentation/login_screen.dart';
+import '../auth/presentation/profile_screen.dart';
 import '../auth/presentation/register_screen.dart';
+import '../auth/presentation/reset_password_screen.dart';
 import '../catalog/presentation/home_screen.dart';
 import 'pending_screen.dart';
 import 'splash_screen.dart';
@@ -95,19 +101,31 @@ const repartidorTabs = <ShellTab>[
 List<ShellTab> shellTabsFor(String rol) =>
     rol == 'repartidor' ? repartidorTabs : clienteTabs;
 
-const _publicRoutes = {'/', '/login', '/register', '/forgot-password'};
+const _publicRoutes = {
+  '/',
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+};
 
-const _clienteOnlyExact = {'/cart', '/checkout', '/history', '/addresses'};
-const _clienteOnlyPrefixes = ['/home', '/product/', '/order/'];
+const _clienteOnlyExact = {
+  '/cart',
+  '/checkout',
+  '/history',
+  '/addresses',
+  '/addresses/new',
+};
+const _clienteOnlyPrefixes = ['/home', '/product/', '/order/', '/addresses/'];
 
 /// Pantalla de inicio de cada rol (07 §10.3). Un usuario sin sesión va a
-/// `/login`; cualquier rol que no sea repartidor se trata como cliente, porque
-/// el administrador no tiene superficie propia en la app móvil.
+/// `/login`; con sesión, la ruta la decide la entidad para que el login y el
+/// guard no puedan discrepar.
 String homeFor(AuthSession? session) {
   if (session == null) {
     return '/login';
   }
-  return session.user.isRepartidor ? '/delivery/available' : '/home';
+  return session.user.homePath;
 }
 
 bool _isClienteOnly(String location) =>
@@ -175,8 +193,7 @@ GoRouter createRouter(
         }
       }
 
-      if (session != null &&
-          (location == '/login' || location == '/register')) {
+      if (session != null && _publicRoutes.contains(location)) {
         return home;
       }
 
@@ -191,9 +208,12 @@ GoRouter createRouter(
       ),
       GoRoute(
         path: '/forgot-password',
-        builder: (context, state) => const PendingScreen(
-          location: '/forgot-password',
-          title: 'Recuperar contraseña',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => ResetPasswordScreen(
+          token: state.uri.queryParameters['token'] ?? '',
         ),
       ),
       StatefulShellRoute.indexedStack(
@@ -233,15 +253,11 @@ GoRouter createRouter(
             routes: [
               GoRoute(
                 path: '/profile',
-                builder: (context, state) =>
-                    const PendingScreen(location: '/profile', title: 'Perfil'),
+                builder: (context, state) => const ProfileScreen(),
                 routes: [
                   GoRoute(
                     path: 'edit',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/edit',
-                      title: 'Editar perfil',
-                    ),
+                    builder: (context, state) => const EditProfileScreen(),
                   ),
                   GoRoute(
                     path: 'security',
@@ -364,8 +380,18 @@ GoRouter createRouter(
       ),
       GoRoute(
         path: '/addresses',
-        builder: (context, state) =>
-            const PendingScreen(location: '/addresses', title: 'Direcciones'),
+        builder: (context, state) => const AddressesScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) => const AddressFormScreen(),
+          ),
+          GoRoute(
+            path: ':id/edit',
+            builder: (context, state) =>
+                AddressFormScreen(addressId: state.pathParameters['id']),
+          ),
+        ],
       ),
       GoRoute(
         path: '/notifications',

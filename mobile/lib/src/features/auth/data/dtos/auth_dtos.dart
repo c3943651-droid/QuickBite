@@ -36,6 +36,32 @@ class RegisterRequestDto {
 }
 
 @JsonSerializable()
+class ForgotPasswordRequestDto {
+  const ForgotPasswordRequestDto({required this.email});
+
+  factory ForgotPasswordRequestDto.fromJson(Map<String, dynamic> json) =>
+      _$ForgotPasswordRequestDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$ForgotPasswordRequestDtoToJson(this);
+
+  final String email;
+}
+
+@JsonSerializable()
+class ResetPasswordRequestDto {
+  const ResetPasswordRequestDto({
+    required this.token,
+    required this.newPassword,
+  });
+
+  factory ResetPasswordRequestDto.fromJson(Map<String, dynamic> json) =>
+      _$ResetPasswordRequestDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$ResetPasswordRequestDtoToJson(this);
+
+  final String token;
+  final String newPassword;
+}
+
+@JsonSerializable()
 class AuthResponseDto {
   const AuthResponseDto({
     required this.accessToken,

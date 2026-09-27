@@ -31,3 +31,17 @@ Map<String, dynamic> _$UserProfileDtoToJson(UserProfileDto instance) =>
       'creado_en': instance.creadoEn?.toIso8601String(),
       'ultimo_login': instance.ultimoLogin?.toIso8601String(),
     };
+
+UpdateProfileRequestDto _$UpdateProfileRequestDtoFromJson(
+  Map<String, dynamic> json,
+) => UpdateProfileRequestDto(
+  nombre: json['nombre'] as String?,
+  telefono: json['telefono'] as String?,
+);
+
+Map<String, dynamic> _$UpdateProfileRequestDtoToJson(
+  UpdateProfileRequestDto instance,
+) => <String, dynamic>{
+  'nombre': instance.nombre,
+  'telefono': instance.telefono,
+};

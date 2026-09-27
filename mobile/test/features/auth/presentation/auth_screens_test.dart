@@ -55,6 +55,33 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> forgotPassword({required String email}) async {}
+
+  @override
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {}
+
+  @override
+  Future<UserProfile> fetchProfile() async => const UserProfile(
+    id: '33333333-3333-3333-3333-333333333333',
+    nombre: 'Carlos Pérez',
+    email: 'carlos@quickbite.mx',
+    rol: 'cliente',
+  );
+
+  @override
+  Future<UserProfile> updateProfile({String? nombre, String? telefono}) async =>
+      UserProfile(
+        id: '33333333-3333-3333-3333-333333333333',
+        nombre: nombre ?? 'Carlos Pérez',
+        email: 'carlos@quickbite.mx',
+        rol: 'cliente',
+        telefono: telefono,
+      );
+
+  @override
   Future<AuthTokens> refresh({required String refreshToken}) async =>
       _session.tokens;
 

@@ -1,5 +1,6 @@
 import '../../../core/network/dio_client.dart';
 import 'dtos/auth_dtos.dart';
+import 'dtos/user_profile_dto.dart';
 
 class AuthRemoteDataSource {
   const AuthRemoteDataSource(this._client);
@@ -32,6 +33,50 @@ class AuthRemoteDataSource {
         password: password,
         telefono: telefono,
         rol: rol,
+      ).toJson(),
+    );
+  }
+
+  Future<UserProfileDto> fetchProfile() async {
+    final response = await _client.get('/users/profile');
+    return UserProfileDto.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<UserProfileDto> updateProfile({
+    String? nombre,
+    String? telefono,
+  }) async {
+    final response = await _client.put(
+      '/users/profile',
+      data: UpdateProfileRequestDto(
+        nombre: _blankToNull(nombre),
+        telefono: _blankToNull(telefono),
+      ).toJson(),
+    );
+    return UserProfileDto.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  static String? _blankToNull(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+
+  Future<void> forgotPassword({required String email}) async {
+    await _client.post(
+      '/auth/forgot-password',
+      data: ForgotPasswordRequestDto(email: email).toJson(),
+    );
+  }
+
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    await _client.post(
+      '/auth/reset-password',
+      data: ResetPasswordRequestDto(
+        token: token,
+        newPassword: newPassword,
       ).toJson(),
     );
   }

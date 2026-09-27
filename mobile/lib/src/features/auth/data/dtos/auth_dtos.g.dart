@@ -33,6 +33,28 @@ Map<String, dynamic> _$RegisterRequestDtoToJson(RegisterRequestDto instance) =>
       'rol': instance.rol,
     };
 
+ForgotPasswordRequestDto _$ForgotPasswordRequestDtoFromJson(
+  Map<String, dynamic> json,
+) => ForgotPasswordRequestDto(email: json['email'] as String);
+
+Map<String, dynamic> _$ForgotPasswordRequestDtoToJson(
+  ForgotPasswordRequestDto instance,
+) => <String, dynamic>{'email': instance.email};
+
+ResetPasswordRequestDto _$ResetPasswordRequestDtoFromJson(
+  Map<String, dynamic> json,
+) => ResetPasswordRequestDto(
+  token: json['token'] as String,
+  newPassword: json['newPassword'] as String,
+);
+
+Map<String, dynamic> _$ResetPasswordRequestDtoToJson(
+  ResetPasswordRequestDto instance,
+) => <String, dynamic>{
+  'token': instance.token,
+  'newPassword': instance.newPassword,
+};
+
 AuthResponseDto _$AuthResponseDtoFromJson(Map<String, dynamic> json) =>
     AuthResponseDto(
       accessToken: json['accessToken'] as String,

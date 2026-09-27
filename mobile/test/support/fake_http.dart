@@ -201,6 +201,31 @@ Map<String, dynamic> productJson({
   };
 }
 
+Map<String, dynamic> addressJson({
+  String id = '55555555-5555-5555-5555-555555555555',
+  String alias = 'Casa',
+  String calle = 'Av. Insurgentes',
+  String numero = '123',
+  String referencia = 'Portón azul',
+  String ciudad = 'CDMX',
+  double latitud = 19.4326,
+  double longitud = -99.1332,
+  bool esPredeterminada = true,
+}) {
+  return {
+    'id': id,
+    'alias': alias,
+    'calle': calle,
+    'numero': numero,
+    'referencia': referencia,
+    'ciudad': ciudad,
+    'latitud': latitud,
+    'longitud': longitud,
+    'es_predeterminada': esPredeterminada,
+    'creado_en': '2026-02-01T12:00:00Z',
+  };
+}
+
 Map<String, dynamic> pagedResponseJson({
   required List<Map<String, dynamic>> data,
   int page = 1,

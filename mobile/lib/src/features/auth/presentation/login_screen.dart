@@ -72,8 +72,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _showError(error);
         return;
       }
-      if (next.value != null && previous?.value == null) {
-        context.go('/home');
+      if (next.value case final session?) {
+        if (previous?.value == null) {
+          context.go(session.user.homePath);
+        }
       }
     });
 
@@ -151,10 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextButton(
                   onPressed: isLoading
                       ? null
-                      : () => AppSnackbar.showInfo(
-                          context,
-                          'La recuperación de contraseña estará disponible próximamente.',
-                        ),
+                      : () => context.push('/forgot-password'),
                   child: const Text('¿Olvidaste tu contraseña?'),
                 ),
                 const Divider(height: AppSpacing.xl),

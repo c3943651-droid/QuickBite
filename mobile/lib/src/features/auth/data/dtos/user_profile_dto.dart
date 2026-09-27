@@ -30,3 +30,15 @@ class UserProfileDto {
   @JsonKey(name: 'ultimo_login')
   final DateTime? ultimoLogin;
 }
+
+@JsonSerializable()
+class UpdateProfileRequestDto {
+  const UpdateProfileRequestDto({this.nombre, this.telefono});
+
+  factory UpdateProfileRequestDto.fromJson(Map<String, dynamic> json) =>
+      _$UpdateProfileRequestDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$UpdateProfileRequestDtoToJson(this);
+
+  final String? nombre;
+  final String? telefono;
+}

@@ -48,6 +48,19 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> forgotPassword({required String email}) {
+    return _remote.forgotPassword(email: email);
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String token,
+    required String newPassword,
+  }) {
+    return _remote.resetPassword(token: token, newPassword: newPassword);
+  }
+
+  @override
   Future<AuthTokens> refresh({required String refreshToken}) async {
     final dto = await _remote.refresh(refreshToken: refreshToken);
     return AuthTokens(
@@ -81,4 +94,32 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<void> clearSession() => _tokenStorage.clear();
+
+  @override
+  Future<UserProfile> fetchProfile() async {
+    final dto = await _remote.fetchProfile();
+    return UserProfile(
+      id: dto.id,
+      nombre: dto.nombre,
+      email: dto.email,
+      rol: dto.rol,
+      telefono: dto.telefono,
+      creadoEn: dto.creadoEn,
+      ultimoLogin: dto.ultimoLogin,
+    );
+  }
+
+  @override
+  Future<UserProfile> updateProfile({String? nombre, String? telefono}) async {
+    final dto = await _remote.updateProfile(nombre: nombre, telefono: telefono);
+    return UserProfile(
+      id: dto.id,
+      nombre: dto.nombre,
+      email: dto.email,
+      rol: dto.rol,
+      telefono: dto.telefono,
+      creadoEn: dto.creadoEn,
+      ultimoLogin: dto.ultimoLogin,
+    );
+  }
 }

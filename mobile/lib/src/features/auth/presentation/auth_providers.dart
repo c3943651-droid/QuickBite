@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/error/app_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/retry_policy.dart';
 import '../../../core/session/token_storage.dart';
@@ -177,6 +178,114 @@ class SessionNotifier extends AsyncNotifier<AuthSession?> {
       return null;
     }
   }
+}
+
+/// Perfil del usuario autenticado (07.1 SCR-PROF-01/02). El refresh manual
+/// se dispara desde el propio hub con `ref.invalidate`, así que la pantalla no
+/// necesita un notifier con estado propio.
+final userProfileProvider = FutureProvider.autoDispose<UserProfile>((ref) {
+  return ref.watch(authRepositoryProvider).fetchProfile();
+});
+
+/// Estado de `PUT /users/profile`. La pantalla de edición lo consume con
+/// `ref.listen`: `saved` marca el éxito y provoca volver al hub (SCR-PROF-02).
+@immutable
+class ProfileEditState {
+  const ProfileEditState({
+    this.loading = false,
+    this.saved = false,
+    this.error,
+  });
+
+  final bool loading;
+  final bool saved;
+  final Object? error;
+}
+
+final profileEditProvider =
+    NotifierProvider<ProfileEditNotifier, ProfileEditState>(
+      ProfileEditNotifier.new,
+    );
+
+class ProfileEditNotifier extends Notifier<ProfileEditState> {
+  @override
+  ProfileEditState build() => const ProfileEditState();
+
+  Future<bool> save({String? nombre, String? telefono}) async {
+    state = const ProfileEditState(loading: true);
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .updateProfile(nombre: nombre, telefono: telefono);
+      ref.invalidate(userProfileProvider);
+      state = const ProfileEditState(saved: true);
+      return true;
+    } on Object catch (error) {
+      state = ProfileEditState(error: error);
+      return false;
+    }
+  }
+}
+
+/// Estado del flujo de recuperación de contraseña (07.1 SCR-AUTH-04/05).
+///
+/// El envío no se modela con `AsyncNotifier` porque su resultado no se guarda:
+/// solo importa si terminó, y el texto que se muestra es siempre el mismo
+/// (05#D-04). [sent] permite que la pantalla cambie de formulario a confirmación.
+@immutable
+class PasswordRecoveryState {
+  const PasswordRecoveryState({
+    this.loading = false,
+    this.sent = false,
+    this.error,
+  });
+
+  final bool loading;
+  final bool sent;
+  final Object? error;
+
+  bool get isFailure => error != null;
+}
+
+final passwordRecoveryProvider =
+    NotifierProvider<PasswordRecoveryNotifier, PasswordRecoveryState>(
+      PasswordRecoveryNotifier.new,
+    );
+
+class PasswordRecoveryNotifier extends Notifier<PasswordRecoveryState> {
+  @override
+  PasswordRecoveryState build() => const PasswordRecoveryState();
+
+  Future<void> requestLink({required String email}) async {
+    state = const PasswordRecoveryState(loading: true);
+    try {
+      await ref.read(authRepositoryProvider).forgotPassword(email: email);
+      state = const PasswordRecoveryState(sent: true);
+    } on ValidationException {
+      state = const PasswordRecoveryState(sent: true);
+    } on Object catch (error) {
+      state = PasswordRecoveryState(error: error);
+    }
+  }
+
+  Future<bool> submitNewPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    state = const PasswordRecoveryState(loading: true);
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .resetPassword(token: token, newPassword: newPassword);
+      state = const PasswordRecoveryState(sent: true);
+      return true;
+    } on Object catch (error) {
+      state = PasswordRecoveryState(error: error);
+      return false;
+    }
+  }
+
+  void clear() => state = const PasswordRecoveryState();
 }
 
 Future<StoredSession?> _refreshSession(Ref ref) async {

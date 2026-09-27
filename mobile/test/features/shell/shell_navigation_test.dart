@@ -217,8 +217,22 @@ void main() {
       '/delivery/history',
       '/delivery/stats',
     ];
-    const publicRoutes = ['/login', '/register', '/forgot-password'];
-    const realScreens = {'/home', '/login', '/register'};
+    const publicRoutes = [
+      '/login',
+      '/register',
+      '/forgot-password',
+      '/reset-password',
+    ];
+    const realScreens = {
+      '/home',
+      '/login',
+      '/register',
+      '/forgot-password',
+      '/reset-password',
+      '/profile',
+      '/profile/edit',
+      '/addresses',
+    };
 
     Future<void> expectResolves(
       WidgetTester tester,
@@ -244,6 +258,46 @@ void main() {
     testWidgets('rutas de cliente', (tester) async {
       for (final path in clienteRoutes) {
         await expectResolves(tester, cliente, path);
+      }
+    });
+
+    testWidgets('el formulario de dirección resuelve en nueva y edición', (
+      tester,
+    ) async {
+      for (final entry in {
+        '/addresses/new': 'Agregar dirección',
+        '/addresses/22222222-2222-2222-2222-222222222222/edit':
+            'Editar dirección',
+      }.entries) {
+        final router = await pumpRouter(tester, cliente);
+        router.go(entry.key);
+        await settle(tester);
+
+        expect(
+          locationOf(router),
+          entry.key,
+          reason: 'la ruta ${entry.key} debe resolverse',
+        );
+        expect(
+          find.widgetWithText(AppBar, entry.value),
+          findsOneWidget,
+          reason: 'falta el encabezado de ${entry.key}',
+        );
+      }
+    });
+
+    testWidgets('un repartidor no entra a las rutas de direcciones', (
+      tester,
+    ) async {
+      final router = await pumpRouter(tester, repartidor);
+      for (final path in [
+        '/addresses',
+        '/addresses/new',
+        '/addresses/22222222-2222-2222-2222-222222222222/edit',
+      ]) {
+        router.go(path);
+        await settle(tester);
+        expect(locationOf(router), '/delivery/available', reason: 'ruta $path');
       }
     });
 
