@@ -43,6 +43,21 @@ class ProductFilterNotifier extends Notifier<ProductFilter> {
     state = state.copyWith(sort: sort, page: 1);
   }
 
+  /// Aplica de golpe los filtros de la hoja (07.1 SCR-CAT-03). Cualquier
+  /// cambio reinicia la paginación y limpia la búsqueda, porque el catálogo se
+  /// vuelve a pedir desde la primera página.
+  void applyAll(ProductFilter filter) {
+    state = ProductFilter(
+      categoryId: filter.categoryId,
+      disponible: filter.disponible,
+      sort: filter.sort,
+      precioMin: filter.precioMin,
+      precioMax: filter.precioMax,
+      page: 1,
+      limit: state.limit,
+    );
+  }
+
   void clear() {
     state = const ProductFilter();
   }

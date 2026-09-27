@@ -46,6 +46,8 @@ class CatalogRemoteDataSource {
         'search': filter.search,
       'disponible': filter.disponible,
       'orden': filter.sort.apiValue,
+      if (filter.hasPrecioMin) 'precio_min': filter.precioMin,
+      if (filter.hasPrecioMax) 'precio_max': filter.precioMax,
       'page': filter.page,
       'limit': filter.limit,
     };

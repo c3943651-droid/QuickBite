@@ -7,6 +7,7 @@ import '../../core/widgets/app_snackbar.dart';
 import '../address/presentation/address_form_screen.dart';
 import '../address/presentation/addresses_screen.dart';
 import '../auth/domain/auth_entities.dart';
+import '../search/presentation/search_screen.dart';
 import '../auth/presentation/auth_providers.dart';
 import '../auth/presentation/edit_profile_screen.dart';
 import '../auth/presentation/forgot_password_screen.dart';
@@ -115,6 +116,7 @@ const _clienteOnlyExact = {
   '/history',
   '/addresses',
   '/addresses/new',
+  '/search',
 };
 const _clienteOnlyPrefixes = ['/home', '/product/', '/order/', '/addresses/'];
 
@@ -357,6 +359,10 @@ GoRouter createRouter(
       ),
       // Rutas de detalle y tarea. Al declararse en el nivel raíz se abren
       // sobre el shell, a pantalla completa y sin barra de pestañas.
+      GoRoute(
+        path: '/search',
+        builder: (context, state) => const SearchScreen(),
+      ),
       GoRoute(
         path: '/product/:id',
         builder: (context, state) => PendingScreen(

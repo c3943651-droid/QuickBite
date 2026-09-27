@@ -61,6 +61,8 @@ void main() {
       expect(page.items.first.stockMinimo, 5);
     });
 
+    // El doc 04 §5.2 documenta `categoria_id`, pero el backend publicado en
+    // CatalogController.cs:27 acepta `categoriaId`; se envía el que usa la API real.
     test('envía los query params que espera el backend', () async {
       http.on('GET', '/products', pagedResponseJson(data: []));
 
@@ -89,6 +91,36 @@ void main() {
       await repository.getProducts(const ProductFilter(search: ''));
 
       expect(http.lastRequest().queryParameters.containsKey('search'), isFalse);
+    });
+
+    test('envía el rango de precio con los nombres de 04 §5.2', () async {
+      http.on('GET', '/products', pagedResponseJson(data: []));
+
+      await repository.getProducts(
+        const ProductFilter(precioMin: 50, precioMax: 180.5),
+      );
+
+      final query = http.lastRequest().queryParameters;
+      expect(query['precio_min'], 50);
+      expect(query['precio_max'], 180.5);
+    });
+
+    test('omite el rango de precio cuando no se filtra', () async {
+      http.on('GET', '/products', pagedResponseJson(data: []));
+
+      await repository.getProducts(const ProductFilter());
+
+      final query = http.lastRequest().queryParameters;
+      expect(query.containsKey('precio_min'), isFalse);
+      expect(query.containsKey('precio_max'), isFalse);
+    });
+
+    test('el filtro de disponibilidad se propaga a la API', () async {
+      http.on('GET', '/products', pagedResponseJson(data: []));
+
+      await repository.getProducts(const ProductFilter(disponible: false));
+
+      expect(http.lastRequest().queryParameters['disponible'], false);
     });
 
     test('traduce cada opción de orden a su valor de API', () async {

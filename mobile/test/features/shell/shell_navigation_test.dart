@@ -141,6 +141,7 @@ void main() {
         '/history',
         '/profile',
         '/addresses',
+        '/search',
         '/notifications',
         '/delivery/available',
         '/delivery/stats',
@@ -197,6 +198,7 @@ void main() {
       '/order/9',
       '/history',
       '/addresses',
+      '/search',
     ];
     const anyAuthenticated = [
       '/profile',
@@ -232,6 +234,7 @@ void main() {
       '/profile',
       '/profile/edit',
       '/addresses',
+      '/search',
     };
 
     Future<void> expectResolves(

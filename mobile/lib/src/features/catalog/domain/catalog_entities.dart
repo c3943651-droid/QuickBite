@@ -115,6 +115,8 @@ class ProductFilter extends Equatable {
     this.search,
     this.disponible = true,
     this.sort = ProductSort.relevancia,
+    this.precioMin,
+    this.precioMax,
     this.page = 1,
     this.limit = 12,
   });
@@ -123,8 +125,19 @@ class ProductFilter extends Equatable {
   final String? search;
   final bool disponible;
   final ProductSort sort;
+  final double? precioMin;
+  final double? precioMax;
   final int page;
   final int limit;
+
+  /// Un rango invertido nunca se envía: 04 §5.2 responde 400 si
+  /// `precio_min > precio_max`, así que el cliente lo descarta en origen.
+  bool get hasPrecioMin => precioMin != null && precioMin! > 0;
+
+  bool get hasPrecioMax => precioMax != null && precioMax! > 0;
+
+  bool get rangoInvertido =>
+      hasPrecioMin && hasPrecioMax && precioMin! > precioMax!;
 
   ProductFilter copyWith({
     String? categoryId,
@@ -132,6 +145,10 @@ class ProductFilter extends Equatable {
     String? search,
     bool? disponible,
     ProductSort? sort,
+    double? precioMin,
+    double? precioMax,
+    bool clearPrecioMin = false,
+    bool clearPrecioMax = false,
     int? page,
     int? limit,
   }) {
@@ -140,6 +157,8 @@ class ProductFilter extends Equatable {
       search: search ?? this.search,
       disponible: disponible ?? this.disponible,
       sort: sort ?? this.sort,
+      precioMin: clearPrecioMin ? null : (precioMin ?? this.precioMin),
+      precioMax: clearPrecioMax ? null : (precioMax ?? this.precioMax),
       page: page ?? this.page,
       limit: limit ?? this.limit,
     );
@@ -151,6 +170,8 @@ class ProductFilter extends Equatable {
     search,
     disponible,
     sort,
+    precioMin,
+    precioMax,
     page,
     limit,
   ];

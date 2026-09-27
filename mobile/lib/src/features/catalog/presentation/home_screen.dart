@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
@@ -12,6 +13,7 @@ import '../../../core/widgets/state_views.dart';
 import '../../catalog/domain/catalog_entities.dart';
 import '../../auth/presentation/auth_providers.dart';
 import 'catalog_providers.dart';
+import 'filter_sheet.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -67,7 +69,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final session = ref.watch(sessionProvider);
     final products = ref.watch(productsProvider);
     final categories = ref.watch(categoriesProvider);
-    final selectedCategory = ref.watch(productFilterProvider).categoryId;
+    final filter = ref.watch(productFilterProvider);
+    final selectedCategory = filter.categoryId;
+    final activeFilters = _activeFilterCount(filter);
     final userName = session.value?.user.nombre ?? '';
 
     return Scaffold(
@@ -104,9 +108,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 controller: _searchController,
                 onChanged: _onSearchChanged,
                 textInputAction: TextInputAction.search,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Buscar en el menú',
-                  prefixIcon: Icon(Icons.search, size: 20),
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  // 07.1 SCR-CAT-02: la búsqueda rápida filtra el catálogo; este
+                  // acceso abre la pantalla dedicada con historial.
+                  suffixIcon: IconButton(
+                    onPressed: () => context.go('/search'),
+                    icon: const Icon(Icons.travel_explore, size: 20),
+                    tooltip: 'Búsqueda avanzada',
+                  ),
                 ),
               ),
             ),
@@ -134,12 +145,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: OutlinedButton.icon(
-                  onPressed: () => AppSnackbar.showInfo(
-                    context,
-                    'Los filtros avanzados estarán disponibles próximamente.',
-                  ),
+                  onPressed: () => _openFilters(context, categories),
                   icon: const Icon(Icons.tune, size: 18),
-                  label: const Text('Filtros'),
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Filtros'),
+                      if (activeFilters > 0) ...[
+                        const SizedBox(width: AppSpacing.sm),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.quickbiteOrange,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            '$activeFilters',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 40),
                     padding: const EdgeInsets.symmetric(
@@ -152,6 +186,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(child: _buildBody(products)),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 07.1 SCR-CAT-03: cuenta cuántos filtros distintos hay activos para
+  /// mostrarlos en el botón y no obligar a abrir la hoja.
+  static int _activeFilterCount(ProductFilter filter) {
+    var count = 0;
+    if (filter.categoryId != null) count++;
+    if (filter.precioMin != null || filter.precioMax != null) count++;
+    if (!filter.disponible) count++;
+    if (filter.sort != ProductSort.relevancia) count++;
+    return count;
+  }
+
+  Future<void> _openFilters(
+    BuildContext context,
+    AsyncValue<List<Category>> categories,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => FilterSheet(
+        categories: categories.value ?? const <Category>[],
+        onClose: () => Navigator.of(context).pop(),
       ),
     );
   }

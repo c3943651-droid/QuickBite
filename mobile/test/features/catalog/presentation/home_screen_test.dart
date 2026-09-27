@@ -11,6 +11,8 @@ import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.d
 import 'package:quickbite_mobile/src/features/catalog/domain/catalog_entities.dart';
 import 'package:quickbite_mobile/src/features/catalog/domain/catalog_repository.dart';
 import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_providers.dart';
+import 'package:quickbite_mobile/src/features/catalog/presentation/filter_sheet.dart';
+import 'package:go_router/go_router.dart';
 import 'package:quickbite_mobile/src/features/catalog/presentation/home_screen.dart';
 
 const _tacos = Category(id: 'c1', nombre: 'Tacos', orden: 1, activo: true);
@@ -306,6 +308,94 @@ void main() {
       expect(container.read(productsProvider).value?.hasMore, isTrue);
       expect(find.byType(CircularProgressIndicator), findsWidgets);
       expect(find.byType(ProductCard), findsNWidgets(2));
+    });
+
+    testWidgets('el campo de búsqueda enlaza a la pantalla dedicada', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final container = ProviderContainer(
+        overrides: [
+          catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
+          authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
+          tokenStorageProvider.overrideWithValue(EmptyTokenStorage()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
+          GoRoute(
+            path: '/search',
+            builder: (_, _) =>
+                const Scaffold(body: Text('Pantalla de búsqueda')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      await tester.tap(find.byTooltip('Búsqueda avanzada'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Pantalla de búsqueda'), findsOneWidget);
+    });
+
+    testWidgets('"Filtros" abre la hoja de filtros avanzados', (tester) async {
+      await pumpHome(tester, FakeCatalogRepository());
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Filtros'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(FilterSheet), findsOneWidget);
+      expect(find.text('Aplicar filtros'), findsOneWidget);
+    });
+
+    testWidgets('"Filtros" cuenta los filtros activos', (tester) async {
+      final catalog = FakeCatalogRepository();
+      final container = await pumpHome(tester, catalog);
+
+      container
+          .read(productFilterProvider.notifier)
+          .applyAll(
+            const ProductFilter(categoryId: 'c2', precioMin: 20, precioMax: 90),
+          );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      // categoría + rango de precio = 2 filtros (el rango cuenta como uno).
+      expect(find.text('2'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Filtros'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Limpiar filtros'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aplicar filtros'));
+      await tester.pumpAndSettle();
+
+      expect(catalog.filters.last.categoryId, isNull);
+      expect(catalog.filters.last.precioMin, isNull);
+    });
+
+    testWidgets('"Filtros" no muestra contador sin filtros activos', (
+      tester,
+    ) async {
+      await pumpHome(tester, FakeCatalogRepository());
+
+      expect(find.text('Filtros'), findsOneWidget);
+      expect(find.text('0'), findsNothing);
     });
 
     testWidgets('el saludo usa el nombre del usuario autenticado', (
