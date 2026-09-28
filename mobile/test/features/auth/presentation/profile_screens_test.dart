@@ -241,6 +241,26 @@ void main() {
 
       expect(find.text('Reintentar'), findsOneWidget);
     });
+
+    testWidgets('la fila Mis direcciones navega a /addresses', (tester) async {
+      await pumpAt(tester, '/profile');
+
+      await tester.tap(find.text('Mis direcciones'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Agregar dirección'), findsOneWidget);
+    });
+
+    testWidgets('la fila Preferencias de notificaciones navega a la pantalla', (
+      tester,
+    ) async {
+      await pumpAt(tester, '/profile');
+
+      await tester.tap(find.text('Preferencias de notificaciones'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Preferencias de notificaciones'), findsOneWidget);
+    });
   });
 
   group('EditProfileScreen (07.1 SCR-PROF-02)', () {
@@ -262,6 +282,19 @@ void main() {
       await pumpAt(tester, '/profile/edit');
 
       await tester.enterText(find.byType(TextFormField).first, '');
+      await tester.ensureVisible(find.text('Guardar cambios'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Guardar cambios'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('El nombre es obligatorio.'), findsOneWidget);
+      expect(auth.updates, isEmpty);
+    });
+
+    testWidgets('un nombre con solo espacios se rechaza', (tester) async {
+      await pumpAt(tester, '/profile/edit');
+
+      await tester.enterText(find.byType(TextFormField).first, '   ');
       await tester.ensureVisible(find.text('Guardar cambios'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Guardar cambios'));

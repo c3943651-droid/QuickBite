@@ -240,6 +240,7 @@ void main() {
       '/reset-password',
       '/profile',
       '/profile/edit',
+      '/profile/notifications',
       '/addresses',
       '/search',
       '/product/7',

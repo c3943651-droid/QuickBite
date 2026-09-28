@@ -288,6 +288,18 @@ void main() {
       expect(addresses.deleteCalls, [_casa.id]);
     });
 
+    testWidgets('tocar el lápiz de edición navega a la edición de esa dirección', (
+      tester,
+    ) async {
+      await pumpAt(tester, '/addresses');
+
+      await tester.tap(find.byIcon(Icons.edit_outlined).first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Editar dirección'), findsOneWidget);
+      expect(find.text('Eliminar'), findsOneWidget);
+    });
+
     testWidgets('el FAB lleva al formulario de creación', (tester) async {
       await pumpAt(tester, '/addresses');
 
@@ -388,6 +400,43 @@ void main() {
 
       expect(find.text('La dirección ya existe.'), findsOneWidget);
       expect(find.text('Agregar dirección'), findsOneWidget);
+    });
+
+    testWidgets('crear con casilla predeterminada envía esPredeterminada true', (
+      tester,
+    ) async {
+      await pumpAt(tester, '/addresses/new');
+
+      await fill(tester, 'Calle', 'Av. Universidad');
+      await fill(tester, 'Ciudad', 'CDMX');
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(addresses.creates.single.esPredeterminada, isTrue);
+    });
+
+    testWidgets('eliminar desde el formulario de edición pide confirmación y borra', (
+      tester,
+    ) async {
+      await pumpAt(tester, '/addresses/${_oficina.id}/edit');
+
+      await tester.tap(find.text('Eliminar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Esta acción no se puede deshacer.'), findsOneWidget);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.widgetWithText(FilledButton, 'Eliminar'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(addresses.deleteCalls, [_oficina.id]);
+      expect(find.text('Casa'), findsOneWidget);
     });
   });
 }

@@ -43,6 +43,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("addresses")]
+    [HttpGet("/api/v1/addresses")]
     [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> GetAddresses(CancellationToken cancellationToken)
     {
@@ -51,6 +52,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("addresses")]
+    [HttpPost("/api/v1/addresses")]
     [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> CreateAddress([FromBody] CreateAddressRequest request, CancellationToken cancellationToken)
     {
@@ -59,6 +61,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("addresses/{id:guid}")]
+    [HttpPut("/api/v1/addresses/{id:guid}")]
     [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> UpdateAddress(Guid id, [FromBody] UpdateAddressRequest request, CancellationToken cancellationToken)
     {
@@ -67,6 +70,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("addresses/{id:guid}")]
+    [HttpDelete("/api/v1/addresses/{id:guid}")]
     [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> DeleteAddress(Guid id, CancellationToken cancellationToken)
     {
@@ -75,6 +79,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPatch("addresses/{id:guid}/set-default")]
+    [HttpPatch("/api/v1/addresses/{id:guid}/set-default")]
     [Authorize(Roles = Roles.Cliente)]
     public async Task<IActionResult> SetDefaultAddress(Guid id, CancellationToken cancellationToken)
     {

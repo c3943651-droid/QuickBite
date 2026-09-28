@@ -4,19 +4,26 @@ import 'package:quickbite_mobile/src/core/polling/polling_controller.dart';
 import 'package:quickbite_mobile/src/features/notification/domain/notification_entities.dart';
 import 'package:quickbite_mobile/src/features/notification/domain/preferencias_notificacion.dart';
 import 'package:quickbite_mobile/src/features/notification/presentation/preferencias_providers.dart';
+import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
 import 'package:quickbite_mobile/src/features/order/presentation/order_tracking_providers.dart';
 import 'package:quickbite_mobile/src/features/search/presentation/search_providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/fake_token_storage.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  Future<ProviderContainer> contenedorCon() async {
+  Future<ProviderContainer> contenedorCon([
+    Map<String, Object> guardadas = const {},
+  ]) async {
+    SharedPreferences.setMockInitialValues(guardadas);
+    final prefs = await SharedPreferences.getInstance();
     final tokenStorage = InMemoryTokenStorage();
     final container = ProviderContainer(
       overrides: [
         tokenStorageProvider.overrideWithValue(tokenStorage),
+        sharedPreferencesProvider.overrideWithValue(prefs),
       ],
     );
     addTearDown(container.dispose);
