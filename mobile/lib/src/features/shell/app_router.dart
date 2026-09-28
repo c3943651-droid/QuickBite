@@ -18,6 +18,8 @@ import '../auth/presentation/reset_password_screen.dart';
 import '../cart/presentation/cart_screen.dart';
 import '../catalog/presentation/home_screen.dart';
 import '../catalog/presentation/product_detail_screen.dart';
+import '../order/presentation/checkout_screen.dart';
+import '../order/presentation/order_confirmation_screen.dart';
 import 'pending_screen.dart';
 import 'splash_screen.dart';
 
@@ -371,9 +373,12 @@ GoRouter createRouter(
       ),
       GoRoute(
         path: '/checkout',
-        builder: (context, state) => const PendingScreen(
-          location: '/checkout',
-          title: 'Confirmación de pedido',
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: '/order/confirmation/:id',
+        builder: (context, state) => OrderConfirmationScreen(
+          orderId: state.pathParameters['id']!,
         ),
       ),
       GoRoute(

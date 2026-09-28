@@ -190,11 +190,12 @@ void main() {
     });
   });
 
-  group('las 26 rutas de 07 §10.2', () {
+  group('las 27 rutas de 07 §10.2', () {
     const clienteRoutes = [
       '/product/7',
       '/cart',
       '/checkout',
+      '/order/confirmation/9',
       '/order/9',
       '/history',
       '/addresses',
@@ -228,6 +229,8 @@ void main() {
     const realScreens = {
       '/home',
       '/cart',
+      '/checkout',
+      '/order/confirmation/9',
       '/login',
       '/register',
       '/forgot-password',

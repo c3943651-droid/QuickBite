@@ -66,5 +66,30 @@ void main() {
       expect(find.text('Historial'), findsOneWidget);
       expect(find.text('Perfil'), findsOneWidget);
     });
+
+    testWidgets('/checkout abre el checkout real, no una pantalla pendiente', (
+      tester,
+    ) async {
+      final router = await pumpRouter(tester, _session);
+      router.go('/checkout');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(locationOf(router), '/checkout');
+      expect(find.text('Confirmar pedido'), findsOneWidget);
+      expect(find.text('Confirmación de pedido'), findsNothing);
+    });
+
+    testWidgets('/order/confirmation/:id abre la confirmación real', (
+      tester,
+    ) async {
+      final router = await pumpRouter(tester, _session);
+      router.go('/order/confirmation/o1');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(locationOf(router), '/order/confirmation/o1');
+      expect(find.text('No encontramos este pedido'), findsOneWidget);
+    });
   });
 }
