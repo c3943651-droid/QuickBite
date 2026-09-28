@@ -1,9 +1,29 @@
-**Versión:** 3.1
-**Fecha:** 14/09/2026
-**Estado:** Aprobado
-**Audiencia:** React Native
+**Versión:** 3.2
+**Fecha:** 26/09/2026
+**Estado:** Superado (parcial) — ver aviso de vigencia
+**Audiencia:** Flutter
 **Depende de:** 00, 01, 02, 03, 04, 05, 06
-**Referenciado por:** 07.1, 09, 10, 12, 13
+**Referenciado por:** 07.1, 07.2, 07.3, 09, 10, 12, 13
+**Superado por:** 07.2 (herramientas y línea base) · 07.3 (orden de ejecución)
+
+---
+
+> ## ⚠️ Aviso de vigencia
+>
+> **Este documento está superado para el trabajo en Flutter.** Su título dice «Flutter» pero su
+> cuerpo describe **React Native** (axios, React Query, Zustand, react-native-keychain,
+> FlatList) y no contiene ninguna mención a Flutter. No lo uses como guía de implementación.
+>
+> | Qué tomar de este documento | Dónde está vigente |
+> | :--- | :--- |
+> | **Conceptos**: alcance por perfiles, capas, repositorios, estrategia de datos, seguridad, pruebas | Este documento (siguen siendo válidos) |
+> | **Herramientas**: estado, red, DTOs, estructura de carpetas | **07.2** — `Riverpod`, `Dio`, `go_router`, `json_serializable` |
+> | **Orden de ejecución** de las 45 pantallas | **07.3** — Plan de Implementación por Hitos |
+> | **Pantallas** (secciones, contenido, acciones, estados) | **07.1** — vigente, agnóstica de framework |
+> | **Tokens de diseño** | **09** — vigente |
+>
+> Regla de lectura: para decidir *qué construir* y *en qué orden*, lee **07.3**. Para decidir
+> *con qué herramientas*, lee **07.2**. Este documento solo aporta el modelo mental.
 
 ---
 
