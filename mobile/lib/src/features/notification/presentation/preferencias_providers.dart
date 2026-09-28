@@ -14,11 +14,10 @@ final preferenciasRepositoryProvider = Provider<PreferenciasRepository>(
 /// [AsyncNotifier] porque lee de [SharedPreferences] al entrar; cada cambio se
 /// aplica al instante en memoria y se persiste en segundo plano.
 final preferenciasNotificacionProvider =
-    AsyncNotifierProvider<PreferenciasNotificacionNotifier,
-        PreferenciasNotificacion>(
-      PreferenciasNotificacionNotifier.new,
-      retry: noAutoRetry,
-    );
+    AsyncNotifierProvider<
+      PreferenciasNotificacionNotifier,
+      PreferenciasNotificacion
+    >(PreferenciasNotificacionNotifier.new, retry: noAutoRetry);
 
 class PreferenciasNotificacionNotifier
     extends AsyncNotifier<PreferenciasNotificacion> {

@@ -38,6 +38,7 @@ class DioClient {
     required AppConfig config,
     required TokenStorage tokenStorage,
     SessionRefreshCallback? onRefresh,
+    void Function()? onSessionInvalid,
     HttpClientAdapter? httpClientAdapter,
   }) : dio = buildDio(config, httpClientAdapter) {
     dio.interceptors.add(
@@ -45,6 +46,7 @@ class DioClient {
         tokenStorage: tokenStorage,
         onRefresh: onRefresh ?? _unsupportedRefresh,
         dioProvider: () => dio,
+        onSessionInvalid: onSessionInvalid,
       ),
     );
   }

@@ -6,6 +6,7 @@ import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/notification_badge.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/widgets/state_views.dart';
 import '../../notification/presentation/notification_providers.dart';
 import '../domain/auth_entities.dart';
 import 'auth_providers.dart';
@@ -21,8 +22,10 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Perfil')),
       body: profile.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => _ProfileError(
-          error: error,
+        error: (error, _) => ErrorStateView(
+          message: error is AppException
+              ? error.userMessage
+              : 'No pudimos cargar tu perfil. Inténtalo de nuevo.',
           onRetry: () => ref.invalidate(userProfileProvider),
         ),
         data: (data) => _ProfileBody(profile: data),
@@ -197,35 +200,6 @@ class _Row extends StatelessWidget {
               child: const Icon(Icons.chevron_right),
             ),
       onTap: onTap,
-    );
-  }
-}
-
-class _ProfileError extends ConsumerWidget {
-  const _ProfileError({required this.error, required this.onRetry});
-
-  final Object error;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final failure = error;
-    final message = failure is AppException
-        ? failure.userMessage
-        : 'No pudimos cargar tu perfil. Inténtalo de nuevo.';
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: AppSpacing.md),
-            PrimaryButton(label: 'Reintentar', onPressed: onRetry),
-          ],
-        ),
-      ),
     );
   }
 }

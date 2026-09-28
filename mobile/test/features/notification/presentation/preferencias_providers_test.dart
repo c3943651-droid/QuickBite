@@ -34,7 +34,9 @@ void main() {
     test('carga los valores por defecto sin datos guardados', () async {
       final container = await contenedorCon();
 
-      final prefs = await container.read(preferenciasNotificacionProvider.future);
+      final prefs = await container.read(
+        preferenciasNotificacionProvider.future,
+      );
 
       expect(prefs, const PreferenciasNotificacion());
     });
@@ -76,9 +78,9 @@ void main() {
     });
 
     test('un intervalo guardado fuera de rango se acota al leer', () async {
-      final container = await contenedorCon(
-        {'quickbite_prefs_intervalo_segundos': 5},
-      );
+      final container = await contenedorCon({
+        'quickbite_prefs_intervalo_segundos': 5,
+      });
       await container.read(preferenciasNotificacionProvider.future);
 
       expect(

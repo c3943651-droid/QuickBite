@@ -54,9 +54,8 @@ class PreferenciasNotificacion extends Equatable {
   PreferenciasNotificacion conVibracion(bool activo) =>
       copiar(vibracion: activo);
 
-  PreferenciasNotificacion conIntervalo(Duration intervalo) => copiar(
-    intervaloActualizacion: FrecuenciaPolling.normalizar(intervalo),
-  );
+  PreferenciasNotificacion conIntervalo(Duration intervalo) =>
+      copiar(intervaloActualizacion: FrecuenciaPolling.normalizar(intervalo));
 
   PreferenciasNotificacion copiar({
     bool? pedidoNuevo,
@@ -75,7 +74,8 @@ class PreferenciasNotificacion extends Equatable {
     recordatorio: recordatorio ?? this.recordatorio,
     sonido: sonido ?? this.sonido,
     vibracion: vibracion ?? this.vibracion,
-    intervaloActualizacion: intervaloActualizacion ?? this.intervaloActualizacion,
+    intervaloActualizacion:
+        intervaloActualizacion ?? this.intervaloActualizacion,
   );
 
   @override

@@ -32,6 +32,7 @@ final dioProvider = Provider<DioClient>((ref) {
     config: ref.watch(appConfigProvider),
     tokenStorage: ref.watch(tokenStorageProvider),
     onRefresh: () => _refreshSession(ref),
+    onSessionInvalid: () => _expireSession(ref),
     httpClientAdapter: ref.watch(httpClientAdapterProvider),
   );
 });

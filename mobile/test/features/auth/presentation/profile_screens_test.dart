@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/error/app_exception.dart';
 import 'package:quickbite_mobile/src/core/session/token_storage.dart';
+import 'package:quickbite_mobile/src/core/widgets/state_views.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_repository.dart';
 import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
@@ -240,6 +241,21 @@ void main() {
       await pumpAt(tester, '/profile');
 
       expect(find.text('Reintentar'), findsOneWidget);
+    });
+
+    testWidgets('el error de carga usa ErrorStateView con mensaje del error', (
+      tester,
+    ) async {
+      auth = FakeProfileRepository(fetchError: const NetworkException());
+      await pumpAt(tester, '/profile');
+
+      expect(find.byType(ErrorStateView), findsOneWidget);
+      expect(
+        find.text(
+          'No hay conexión con el servidor. Verifica tu red e inténtalo de nuevo.',
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('la fila Mis direcciones navega a /addresses', (tester) async {

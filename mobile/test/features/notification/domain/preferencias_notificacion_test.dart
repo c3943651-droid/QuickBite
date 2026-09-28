@@ -56,9 +56,7 @@ void main() {
         FrecuenciaPolling.opciones.first,
       );
       expect(
-        prefs
-            .conIntervalo(const Duration(hours: 2))
-            .intervaloActualizacion,
+        prefs.conIntervalo(const Duration(hours: 2)).intervaloActualizacion,
         FrecuenciaPolling.opciones.last,
       );
     });

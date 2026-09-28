@@ -36,10 +36,7 @@ class PreferenciasRepository {
 
   Future<void> save(PreferenciasNotificacion prefs) async {
     await _preferences.setBool('${_prefijo}pedido_nuevo', prefs.pedidoNuevo);
-    await _preferences.setBool(
-      '${_prefijo}cambio_estado',
-      prefs.cambioEstado,
-    );
+    await _preferences.setBool('${_prefijo}cambio_estado', prefs.cambioEstado);
     await _preferences.setBool('${_prefijo}asignacion', prefs.asignacion);
     await _preferences.setBool('${_prefijo}sistema', prefs.sistema);
     await _preferences.setBool('${_prefijo}recordatorio', prefs.recordatorio);
@@ -80,8 +77,6 @@ class PreferenciasRepository {
     } on Object {
       return porDefecto;
     }
-    return FrecuenciaPolling.normalizar(
-      Duration(seconds: valor),
-    ).inSeconds;
+    return FrecuenciaPolling.normalizar(Duration(seconds: valor)).inSeconds;
   }
 }

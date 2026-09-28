@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/notification_badge.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../core/widgets/scrollable_fill.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../catalog/domain/catalog_entities.dart';
 import '../../auth/presentation/auth_providers.dart';
@@ -221,7 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildBody(AsyncValue<ProductPage> products) {
     return switch (products) {
-      AsyncError(:final error) => _ScrollableFill(
+      AsyncError(:final error) => ScrollableFill(
         child: ErrorStateView(
           message: error is Exception
               ? _messageFor(error)
@@ -229,7 +230,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onRetry: () => ref.read(productsProvider.notifier).refresh(),
         ),
       ),
-      AsyncData(:final value) when value.items.isEmpty => const _ScrollableFill(
+      AsyncData(:final value) when value.items.isEmpty => const ScrollableFill(
         child: EmptyStateView(message: 'No hay productos disponibles'),
       ),
       AsyncData(:final value) => GridView.builder(
@@ -340,25 +341,6 @@ class _CategoryChips extends StatelessWidget {
             ),
           ),
       ],
-    );
-  }
-}
-
-class _ScrollableFill extends StatelessWidget {
-  const _ScrollableFill({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: child,
-        ),
-      ),
     );
   }
 }

@@ -51,9 +51,7 @@ void main() {
   }
 
   group('NotificationPreferencesScreen (07.1 SCR-PROF-08)', () {
-    testWidgets('muestra los cinco tipos, sonido y vibración', (
-      tester,
-    ) async {
+    testWidgets('muestra los cinco tipos, sonido y vibración', (tester) async {
       await pumpPreferencias(tester);
 
       expect(find.text('Preferencias de notificaciones'), findsOneWidget);
@@ -75,10 +73,16 @@ void main() {
     testWidgets('los cinco tipos arrancan encendidos', (tester) async {
       await pumpPreferencias(tester);
 
-      final switches = tester.widgetList<SwitchListTile>(find.byType(SwitchListTile));
+      final switches = tester.widgetList<SwitchListTile>(
+        find.byType(SwitchListTile),
+      );
       expect(switches, hasLength(7));
       for (final tile in switches) {
-        expect(tile.value, isTrue, reason: '${tile.title} debería estar activo');
+        expect(
+          tile.value,
+          isTrue,
+          reason: '${tile.title} debería estar activo',
+        );
       }
     });
 

@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/error/app_exception.dart';
 import '../../../core/polling/polling_controller.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/state_views.dart';
 import '../domain/notification_entities.dart';
 import '../domain/preferencias_notificacion.dart';
 import 'preferencias_providers.dart';
@@ -25,7 +27,10 @@ class NotificationPreferencesScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Preferencias de notificaciones')),
       body: preferencias.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => _ErrorBody(
+        error: (error, _) => ErrorStateView(
+          message: error is AppException
+              ? error.userMessage
+              : 'No pudimos leer tus preferencias.',
           onRetry: () => ref.invalidate(preferenciasNotificacionProvider),
         ),
         data: (data) => _Body(preferencias: data),
@@ -51,28 +56,22 @@ class _Body extends ConsumerWidget {
           context,
           etiqueta: 'Pedidos nuevos',
           activo: preferencias.pedidoNuevo,
-          onChanged: (v) => notifier.actualizarTipo(
-            TipoNotificacion.pedidoNuevo,
-            v,
-          ),
+          onChanged: (v) =>
+              notifier.actualizarTipo(TipoNotificacion.pedidoNuevo, v),
         ),
         _interruptor(
           context,
           etiqueta: 'Cambios de estado',
           activo: preferencias.cambioEstado,
-          onChanged: (v) => notifier.actualizarTipo(
-            TipoNotificacion.cambioEstado,
-            v,
-          ),
+          onChanged: (v) =>
+              notifier.actualizarTipo(TipoNotificacion.cambioEstado, v),
         ),
         _interruptor(
           context,
           etiqueta: 'Asignaciones',
           activo: preferencias.asignacion,
-          onChanged: (v) => notifier.actualizarTipo(
-            TipoNotificacion.asignacion,
-            v,
-          ),
+          onChanged: (v) =>
+              notifier.actualizarTipo(TipoNotificacion.asignacion, v),
         ),
         _interruptor(
           context,
@@ -85,10 +84,8 @@ class _Body extends ConsumerWidget {
           context,
           etiqueta: 'Recordatorios',
           activo: preferencias.recordatorio,
-          onChanged: (v) => notifier.actualizarTipo(
-            TipoNotificacion.recordatorio,
-            v,
-          ),
+          onChanged: (v) =>
+              notifier.actualizarTipo(TipoNotificacion.recordatorio, v),
         ),
         const Divider(height: AppSpacing.xl),
         const _Seccion('Alertas'),
@@ -190,33 +187,6 @@ class _Seccion extends StatelessWidget {
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
           color: AppColors.quickbiteOrange,
           fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.onRetry});
-
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'No pudimos leer tus preferencias.',
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            FilledButton(onPressed: onRetry, child: const Text('Reintentar')),
-          ],
         ),
       ),
     );
