@@ -15,7 +15,9 @@ import '../auth/presentation/login_screen.dart';
 import '../auth/presentation/profile_screen.dart';
 import '../auth/presentation/register_screen.dart';
 import '../auth/presentation/reset_password_screen.dart';
+import '../cart/presentation/cart_screen.dart';
 import '../catalog/presentation/home_screen.dart';
+import '../catalog/presentation/product_detail_screen.dart';
 import 'pending_screen.dart';
 import 'splash_screen.dart';
 
@@ -235,8 +237,7 @@ GoRouter createRouter(
             routes: [
               GoRoute(
                 path: '/cart',
-                builder: (context, state) =>
-                    const PendingScreen(location: '/cart', title: 'Carrito'),
+                builder: (context, state) => const CartScreen(),
               ),
             ],
           ),
@@ -365,10 +366,8 @@ GoRouter createRouter(
       ),
       GoRoute(
         path: '/product/:id',
-        builder: (context, state) => PendingScreen(
-          location: state.uri.path,
-          title: 'Detalle de producto',
-        ),
+        builder: (context, state) =>
+            ProductDetailScreen(productoId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/checkout',

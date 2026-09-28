@@ -52,11 +52,18 @@ class ErrorStateView extends StatelessWidget {
     required this.message,
     this.onRetry,
     this.retryLabel = 'Reintentar',
+    this.actionLabel,
+    this.onAction,
   });
 
   final String message;
   final VoidCallback? onRetry;
   final String retryLabel;
+
+  /// Acción secundaria para cuando reintentar no tiene sentido (por ejemplo, un
+  /// recurso que ya no existe): salir a otra pantalla en lugar de insistir.
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +90,10 @@ class ErrorStateView extends StatelessWidget {
                 width: 200,
                 child: SecondaryButton(label: retryLabel, onPressed: onRetry),
               ),
+            ],
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              TextButton(onPressed: onAction, child: Text(actionLabel!)),
             ],
           ],
         ),

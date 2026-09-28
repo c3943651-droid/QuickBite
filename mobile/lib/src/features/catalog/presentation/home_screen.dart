@@ -6,12 +6,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/currency_formatter.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../catalog/domain/catalog_entities.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../cart/presentation/cart_providers.dart';
 import 'catalog_providers.dart';
 import 'filter_sheet.dart';
 
@@ -250,16 +250,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: CircularProgressIndicator(strokeWidth: 2),
             );
           }
+          final producto = value.items[index];
           return ProductCard(
-            product: value.items[index],
-            onTap: () => AppSnackbar.showInfo(
-              context,
-              '${value.items[index].nombre} · ${CurrencyFormatter.format(value.items[index].precio)}',
-            ),
-            onQuickAdd: () => AppSnackbar.showInfo(
-              context,
-              'El carrito llegará en el próximo hito.',
-            ),
+            product: producto,
+            onTap: () => context.push('/product/${producto.id}'),
+            onQuickAdd: producto.disponible
+                ? () async {
+                    try {
+                      await ref
+                          .read(cartProvider.notifier)
+                          .addItem(productoId: producto.id, cantidad: 1);
+                      if (context.mounted) {
+                        AppSnackbar.showSuccess(context, 'Agregado al carrito');
+                      }
+                    } on Exception {
+                      if (context.mounted) {
+                        AppSnackbar.showError(
+                          context,
+                          'No se pudo agregar al carrito.',
+                        );
+                      }
+                    }
+                  }
+                : null,
           );
         },
       ),

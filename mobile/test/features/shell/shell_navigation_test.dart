@@ -227,6 +227,7 @@ void main() {
     ];
     const realScreens = {
       '/home',
+      '/cart',
       '/login',
       '/register',
       '/forgot-password',
@@ -235,6 +236,7 @@ void main() {
       '/profile/edit',
       '/addresses',
       '/search',
+      '/product/7',
     };
 
     Future<void> expectResolves(

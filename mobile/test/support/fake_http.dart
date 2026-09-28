@@ -226,6 +226,37 @@ Map<String, dynamic> addressJson({
   };
 }
 
+/// Carrito tal como lo devuelve hoy la API (04 §6.1): `id`, `items` y `total`.
+/// `subtotal` y `costoEnvio` todavía no los emite el backend, así que solo se
+/// incluyen cuando el test los necesita.
+Map<String, dynamic> cartJson({
+  String id = '77777777-7777-7777-7777-777777777777',
+  String itemId = '44444444-4444-4444-4444-444444444444',
+  String productoId = '11111111-1111-1111-1111-111111111111',
+  String nombre = 'Tacos al pastor',
+  double precio = 85.50,
+  int cantidad = 2,
+  List<String> opciones = const ['Extra queso'],
+  double? itemSubtotal = 171.00,
+  double? total = 171.00,
+}) {
+  return {
+    'id': id,
+    'items': [
+      {
+        'id': itemId,
+        'productoId': productoId,
+        'nombre': nombre,
+        'precio': precio,
+        'cantidad': cantidad,
+        'opciones': opciones,
+        'subtotal': ?itemSubtotal,
+      },
+    ],
+    'total': total ?? 0,
+  };
+}
+
 Map<String, dynamic> pagedResponseJson({
   required List<Map<String, dynamic>> data,
   int page = 1,

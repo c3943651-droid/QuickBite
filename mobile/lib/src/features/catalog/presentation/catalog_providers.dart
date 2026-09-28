@@ -18,6 +18,19 @@ final categoriesProvider = FutureProvider<List<Category>>(
   retry: noAutoRetry,
 );
 
+/// 07.1 SCR-CAT-04 — la ficha se pide sola por su id; producto y opciones van
+/// por separado porque el backend los expone en dos endpoints.
+final productProvider = FutureProvider.family<Product, String>(
+  (ref, id) => ref.watch(catalogRepositoryProvider).getProduct(id),
+  retry: noAutoRetry,
+);
+
+final productOptionsProvider =
+    FutureProvider.family<List<ProductOption>, String>(
+      (ref, id) => ref.watch(catalogRepositoryProvider).getProductOptions(id),
+      retry: noAutoRetry,
+    );
+
 final productFilterProvider =
     NotifierProvider<ProductFilterNotifier, ProductFilter>(
       ProductFilterNotifier.new,

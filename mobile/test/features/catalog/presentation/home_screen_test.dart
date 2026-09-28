@@ -10,10 +10,13 @@ import 'package:quickbite_mobile/src/features/auth/domain/auth_repository.dart';
 import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
 import 'package:quickbite_mobile/src/features/catalog/domain/catalog_entities.dart';
 import 'package:quickbite_mobile/src/features/catalog/domain/catalog_repository.dart';
+import 'package:quickbite_mobile/src/features/cart/presentation/cart_providers.dart';
 import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_providers.dart';
 import 'package:quickbite_mobile/src/features/catalog/presentation/filter_sheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quickbite_mobile/src/features/catalog/presentation/home_screen.dart';
+
+import '../../../support/cart_fakes.dart';
 
 const _tacos = Category(id: 'c1', nombre: 'Tacos', orden: 1, activo: true);
 const _bebidas = Category(id: 'c2', nombre: 'Bebidas', orden: 2, activo: true);
@@ -152,10 +155,12 @@ class EmptyTokenStorage implements TokenStorage {
 }
 
 void main() {
-  Future<ProviderContainer> pumpHome(
+  Future<({ProviderContainer container, FakeCartRepository cart})> pumpHome(
     WidgetTester tester,
-    FakeCatalogRepository catalog,
-  ) async {
+    FakeCatalogRepository catalog, {
+    FakeCartRepository? cart,
+  }) async {
+    final carrito = cart ?? FakeCartRepository();
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -163,6 +168,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         catalogRepositoryProvider.overrideWithValue(catalog),
+        cartRepositoryProvider.overrideWithValue(carrito),
         authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
         tokenStorageProvider.overrideWithValue(EmptyTokenStorage()),
       ],
@@ -179,7 +185,7 @@ void main() {
     // forma indefinida y pumpAndSettle nunca converge.
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    return container;
+    return (container: container, cart: carrito);
   }
 
   group('HomeScreen', () {
@@ -281,31 +287,44 @@ void main() {
       expect(find.text('Bebidas'), findsNothing);
     });
 
-    testWidgets('el quick-add no promete un carrito inexistente', (
-      tester,
-    ) async {
-      await pumpHome(tester, FakeCatalogRepository());
+    testWidgets('el quick-add mete el producto en el carrito', (tester) async {
+      final pumped = await pumpHome(tester, FakeCatalogRepository());
 
       await tester.tap(find.byIcon(Icons.add_circle).first);
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
-      expect(
-        find.text('El carrito llegará en el próximo hito.'),
-        findsOneWidget,
-      );
-      expect(find.text('Agregado al carrito'), findsNothing);
+      expect(pumped.cart.adds.single.productoId, 'p1');
+      expect(pumped.cart.adds.single.cantidad, 1);
+      expect(find.text('Agregado al carrito'), findsOneWidget);
+    });
+
+    testWidgets('el quick-add no ofrece productos agotados', (tester) async {
+      final catalog = FakeCatalogRepository()
+        ..products = const [
+          Product(
+            id: 'p9',
+            nombre: 'Sopa del día',
+            precio: 60,
+            disponible: false,
+          ),
+        ];
+
+      await pumpHome(tester, catalog);
+
+      expect(find.byIcon(Icons.add_circle), findsNothing);
     });
 
     testWidgets('añade un indicador de carga al final si hay más páginas', (
       tester,
     ) async {
       // La paginación en sí se verifica en providers_test; aquí solo el indicador.
-      final container = await pumpHome(
+      final pumped = await pumpHome(
         tester,
         FakeCatalogRepository(totalPages: 3),
       );
 
-      expect(container.read(productsProvider).value?.hasMore, isTrue);
+      expect(pumped.container.read(productsProvider).value?.hasMore, isTrue);
       expect(find.byType(CircularProgressIndicator), findsWidgets);
       expect(find.byType(ProductCard), findsNWidgets(2));
     });
@@ -353,6 +372,48 @@ void main() {
       expect(find.text('Pantalla de búsqueda'), findsOneWidget);
     });
 
+    testWidgets('tocar un producto abre su detalle', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final container = ProviderContainer(
+        overrides: [
+          catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
+          authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
+          tokenStorageProvider.overrideWithValue(EmptyTokenStorage()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
+          GoRoute(
+            path: '/product/:id',
+            builder: (_, state) => Scaffold(
+              body: Text('Detalle de ${state.pathParameters['id']}'),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      await tester.tap(find.text('Tacos al pastor'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Detalle de p1'), findsOneWidget);
+    });
+
     testWidgets('"Filtros" abre la hoja de filtros avanzados', (tester) async {
       await pumpHome(tester, FakeCatalogRepository());
 
@@ -365,9 +426,9 @@ void main() {
 
     testWidgets('"Filtros" cuenta los filtros activos', (tester) async {
       final catalog = FakeCatalogRepository();
-      final container = await pumpHome(tester, catalog);
+      final pumped = await pumpHome(tester, catalog);
 
-      container
+      pumped.container
           .read(productFilterProvider.notifier)
           .applyAll(
             const ProductFilter(categoryId: 'c2', precioMin: 20, precioMax: 90),

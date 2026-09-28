@@ -5,7 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:quickbite_mobile/src/core/config/app_config.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
 import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
+import 'package:quickbite_mobile/src/features/cart/presentation/cart_providers.dart';
 import 'package:quickbite_mobile/src/features/shell/app_router.dart';
+
+import 'cart_fakes.dart';
 
 const testConfig = AppConfig(
   apiBaseUrl: 'https://api.test',
@@ -59,6 +62,7 @@ Future<GoRouter> pumpRouter(
       overrides: [
         appConfigProvider.overrideWithValue(testConfig),
         sessionProvider.overrideWith(() => _FixedSessionNotifier(session)),
+        cartRepositoryProvider.overrideWithValue(FakeCartRepository()),
       ],
       child: MaterialApp.router(routerConfig: router),
     ),
