@@ -5,17 +5,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quickbite_mobile/src/core/error/app_exception.dart';
 import 'package:quickbite_mobile/src/core/polling/polling_controller.dart';
 import 'package:quickbite_mobile/src/core/widgets/status_timeline.dart';
+import 'package:quickbite_mobile/src/features/notification/presentation/preferencias_providers.dart';
 import 'package:quickbite_mobile/src/features/order/domain/order_entities.dart';
 import 'package:quickbite_mobile/src/features/order/domain/order_repository.dart';
 
 import 'checkout_providers.dart';
 
-/// Frecuencia del polling de seguimiento. 07.3 H5.3 la sobreescribe con la
-/// preferencia de la persona usuaria cuando exista; el rango permitido lo acota
-/// [FrecuenciaPolling.normalizar].
-final intervaloPollingProvider = Provider<Duration>(
-  (ref) => FrecuenciaPolling.porDefecto,
-);
+/// Frecuencia del polling de seguimiento (07.1 SCR-PROF-08, 05#D-01).
+///
+/// Sale de la preferencia local de la persona usuaria; mientras esa preferencia
+/// aún no se ha leído de disco se usa el valor por defecto, y el rango permitido
+/// lo acota [FrecuenciaPolling.normalizar]. El `select` hace que el seguimiento
+/// solo se recomponga cuando la duración cambia de verdad, no cuando termina la
+/// lectura inicial.
+final intervaloPollingProvider = Provider<Duration>((ref) {
+  final intervalo = ref.watch(
+    preferenciasNotificacionProvider.select(
+      (preferencias) => preferencias.value?.intervaloActualizacion,
+    ),
+  );
+  return intervalo ?? FrecuenciaPolling.porDefecto;
+});
 
 /// Seguimiento de un pedido (07.1 SCR-ORDER-01).
 ///

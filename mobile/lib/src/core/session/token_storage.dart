@@ -44,9 +44,7 @@ class SecureTokenStorage implements TokenStorage {
   }
 
   @override
-  Future<String?> readAccessToken() => _storage.read(key: _accessKey);
-
-  @override
+  Future<void> initialize() async {}
   Future<void> save(StoredSession session) async {
     await _storage.write(key: _accessKey, value: session.accessToken);
     await _storage.write(key: _refreshKey, value: session.refreshToken);

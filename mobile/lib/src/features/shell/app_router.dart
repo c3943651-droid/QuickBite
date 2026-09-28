@@ -20,6 +20,7 @@ import '../catalog/presentation/home_screen.dart';
 import '../catalog/presentation/product_detail_screen.dart';
 import '../order/presentation/checkout_screen.dart';
 import '../order/presentation/order_confirmation_screen.dart';
+import '../notification/presentation/notification_preferences_screen.dart';
 import '../notification/presentation/notifications_screen.dart';
 import '../order/presentation/order_detail_screen.dart';
 import '../order/presentation/orders_screen.dart';
@@ -280,10 +281,8 @@ GoRouter createRouter(
                   ),
                   GoRoute(
                     path: 'notifications',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/notifications',
-                      title: 'Preferencias de notificaciones',
-                    ),
+                    builder: (context, state) =>
+                        const NotificationPreferencesScreen(),
                   ),
                   GoRoute(
                     path: 'appearance',
@@ -318,6 +317,20 @@ GoRouter createRouter(
                     builder: (context, state) => const PendingScreen(
                       location: '/profile/advanced',
                       title: 'Avanzado',
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'language',
+                    builder: (context, state) => const PendingScreen(
+                      location: '/profile/language',
+                      title: 'Idioma y región',
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'delete-account',
+                    builder: (context, state) => const PendingScreen(
+                      location: '/profile/delete-account',
+                      title: 'Eliminar cuenta',
                     ),
                   ),
                 ],
