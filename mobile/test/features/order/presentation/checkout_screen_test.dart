@@ -23,7 +23,12 @@ const _direcciones = [
     alias: 'Casa',
     esPredeterminada: true,
   ),
-  Address(id: 'a2', calle: 'Av. Insurgentes 100', ciudad: 'CDMX', alias: 'Oficina'),
+  Address(
+    id: 'a2',
+    calle: 'Av. Insurgentes 100',
+    ciudad: 'CDMX',
+    alias: 'Oficina',
+  ),
 ];
 
 void main() {
@@ -60,11 +65,18 @@ void main() {
         GoRoute(path: '/checkout', builder: (_, _) => const CheckoutScreen()),
         GoRoute(
           path: '/order/confirmation/:id',
-          builder: (_, state) =>
-              Scaffold(body: Text('Confirmación real ${state.pathParameters['id']}')),
+          builder: (_, state) => Scaffold(
+            body: Text('Confirmación real ${state.pathParameters['id']}'),
+          ),
         ),
-        GoRoute(path: '/addresses/new', builder: (_, _) => const Scaffold(body: Text('Nueva dirección'))),
-        GoRoute(path: '/cart', builder: (_, _) => const Scaffold(body: Text('Carrito real'))),
+        GoRoute(
+          path: '/addresses/new',
+          builder: (_, _) => const Scaffold(body: Text('Nueva dirección')),
+        ),
+        GoRoute(
+          path: '/cart',
+          builder: (_, _) => const Scaffold(body: Text('Carrito real')),
+        ),
       ],
     );
     addTearDown(router.dispose);
@@ -109,7 +121,9 @@ void main() {
       expect(container.read(checkoutDireccionProvider)?.id, 'a2');
     });
 
-    testWidgets('sin direcciones solo ofrece agregar una nueva', (tester) async {
+    testWidgets('sin direcciones solo ofrece agregar una nueva', (
+      tester,
+    ) async {
       await pumpCheckout(tester, cart: carritoLleno(), direcciones: const []);
 
       expect(find.text('Agregar nueva dirección'), findsOneWidget);
@@ -165,7 +179,9 @@ void main() {
       expect(find.text(r'$216.00'), findsWidgets);
     });
 
-    testWidgets('el botón principal lleva el total a confirmar', (tester) async {
+    testWidgets('el botón principal lleva el total a confirmar', (
+      tester,
+    ) async {
       await pumpCheckout(tester, cart: carritoLleno());
 
       expect(find.text(r'Confirmar pedido - $171.00'), findsOneWidget);
@@ -183,7 +199,9 @@ void main() {
       expect(container.read(checkoutProvider).notas, 'Tocar el timbre');
     });
 
-    testWidgets('confirma el pedido y navega a la confirmación', (tester) async {
+    testWidgets('confirma el pedido y navega a la confirmación', (
+      tester,
+    ) async {
       await pumpCheckout(tester, cart: carritoLleno());
 
       await tester.tap(find.text(r'Confirmar pedido - $171.00'));
@@ -215,26 +233,26 @@ void main() {
       );
     });
 
-    testWidgets('muestra el error de stock insuficiente sin limpiar el carrito', (
+    testWidgets(
+      'muestra el error de stock insuficiente sin limpiar el carrito',
+      (tester) async {
+        orderRepository.error = const ValidationException(
+          'Stock insuficiente: Tacos al pastor',
+        );
+        await pumpCheckout(tester, cart: carritoLleno());
+
+        await tester.tap(find.text(r'Confirmar pedido - $171.00'));
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('Stock insuficiente'), findsWidgets);
+        expect(find.text('Confirmación real o1'), findsNothing);
+        expect(container.read(cartProvider).requireValue.isEmpty, isFalse);
+      },
+    );
+
+    testWidgets('el botón se bloquea mientras valida el pedido', (
       tester,
     ) async {
-      orderRepository.error = const ValidationException(
-        'Stock insuficiente: Tacos al pastor',
-      );
-      await pumpCheckout(tester, cart: carritoLleno());
-
-      await tester.tap(find.text(r'Confirmar pedido - $171.00'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.textContaining('Stock insuficiente'),
-        findsWidgets,
-      );
-      expect(find.text('Confirmación real o1'), findsNothing);
-      expect(container.read(cartProvider).requireValue.isEmpty, isFalse);
-    });
-
-    testWidgets('el botón se bloquea mientras valida el pedido', (tester) async {
       await pumpCheckout(tester, cart: carritoLleno());
 
       await tester.tap(find.text(r'Confirmar pedido - $171.00'));

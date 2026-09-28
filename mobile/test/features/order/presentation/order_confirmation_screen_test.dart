@@ -35,12 +35,17 @@ void main() {
       routes: [
         GoRoute(
           path: '/order/confirmation/:id',
-          builder: (_, state) => OrderConfirmationScreen(
-            orderId: state.pathParameters['id']!,
-          ),
+          builder: (_, state) =>
+              OrderConfirmationScreen(orderId: state.pathParameters['id']!),
         ),
-        GoRoute(path: '/order/:id', builder: (_, _) => const Scaffold(body: Text('Seguimiento real'))),
-        GoRoute(path: '/home', builder: (_, _) => const Scaffold(body: Text('Catálogo real'))),
+        GoRoute(
+          path: '/order/:id',
+          builder: (_, _) => const Scaffold(body: Text('Seguimiento real')),
+        ),
+        GoRoute(
+          path: '/home',
+          builder: (_, _) => const Scaffold(body: Text('Catálogo real')),
+        ),
       ],
     );
     addTearDown(router.dispose);

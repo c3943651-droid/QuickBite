@@ -38,10 +38,33 @@ class OrderRepositoryImpl implements OrderRepository {
       direccionSnapshot: '',
       subtotal: dto.subtotal,
       costoEnvio: dto.costoEnvio,
-      items: dto.items.map((n) => OrderItem(nombre: n, cantidad: 1)).toList(
-        growable: false,
-      ),
+      items: dto.items
+          .map((n) => OrderItem(nombre: n, cantidad: 1))
+          .toList(growable: false),
     );
+  }
+
+  @override
+  Future<List<Order>> listOrders() async {
+    final dtos = await _remote.listOrders();
+    return dtos
+        .map((dto) => _toOrder(dto, direccionSnapshot: ''))
+        .toList(growable: false);
+  }
+
+  @override
+  Future<EstadoPedidoActualizado> getStatus(String id) async {
+    final dto = await _remote.getStatus(id);
+    return EstadoPedidoActualizado(
+      id: dto.id,
+      estado: EstadoPedido.fromApi(dto.estado),
+      actualizadoEn: dto.actualizadoEn.toUtc(),
+    );
+  }
+
+  @override
+  Future<void> cancelOrder(String id, {String? motivo}) async {
+    await _remote.cancelOrder(id, motivo: motivo?.trim() ?? '');
   }
 
   /// `CreateOrderRequest` no tiene campo de notas, así que el texto se

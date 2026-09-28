@@ -7,10 +7,14 @@ import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_repository.dart';
 import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
 import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_providers.dart';
+import 'package:quickbite_mobile/src/features/notification/domain/notification_entities.dart';
+import 'package:quickbite_mobile/src/features/notification/domain/notification_repository.dart';
+import 'package:quickbite_mobile/src/features/notification/presentation/notification_providers.dart';
 import 'package:quickbite_mobile/src/features/shell/app_router.dart';
 
 import '../../../support/catalog_fakes.dart';
 import '../../../support/fake_token_storage.dart';
+import '../../../support/notification_fakes.dart';
 
 class FakeProfileRepository implements AuthRepository {
   FakeProfileRepository({this.profile, this.fetchError, this.updateError});
@@ -118,6 +122,7 @@ void main() {
     WidgetTester tester,
     String location, {
     AuthSession session = cliente,
+    NotificationRepository? notificaciones,
   }) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
@@ -128,6 +133,8 @@ void main() {
         authRepositoryProvider.overrideWithValue(auth),
         tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
         catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
+        if (notificaciones != null)
+          notificationRepositoryProvider.overrideWithValue(notificaciones),
       ],
     );
     addTearDown(container.dispose);
@@ -173,6 +180,39 @@ void main() {
       ]) {
         expect(find.text(label), findsOneWidget, reason: 'falta $label');
       }
+    });
+
+    testWidgets('la fila Notificaciones abre la bandeja y muestra el badge', (
+      tester,
+    ) async {
+      final notificaciones = FakeNotificationRepository(
+        notificaciones: [
+          Notificacion(
+            id: 'n1',
+            tipo: TipoNotificacion.pedidoNuevo,
+            titulo: 'Pedido recibido',
+            mensaje: 'Estamos preparando tu pedido.',
+            creadoEn: DateTime(2026, 9, 27, 15),
+          ),
+          Notificacion(
+            id: 'n2',
+            tipo: TipoNotificacion.sistema,
+            titulo: 'Mantenimiento',
+            mensaje: 'Domingo de mantenimiento.',
+            leido: true,
+            creadoEn: DateTime(2026, 9, 26, 10),
+          ),
+        ],
+      );
+      await pumpAt(tester, '/profile', notificaciones: notificaciones);
+
+      expect(find.text('1'), findsOneWidget);
+
+      await tester.tap(find.text('Notificaciones'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Pedido recibido'), findsOneWidget);
+      expect(find.text('Mantenimiento'), findsOneWidget);
     });
 
     testWidgets('un repartidor no ve la fila de direcciones', (tester) async {

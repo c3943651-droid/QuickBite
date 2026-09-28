@@ -19,7 +19,9 @@ void main() {
     http = FakeHttpAdapter();
     final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
       ..httpClientAdapter = http;
-    repository = OrderRepositoryImpl(OrderRemoteDataSource(ApiClient(dio: dio)));
+    repository = OrderRepositoryImpl(
+      OrderRemoteDataSource(ApiClient(dio: dio)),
+    );
   });
 
   group('createOrder', () {
@@ -38,22 +40,22 @@ void main() {
       expect(body['metodoPago'], 'tarjeta');
     });
 
-    test('las notas de entrega viajan en el snapshot (la API no tiene campo)', () async {
-      http.on('POST', '/orders', orderJson());
+    test(
+      'las notas de entrega viajan en el snapshot (la API no tiene campo)',
+      () async {
+        http.on('POST', '/orders', orderJson());
 
-      await repository.createOrder(
-        direccionId: _direccionId,
-        direccionSnapshot: 'Av. Reforma 222, Centro',
-        metodoPago: MetodoPago.efectivo,
-        notasEntrega: 'Tocar el timbre',
-      );
+        await repository.createOrder(
+          direccionId: _direccionId,
+          direccionSnapshot: 'Av. Reforma 222, Centro',
+          metodoPago: MetodoPago.efectivo,
+          notasEntrega: 'Tocar el timbre',
+        );
 
-      final body = http.lastRequest().data as Map<String, dynamic>;
-      expect(
-        body['direccionSnapshot'],
-        contains('Nota: Tocar el timbre'),
-      );
-    });
+        final body = http.lastRequest().data as Map<String, dynamic>;
+        expect(body['direccionSnapshot'], contains('Nota: Tocar el timbre'));
+      },
+    );
 
     test('sin notas el snapshot queda limpio', () async {
       http.on('POST', '/orders', orderJson());
@@ -83,17 +85,20 @@ void main() {
       expect(order.total, 171.0);
     });
 
-    test('omite la dirección cuando el pedido usa un snapshot suelto', () async {
-      http.on('POST', '/orders', orderJson());
+    test(
+      'omite la dirección cuando el pedido usa un snapshot suelto',
+      () async {
+        http.on('POST', '/orders', orderJson());
 
-      await repository.createOrder(
-        direccionSnapshot: 'Snack 3, junto a la gasolinera',
-        metodoPago: MetodoPago.efectivo,
-      );
+        await repository.createOrder(
+          direccionSnapshot: 'Snack 3, junto a la gasolinera',
+          metodoPago: MetodoPago.efectivo,
+        );
 
-      final body = http.lastRequest().data as Map<String, dynamic>;
-      expect(body.containsKey('direccionId'), isFalse);
-    });
+        final body = http.lastRequest().data as Map<String, dynamic>;
+        expect(body.containsKey('direccionId'), isFalse);
+      },
+    );
 
     test('propaga el 400 de carrito vacío como error de validación', () async {
       http.onError(

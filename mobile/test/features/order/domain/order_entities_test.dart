@@ -19,19 +19,25 @@ void main() {
       expect(order.items.single.nombre, 'Tacos al pastor');
     });
 
-    test('el tiempo estimado es el que fija la app mientras la API no lo manda', () {
-      const order = Order(
-        id: 'o1',
-        numeroPedido: 'QB-1',
-        estado: 'Pendiente',
-        total: 100,
-        direccionEntrega: 'Centro',
-        items: [],
-      );
+    test(
+      'el tiempo estimado es el que fija la app mientras la API no lo manda',
+      () {
+        const order = Order(
+          id: 'o1',
+          numeroPedido: 'QB-1',
+          estado: 'Pendiente',
+          total: 100,
+          direccionEntrega: 'Centro',
+          items: [],
+        );
 
-      expect(order.tiempoEntregaEstimado, Order.tiempoEntregaEstimadoPorDefecto);
-      expect(order.tiempoEntregaEstimado, greaterThan(0));
-    });
+        expect(
+          order.tiempoEntregaEstimado,
+          Order.tiempoEntregaEstimadoPorDefecto,
+        );
+        expect(order.tiempoEntregaEstimado, greaterThan(0));
+      },
+    );
 
     test('el resumen suma los items y la cantidad total', () {
       const order = Order(
@@ -70,5 +76,4 @@ void main() {
       expect(MetodoPago.fromApi('efectivo'), MetodoPago.efectivo);
     });
   });
-
 }

@@ -52,3 +52,18 @@ OrderDetailDto _$OrderDetailDtoFromJson(Map<String, dynamic> json) =>
           (json['items'] as List<dynamic>?)?.map((e) => e as String).toList() ??
           const [],
     );
+
+OrderStatusDto _$OrderStatusDtoFromJson(Map<String, dynamic> json) =>
+    OrderStatusDto(
+      id: json['id'] as String,
+      estado: json['estado'] as String,
+      actualizadoEn: DateTime.parse(json['actualizadoEn'] as String),
+    );
+
+CancelOrderRequestDto _$CancelOrderRequestDtoFromJson(
+  Map<String, dynamic> json,
+) => CancelOrderRequestDto(motivo: json['motivo'] as String);
+
+Map<String, dynamic> _$CancelOrderRequestDtoToJson(
+  CancelOrderRequestDto instance,
+) => <String, dynamic>{'motivo': instance.motivo};
