@@ -20,6 +20,10 @@ import '../catalog/presentation/home_screen.dart';
 import '../catalog/presentation/product_detail_screen.dart';
 import '../order/presentation/checkout_screen.dart';
 import '../order/presentation/order_confirmation_screen.dart';
+import '../notification/presentation/notification_preferences_screen.dart';
+import '../notification/presentation/notifications_screen.dart';
+import '../order/presentation/order_detail_screen.dart';
+import '../order/presentation/orders_screen.dart';
 import 'pending_screen.dart';
 import 'splash_screen.dart';
 
@@ -247,10 +251,7 @@ GoRouter createRouter(
             routes: [
               GoRoute(
                 path: '/history',
-                builder: (context, state) => const PendingScreen(
-                  location: '/history',
-                  title: 'Historial de pedidos',
-                ),
+                builder: (context, state) => const OrdersScreen(),
               ),
             ],
           ),
@@ -280,10 +281,8 @@ GoRouter createRouter(
                   ),
                   GoRoute(
                     path: 'notifications',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/notifications',
-                      title: 'Preferencias de notificaciones',
-                    ),
+                    builder: (context, state) =>
+                        const NotificationPreferencesScreen(),
                   ),
                   GoRoute(
                     path: 'appearance',
@@ -318,6 +317,20 @@ GoRouter createRouter(
                     builder: (context, state) => const PendingScreen(
                       location: '/profile/advanced',
                       title: 'Avanzado',
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'language',
+                    builder: (context, state) => const PendingScreen(
+                      location: '/profile/language',
+                      title: 'Idioma y región',
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'delete-account',
+                    builder: (context, state) => const PendingScreen(
+                      location: '/profile/delete-account',
+                      title: 'Eliminar cuenta',
                     ),
                   ),
                 ],
@@ -377,16 +390,13 @@ GoRouter createRouter(
       ),
       GoRoute(
         path: '/order/confirmation/:id',
-        builder: (context, state) => OrderConfirmationScreen(
-          orderId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            OrderConfirmationScreen(orderId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/order/:id',
-        builder: (context, state) => PendingScreen(
-          location: state.uri.path,
-          title: 'Seguimiento del pedido',
-        ),
+        builder: (context, state) =>
+            OrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/addresses',
@@ -405,10 +415,7 @@ GoRouter createRouter(
       ),
       GoRoute(
         path: '/notifications',
-        builder: (context, state) => const PendingScreen(
-          location: '/notifications',
-          title: 'Notificaciones',
-        ),
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: '/delivery/stats',

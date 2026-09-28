@@ -81,7 +81,9 @@ class OrderConfirmationScreen extends ConsumerWidget {
                             Text('${item.cantidad} × ${item.nombre}'),
                             Text(
                               CurrencyFormatter.format(
-                                order.total / order.cantidadItems * item.cantidad,
+                                order.total /
+                                    order.cantidadItems *
+                                    item.cantidad,
                               ),
                             ),
                           ],

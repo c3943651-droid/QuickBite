@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quickbite_mobile/src/core/session/token_storage.dart';
-import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
-import 'package:quickbite_mobile/src/features/auth/domain/auth_repository.dart';
-import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
-import 'package:quickbite_mobile/src/features/catalog/domain/catalog_entities.dart';
-import 'package:quickbite_mobile/src/features/catalog/domain/catalog_repository.dart';
-import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_providers.dart';
-import 'package:quickbite_mobile/src/features/search/presentation/search_providers.dart';
-import 'package:quickbite_mobile/src/features/search/presentation/search_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../src/core/session/token_storage.dart';
+import '../../../src/features/auth/domain/auth_entities.dart';
+import '../../../src/features/auth/domain/auth_repository.dart';
+import '../../../src/features/auth/presentation/auth_providers.dart';
+import '../../../src/features/catalog/domain/catalog_entities.dart';
+import '../../../src/features/catalog/domain/catalog_repository.dart';
+import '../../../src/features/catalog/presentation/catalog_providers.dart';
+import '../../../src/features/search/presentation/search_providers.dart';
+import '../../../src/features/search/presentation/search_screen.dart';
 
 import '../../../support/catalog_fakes.dart';
-import '../../../support/fake_token_storage.dart';
 
 class _SearchCatalogRepository implements CatalogRepository {
   List<Product> matches = const [quickbitePastor];
@@ -112,9 +111,6 @@ void main() {
         catalogRepositoryProvider.overrideWithValue(catalog),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
-        sharedPreferencesProvider.overrideWithValue(
-          await SharedPreferences.getInstance(),
-        ),
       ],
     );
     addTearDown(container.dispose);

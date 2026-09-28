@@ -2,24 +2,29 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/retry_policy.dart';
+import '../../../core/session/token_storage.dart';
 import '../../catalog/domain/catalog_entities.dart';
 import '../../catalog/presentation/catalog_providers.dart';
 import '../data/search_history_repository.dart';
 import '../domain/search_history.dart';
 
-final sharedPreferencesProvider = Provider<SharedPreferences>(
-  (ref) =>
-      throw UnimplementedError('sharedPreferencesProvider sin sobrescribir'),
+final tokenStorageProvider = Provider<TokenStorage>((ref) =>
+  throw UnimplementedError('tokenStorageProvider sin sobrescribir'),
 );
 
 final searchHistoryRepositoryProvider = Provider<SearchHistoryRepository>((
   ref,
 ) {
-  return SearchHistoryRepository(ref.watch(sharedPreferencesProvider));
+  return SQLiteSearchHistoryRepository(ref.watch(tokenStorageProvider));
 });
+
+final searchHistoryProvider =
+    AsyncNotifierProvider<SearchHistoryNotifier, SearchHistory>(
+      SearchHistoryNotifier.new,
+      retry: noAutoRetry,
+    );
 
 final searchHistoryProvider =
     AsyncNotifierProvider<SearchHistoryNotifier, SearchHistory>(
