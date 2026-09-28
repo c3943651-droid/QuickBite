@@ -11,4 +11,11 @@ abstract interface class OrderRepository {
   });
 
   Future<Order> getOrder(String id);
+
+  /// Historial completo del cliente; el filtrado por estado es en cliente.
+  Future<List<Order>> listOrders();
+
+  Future<EstadoPedidoActualizado> getStatus(String id);
+
+  Future<void> cancelOrder(String id, {String? motivo});
 }

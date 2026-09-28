@@ -15,8 +15,11 @@ import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_provi
 import 'package:quickbite_mobile/src/features/catalog/presentation/filter_sheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quickbite_mobile/src/features/catalog/presentation/home_screen.dart';
+import 'package:quickbite_mobile/src/features/notification/domain/notification_entities.dart';
+import 'package:quickbite_mobile/src/features/notification/presentation/notification_providers.dart';
 
 import '../../../support/cart_fakes.dart';
+import '../../../support/notification_fakes.dart';
 
 const _tacos = Category(id: 'c1', nombre: 'Tacos', orden: 1, activo: true);
 const _bebidas = Category(id: 'c2', nombre: 'Bebidas', orden: 2, activo: true);
@@ -485,6 +488,65 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Hola, Carlos Pérez'), findsOneWidget);
+    });
+  });
+
+  group('campana de notificaciones', () {
+    testWidgets('abre la bandeja y muestra cuántas hay sin leer', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final notificaciones = FakeNotificationRepository(
+        notificaciones: [
+          Notificacion(
+            id: 'n1',
+            tipo: TipoNotificacion.cambioEstado,
+            titulo: 'Tu pedido va en camino',
+            mensaje: 'Salió del restaurante.',
+            creadoEn: DateTime(2026, 9, 27, 15),
+          ),
+        ],
+      );
+      final container = ProviderContainer(
+        overrides: [
+          catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
+          cartRepositoryProvider.overrideWithValue(FakeCartRepository()),
+          authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
+          tokenStorageProvider.overrideWithValue(EmptyTokenStorage()),
+          notificationRepositoryProvider.overrideWithValue(notificaciones),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final router = GoRouter(
+        routes: [
+          GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
+          GoRoute(
+            path: '/notifications',
+            builder: (_, _) => const Scaffold(body: Text('Bandeja')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text('1'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Notificaciones'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bandeja'), findsOneWidget);
     });
   });
 }

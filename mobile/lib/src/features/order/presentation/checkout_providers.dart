@@ -12,7 +12,9 @@ import '../domain/order_entities.dart';
 import '../domain/order_repository.dart';
 
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
-  return OrderRepositoryImpl(OrderRemoteDataSource(ref.watch(apiClientProvider)));
+  return OrderRepositoryImpl(
+    OrderRemoteDataSource(ref.watch(apiClientProvider)),
+  );
 });
 
 /// Estado del checkout (07.1 SCR-CART-02). Guarda la elección explícita del
@@ -44,7 +46,9 @@ class CheckoutState extends Equatable {
     Object? error = _unset,
   }) {
     return CheckoutState(
-      direccionId: identical(direccionId, _unset) ? this.direccionId : direccionId as String?,
+      direccionId: identical(direccionId, _unset)
+          ? this.direccionId
+          : direccionId as String?,
       metodoPago: metodoPago ?? this.metodoPago,
       notas: notas ?? this.notas,
       enviando: enviando ?? this.enviando,
@@ -151,9 +155,10 @@ class CheckoutNotifier extends Notifier<CheckoutState> {
     final partes = <String>[
       if (direccion.alias != null && direccion.alias!.isNotEmpty)
         direccion.alias!,
-      [direccion.calle, direccion.numero]
-          .where((valor) => valor != null && valor.isNotEmpty)
-          .join(' '),
+      [
+        direccion.calle,
+        direccion.numero,
+      ].where((valor) => valor != null && valor.isNotEmpty).join(' '),
       if (direccion.ciudad.isNotEmpty) direccion.ciudad,
       if (direccion.referencia != null && direccion.referencia!.isNotEmpty)
         'Ref: ${direccion.referencia}',

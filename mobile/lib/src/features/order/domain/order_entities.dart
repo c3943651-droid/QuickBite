@@ -58,11 +58,125 @@ class Order extends Equatable {
   final double? costoEnvio;
   final DateTime? creadoEn;
 
+  /// Estado interpretado: la API manda el texto y la app razona sobre el enum.
+  EstadoPedido get estadoPedido => EstadoPedido.fromApi(estado);
+
+  /// El polling solo cambia el estado; el resto del detalle sigue igual.
+  Order copyWith({String? estado, DateTime? creadoEn, List<OrderItem>? items}) {
+    return Order(
+      id: id,
+      numeroPedido: numeroPedido,
+      estado: estado ?? this.estado,
+      total: total,
+      direccionEntrega: direccionEntrega,
+      items: items ?? this.items,
+      subtotal: subtotal,
+      costoEnvio: costoEnvio,
+      creadoEn: creadoEn ?? this.creadoEn,
+    );
+  }
+
   int get tiempoEntregaEstimado => tiempoEntregaEstimadoPorDefecto;
 
   int get cantidadItems =>
       items.fold(0, (total, item) => total + item.cantidad);
 
   @override
-  List<Object?> get props => [id, numeroPedido, estado, total, direccionEntrega];
+  List<Object?> get props => [
+    id,
+    numeroPedido,
+    estado,
+    total,
+    direccionEntrega,
+  ];
+}
+
+/// Estados que devuelve `GET /orders` como el `ToString()` del enum
+/// `OrderStatus` del backend. La app los mantiene como texto en [Order.estado]
+/// (lo que llegó por el cable) y usa este enum para razonar sobre ellos.
+enum EstadoPedido {
+  pendiente('Pendiente', 'Pendiente'),
+  confirmado('Confirmado', 'Confirmado'),
+  preparando('Preparando', 'Preparando'),
+  listo('Listo', 'Listo'),
+  enCamino('EnCamino', 'En camino'),
+  entregado('Entregado', 'Entregado'),
+  cancelado('Cancelado', 'Cancelado');
+
+  const EstadoPedido(this.api, this.etiqueta);
+
+  /// Valor exacto con el que responde la API.
+  final String api;
+
+  final String etiqueta;
+
+  static EstadoPedido fromApi(String value) => values.firstWhere(
+    (estado) => estado.api.toLowerCase() == value.trim().toLowerCase(),
+    orElse: () => EstadoPedido.pendiente,
+  );
+
+  /// Los seis estados que recorren un pedido completo, en orden.
+  static const List<EstadoPedido> linea = [
+    EstadoPedido.pendiente,
+    EstadoPedido.confirmado,
+    EstadoPedido.preparando,
+    EstadoPedido.listo,
+    EstadoPedido.enCamino,
+    EstadoPedido.entregado,
+  ];
+
+  /// El pedido todavía puede cambiar: el polling sigue activo.
+  bool get esActivo => switch (this) {
+    EstadoPedido.entregado || EstadoPedido.cancelado => false,
+    _ => true,
+  };
+
+  /// 07.1 SCR-ORDER-01 — el botón cancelar solo aparece pendiente o confirmado.
+  bool get esCancelable =>
+      this == EstadoPedido.pendiente || this == EstadoPedido.confirmado;
+
+  /// Posición en la línea de tiempo; `-1` si el estado no está en ella.
+  int get indiceEnLinea => linea.indexOf(this);
+
+  bool get esFinal => !esActivo;
+}
+
+/// Filtros de estado del historial (07.1 SCR-ORDER-03). El filtrado es en
+/// cliente: la API devuelve todos los pedidos del usuario sin filtros.
+enum FiltroPedido {
+  todos('Todos', []),
+  pendientes('Pendientes', [EstadoPedido.pendiente]),
+  enCurso('En curso', [
+    EstadoPedido.pendiente,
+    EstadoPedido.confirmado,
+    EstadoPedido.preparando,
+    EstadoPedido.listo,
+    EstadoPedido.enCamino,
+  ]),
+  entregados('Entregados', [EstadoPedido.entregado]),
+  cancelados('Cancelados', [EstadoPedido.cancelado]);
+
+  const FiltroPedido(this.etiqueta, this.estados);
+
+  final String etiqueta;
+
+  /// Estados que incluye; vacío significa "sin filtro".
+  final List<EstadoPedido> estados;
+
+  bool incluye(EstadoPedido estado) =>
+      estados.isEmpty || estados.contains(estado);
+}
+
+/// Estado puntual de un pedido (`GET /orders/{id}/status`), que es lo que
+/// consulta el polling. Trae el momento del último cambio, no un historial.
+class EstadoPedidoActualizado {
+  const EstadoPedidoActualizado({
+    required this.id,
+    required this.estado,
+    required this.actualizadoEn,
+  });
+
+  final String id;
+  final EstadoPedido estado;
+  final DateTime actualizadoEn;
 }

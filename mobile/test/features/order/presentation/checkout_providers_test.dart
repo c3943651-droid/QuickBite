@@ -101,7 +101,9 @@ void main() {
     test('no crea el pedido con el carrito vacío', () async {
       await cargar();
 
-      final resultado = await container.read(checkoutProvider.notifier).confirmar();
+      final resultado = await container
+          .read(checkoutProvider.notifier)
+          .confirmar();
 
       expect(resultado, isNull);
       expect(container.read(checkoutProvider).error, contains('vacío'));
@@ -122,7 +124,9 @@ void main() {
       await container.read(cartProvider.future);
       await container.read(addressesProvider.future);
 
-      final resultado = await container.read(checkoutProvider.notifier).confirmar();
+      final resultado = await container
+          .read(checkoutProvider.notifier)
+          .confirmar();
 
       expect(resultado, isNull);
       expect(container.read(checkoutProvider).error, contains('dirección'));
@@ -176,7 +180,9 @@ void main() {
         'Stock insuficiente: Tacos al pastor',
       );
 
-      final resultado = await container.read(checkoutProvider.notifier).confirmar();
+      final resultado = await container
+          .read(checkoutProvider.notifier)
+          .confirmar();
 
       expect(resultado, isNull);
       expect(

@@ -7,11 +7,13 @@ import 'package:go_router/go_router.dart';
 import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_snackbar.dart';
+import '../../../core/widgets/notification_badge.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../catalog/domain/catalog_entities.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../../cart/presentation/cart_providers.dart';
+import '../../notification/presentation/notification_providers.dart';
 import 'catalog_providers.dart';
 import 'filter_sheet.dart';
 
@@ -73,21 +75,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final selectedCategory = filter.categoryId;
     final activeFilters = _activeFilterCount(filter);
     final userName = session.value?.user.nombre ?? '';
+    final sinLeer = ref.watch(notificationsNoLeidasProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(userName.isEmpty ? 'QuickBite' : 'Hola, $userName'),
         actions: [
-          IconButton(
-            onPressed: () => AppSnackbar.showInfo(
-              context,
-              'Las notificaciones estarán disponibles próximamente.',
-            ),
-            icon: const Icon(Icons.notifications_none),
-            tooltip: 'Notificaciones',
-            constraints: const BoxConstraints.tightFor(
-              width: AppSizes.minTapTarget,
-              height: AppSizes.minTapTarget,
+          NotificationBadge(
+            count: sinLeer,
+            child: IconButton(
+              onPressed: () => context.push('/notifications'),
+              icon: const Icon(Icons.notifications_none),
+              tooltip: 'Notificaciones',
+              constraints: const BoxConstraints.tightFor(
+                width: AppSizes.minTapTarget,
+                height: AppSizes.minTapTarget,
+              ),
             ),
           ),
         ],

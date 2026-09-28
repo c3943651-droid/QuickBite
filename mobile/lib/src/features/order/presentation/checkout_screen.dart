@@ -68,12 +68,11 @@ class _CheckoutBody extends ConsumerWidget {
         _SectionTitle('Dirección de entrega'),
         const SizedBox(height: AppSpacing.sm),
         switch (direcciones) {
-          AsyncData(:final value) when value.isEmpty =>
-            PrimaryButton(
-              label: 'Agregar nueva dirección',
-              icon: Icons.add_location_alt_outlined,
-              onPressed: () => context.push('/addresses/new'),
-            ),
+          AsyncData(:final value) when value.isEmpty => PrimaryButton(
+            label: 'Agregar nueva dirección',
+            icon: Icons.add_location_alt_outlined,
+            onPressed: () => context.push('/addresses/new'),
+          ),
           AsyncData(:final value) => _AddressList(
             direcciones: value,
             seleccionadaId: direccion?.id,
@@ -161,7 +160,9 @@ class _ConfirmBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enviando = ref.watch(checkoutProvider.select((state) => state.enviando));
+    final enviando = ref.watch(
+      checkoutProvider.select((state) => state.enviando),
+    );
 
     return SafeArea(
       child: Padding(
@@ -224,9 +225,10 @@ class _AddressList extends StatelessWidget {
 
   static String _etiqueta(Address direccion) {
     return [
-      [direccion.calle, direccion.numero]
-          .where((valor) => valor != null && valor.isNotEmpty)
-          .join(' '),
+      [
+        direccion.calle,
+        direccion.numero,
+      ].where((valor) => valor != null && valor.isNotEmpty).join(' '),
       direccion.ciudad,
     ].where((parte) => parte.isNotEmpty).join(', ');
   }
@@ -239,10 +241,7 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      texto,
-      style: Theme.of(context).textTheme.titleMedium,
-    );
+    return Text(texto, style: Theme.of(context).textTheme.titleMedium);
   }
 }
 

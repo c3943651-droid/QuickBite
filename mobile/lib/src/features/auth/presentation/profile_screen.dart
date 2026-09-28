@@ -6,6 +6,7 @@ import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/notification_badge.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../notification/presentation/notification_providers.dart';
 import '../domain/auth_entities.dart';
 import 'auth_providers.dart';
 
@@ -66,8 +67,8 @@ class _ProfileBody extends ConsumerWidget {
         _Row(
           icon: Icons.notifications_none,
           label: 'Notificaciones',
-          badgeCount: 0,
-          onTap: () => context.push('/profile/notifications'),
+          badgeCount: ref.watch(notificationsNoLeidasProvider),
+          onTap: () => context.push('/notifications'),
         ),
         _Row(
           icon: Icons.tune,

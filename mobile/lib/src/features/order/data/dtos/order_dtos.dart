@@ -65,3 +65,31 @@ class OrderDetailDto {
   final double total;
   final List<String> items;
 }
+
+@JsonSerializable(createToJson: false)
+class OrderStatusDto {
+  const OrderStatusDto({
+    required this.id,
+    required this.estado,
+    required this.actualizadoEn,
+  });
+
+  factory OrderStatusDto.fromJson(Map<String, dynamic> json) =>
+      _$OrderStatusDtoFromJson(json);
+
+  final String id;
+  final String estado;
+  final DateTime actualizadoEn;
+}
+
+@JsonSerializable()
+class CancelOrderRequestDto {
+  const CancelOrderRequestDto({required this.motivo});
+
+  factory CancelOrderRequestDto.fromJson(Map<String, dynamic> json) =>
+      _$CancelOrderRequestDtoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CancelOrderRequestDtoToJson(this);
+
+  final String motivo;
+}
