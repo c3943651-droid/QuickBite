@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:intl/intl.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/features/profile/data/mantenimiento_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -71,7 +73,10 @@ void main() {
 
       final contenido = jsonDecode(archivo.contenido) as Map<String, dynamic>;
       expect(contenido['perfil']['email'], 'carlos@quickbite.mx');
-      expect(archivo.nombre, 'quickbite-mis-datos-2026-09-28.json');
+      // La fecha va en el nombre del archivo, así que se compara contra la de
+      // hoy y no contra una fija: con la fija el test se rompía cada medianoche.
+      final hoy = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      expect(archivo.nombre, 'quickbite-mis-datos-$hoy.json');
     });
 
     test('exportar el historial de pedidos incluye los pedidos', () async {
@@ -88,26 +93,33 @@ void main() {
       expect(pedidos.single['items'], hasLength(1));
     });
 
-    test('exportar deja el archivo escrito en el directorio indicado', () async {
-      final temporal = await Directory.systemTemp.createTemp('quickbite-test');
+    test(
+      'exportar deja el archivo escrito en el directorio indicado',
+      () async {
+        final temporal = await Directory.systemTemp.createTemp(
+          'quickbite-test',
+        );
 
-      final ruta = await MantenimientoRepository.exportar(
-        nombre: 'mis-datos',
-        datos: const {'perfil': {'email': 'carlos@quickbite.mx'}},
-        directorio: temporal,
-        momento: DateTime.utc(2026, 9, 28),
-      );
+        final ruta = await MantenimientoRepository.exportar(
+          nombre: 'mis-datos',
+          datos: const {
+            'perfil': {'email': 'carlos@quickbite.mx'},
+          },
+          directorio: temporal,
+          momento: DateTime.utc(2026, 9, 28),
+        );
 
-      expect(
-        ruta.path,
-        '${temporal.path}/quickbite-mis-datos-2026-09-28.json',
-      );
-      expect(
-        jsonDecode(await ruta.readAsString()),
-        containsPair('perfil', {'email': 'carlos@quickbite.mx'}),
-      );
-      await temporal.delete(recursive: true);
-    });
+        expect(
+          ruta.path,
+          '${temporal.path}/quickbite-mis-datos-2026-09-28.json',
+        );
+        expect(
+          jsonDecode(await ruta.readAsString()),
+          containsPair('perfil', {'email': 'carlos@quickbite.mx'}),
+        );
+        await temporal.delete(recursive: true);
+      },
+    );
 
     test('el archivo exportado dice de cuándo es y de qué app es', () async {
       final archivo = await MantenimientoRepository.textoExportar(

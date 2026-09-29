@@ -7,20 +7,20 @@ part of 'sesion_dto.dart';
 // **************************************************************************
 
 SesionDto _$SesionDtoFromJson(Map<String, dynamic> json) => SesionDto(
-  id: json['id'] as String,
-  creadoEn: DateTime.parse(json['creado_en'] as String),
-  expiraEn: DateTime.parse(json['expira_en'] as String),
-  esActual: json['es_actual'] as bool,
-  ipOrigen: json['ip_origen'] as String?,
-  userAgent: json['user_agent'] as String?,
+  id: _texto(json['id']),
+  creadoEn: _fechaOpcional(json['creado_en']),
+  expiraEn: _fechaOpcional(json['expira_en']),
+  esActual: _booleano(json['es_actual']),
+  ipOrigen: _textoOpcional(json['ip_origen']),
+  userAgent: _textoOpcional(json['user_agent']),
 );
 
 Map<String, dynamic> _$SesionDtoToJson(SesionDto instance) => <String, dynamic>{
   'id': instance.id,
   'ip_origen': instance.ipOrigen,
   'user_agent': instance.userAgent,
-  'creado_en': instance.creadoEn.toIso8601String(),
-  'expira_en': instance.expiraEn.toIso8601String(),
+  'creado_en': instance.creadoEn?.toIso8601String(),
+  'expira_en': instance.expiraEn?.toIso8601String(),
   'es_actual': instance.esActual,
 };
 

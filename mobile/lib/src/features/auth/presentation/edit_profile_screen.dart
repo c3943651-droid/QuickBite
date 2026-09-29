@@ -219,7 +219,7 @@ class _Avatar extends StatelessWidget {
     final ruta = this.ruta;
     return CircleAvatar(
       radius: 44,
-      backgroundColor: AppColors.quickbiteOrange,
+      backgroundColor: AppColors.accent,
       backgroundImage: ruta == null ? null : FileImage(File(ruta)),
       child: ruta == null
           ? const Icon(Icons.person, color: Colors.white, size: 46)

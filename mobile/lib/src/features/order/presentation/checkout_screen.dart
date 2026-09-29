@@ -1,3 +1,5 @@
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -285,19 +287,19 @@ class _ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.errorRed.withValues(alpha: 0.08),
+        color: AppColors.error.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: AppColors.errorRed),
+        border: Border.all(color: AppColors.error),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline, color: AppColors.errorRed),
+          const Icon(Icons.error_outline, color: AppColors.error),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(color: AppColors.errorRed),
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
         ],

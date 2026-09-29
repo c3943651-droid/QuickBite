@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/error/app_exception.dart';
 import 'package:quickbite_mobile/src/core/session/token_storage.dart';
+import 'package:quickbite_mobile/src/core/widgets/chips.dart';
 import 'package:quickbite_mobile/src/core/widgets/product_card.dart';
 import 'package:quickbite_mobile/src/core/widgets/state_views.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
@@ -202,6 +203,22 @@ void main() {
       expect(find.byType(ProductCard), findsNWidgets(2));
     });
 
+    testWidgets('la tarjeta deja más altura a la imagen que al texto', (
+      tester,
+    ) async {
+      // Con 0.72 la imagen se comía ~85% de la tarjeta y el nombre + precio
+      // quedaban prensados contra el borde inferior: la rejilla se leía como
+      // una galería de huecos vacíos en vez de un catálogo. La proporción se
+      // sube para que la foto sea la protagonista sin aplastar el texto.
+      await pumpHome(tester, FakeCatalogRepository());
+
+      final delegate =
+          tester.widget<GridView>(find.byType(GridView)).gridDelegate
+              as SliverGridDelegateWithFixedCrossAxisCount;
+
+      expect(delegate.childAspectRatio, greaterThan(0.8));
+    });
+
     testWidgets('muestra las categorías en chips', (tester) async {
       await pumpHome(tester, FakeCatalogRepository());
 
@@ -214,7 +231,7 @@ void main() {
       final catalog = FakeCatalogRepository();
       await pumpHome(tester, catalog);
 
-      await tester.tap(find.widgetWithText(FilterChip, 'Bebidas'));
+      await tester.tap(find.widgetWithText(CategoryChip, 'Bebidas'));
       await tester.pumpAndSettle();
 
       expect(catalog.filters.last.categoryId, 'c2');
@@ -226,10 +243,10 @@ void main() {
     ) async {
       final catalog = FakeCatalogRepository();
       await pumpHome(tester, catalog);
-      await tester.tap(find.widgetWithText(FilterChip, 'Bebidas'));
+      await tester.tap(find.widgetWithText(CategoryChip, 'Bebidas'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(FilterChip, 'Todas'));
+      await tester.tap(find.widgetWithText(CategoryChip, 'Todas'));
       await tester.pumpAndSettle();
 
       expect(catalog.filters.last.categoryId, isNull);
@@ -487,7 +504,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Hola, Carlos Pérez'), findsOneWidget);
+      // El saludo ahora va en la banda superior y cambia según la hora, así que
+      // lo que se comprueba es el nombre, no la fórmula exacta.
+      expect(find.textContaining('Carlos Pérez'), findsOneWidget);
     });
   });
 

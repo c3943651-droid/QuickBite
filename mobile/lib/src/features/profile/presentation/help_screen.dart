@@ -130,10 +130,22 @@ Teléfono y versión de la app:
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
-          _Paso('Elige tu sucursal', 'Los productos que ves son los de la más cercana.'),
-          _Paso('Arma tu pedido', 'Toca + en cada producto y revísalo en el carrito.'),
-          _Paso('Paga', 'Tarjeta o efectivo al recibir. El pedido llega confirmado.'),
-          _Paso('Sigue tu pedido', 'En Pedidos verás el repartidor y su ubicación.'),
+          _Paso(
+            'Elige tu sucursal',
+            'Los productos que ves son los de la más cercana.',
+          ),
+          _Paso(
+            'Arma tu pedido',
+            'Toca + en cada producto y revísalo en el carrito.',
+          ),
+          _Paso(
+            'Paga',
+            'Tarjeta o efectivo al recibir. El pedido llega confirmado.',
+          ),
+          _Paso(
+            'Sigue tu pedido',
+            'En Pedidos verás el repartidor y su ubicación.',
+          ),
         ],
       ),
     );
@@ -149,10 +161,7 @@ Teléfono y versión de la app:
         .read(enlacesExternosProvider)
         .escribirSoporte(asunto: asunto, cuerpo: cuerpo);
     if (!context.mounted || abierto) return;
-    AppSnackbar.showError(
-      context,
-      'No se pudo abrir tu app de correo.',
-    );
+    AppSnackbar.showError(context, 'No se pudo abrir tu app de correo.');
   }
 }
 
@@ -172,9 +181,8 @@ class _Paso extends StatelessWidget {
         children: [
           Text(
             titulo,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600),
           ),
           Text(detalle, style: Theme.of(context).textTheme.bodyMedium),
         ],

@@ -1,3 +1,5 @@
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quickbite_mobile/src/core/theme/app_colors.dart';
@@ -78,7 +80,8 @@ class AdvancedScreen extends ConsumerWidget {
           SettingsTile(
             icon: Icons.image_outlined,
             label: 'Limpiar caché de imágenes',
-            subtitle: 'Las fotos de producto se vuelven a descargar al abrir la app.',
+            subtitle:
+                'Las fotos de producto se vuelven a descargar al abrir la app.',
             onTap: () => _limpiarCacheImagenes(context, ref),
           ),
           const Divider(height: AppSpacing.xl),
@@ -134,7 +137,10 @@ class AdvancedScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _limpiarCacheImagenes(BuildContext context, WidgetRef ref) async {
+  Future<void> _limpiarCacheImagenes(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final confirmado = await ConfirmDialog.show(
       context,
       title: '¿Limpiar la caché de imágenes?',
@@ -153,7 +159,8 @@ class AdvancedScreen extends ConsumerWidget {
     final confirmado = await ConfirmDialog.show(
       context,
       title: '¿Limpiar los datos locales?',
-      message: 'Se borrarán las preferencias guardadas en este dispositivo. '
+      message:
+          'Se borrarán las preferencias guardadas en este dispositivo. '
           'No afecta a tus pedidos ni a tu cuenta.',
       confirmLabel: 'Sí, limpiar',
       destructive: true,
@@ -185,7 +192,8 @@ class AdvancedScreen extends ConsumerWidget {
     final confirmado = await ConfirmDialog.show(
       context,
       title: '¿Restablecer las preferencias?',
-      message: 'Aparencia, idioma y notificaciones volverán a su valor inicial.',
+      message:
+          'Aparencia, idioma y notificaciones volverán a su valor inicial.',
       confirmLabel: 'Sí, restablecer',
       destructive: true,
     );

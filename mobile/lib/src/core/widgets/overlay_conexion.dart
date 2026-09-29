@@ -49,7 +49,7 @@ class OfflineBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Material(
-      color: AppColors.softBlack,
+      color: AppColors.ink,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -95,7 +95,7 @@ class SinConexionView extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.cloud_off, size: 64, color: AppColors.secondaryGray),
+            const Icon(Icons.cloud_off, size: 64, color: AppColors.inkMuted),
             const SizedBox(height: AppSpacing.md),
             Text(
               AvisoRed.sinConexion,
@@ -109,7 +109,10 @@ class SinConexionView extends ConsumerWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.lg),
-            TextButton(onPressed: () => reintentar(ref), child: const Text('Reintentar')),
+            TextButton(
+              onPressed: () => reintentar(ref),
+              child: const Text('Reintentar'),
+            ),
           ],
         ),
       ),
@@ -153,7 +156,7 @@ Future<void> guardiaDeRed(
         ..showSnackBar(
           const SnackBar(
             content: Text(AvisoRed.sinConexion),
-            backgroundColor: AppColors.errorRed,
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
         );

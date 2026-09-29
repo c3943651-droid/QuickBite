@@ -19,8 +19,13 @@ class SesionUsuario extends Equatable {
   final String id;
   final String? ipOrigen;
   final String? userAgent;
-  final DateTime creadoEn;
-  final DateTime expiraEn;
+
+  /// A diferencia del resto, aquí las fechas **son opcionales**: el backend no
+  /// las declara obligatorias en 04 §4.9 y una fecha ausente o mal formada no
+  /// puede inventarse, así que la vista dice "Sin fecha" en vez de enseñar una
+  /// fecha falsa.
+  final DateTime? creadoEn;
+  final DateTime? expiraEn;
   final bool esActual;
 
   /// La sesión en curso no se revoca desde aquí: el usuario cierra sesión
@@ -33,9 +38,8 @@ class SesionUsuario extends Equatable {
       ? userAgent!.trim()
       : 'Dispositivo desconocido';
 
-  String get direccion => ipOrigen?.trim().isNotEmpty == true
-      ? ipOrigen!.trim()
-      : 'IP desconocida';
+  String get direccion =>
+      ipOrigen?.trim().isNotEmpty == true ? ipOrigen!.trim() : 'IP desconocida';
 
   @override
   List<Object?> get props => [

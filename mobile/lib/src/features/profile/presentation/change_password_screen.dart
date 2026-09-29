@@ -1,3 +1,5 @@
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -154,9 +156,7 @@ class Requisitos extends StatelessWidget {
                       ? Icons.check_circle
                       : Icons.radio_button_unchecked,
                   size: 16,
-                  color: requisito.met
-                      ? AppColors.successGreen
-                      : AppColors.secondaryGray,
+                  color: requisito.met ? AppColors.success : AppColors.inkMuted,
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Text(requisito.label),
@@ -178,20 +178,19 @@ class _Aviso extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.errorRed.withValues(alpha: 0.08),
+        color: AppColors.error.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppRadius.field),
-        border: Border.all(color: AppColors.errorRed.withValues(alpha: 0.4)),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.errorRed, size: 20),
+          const Icon(Icons.error_outline, color: AppColors.error, size: 20),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               mensaje,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.errorRed),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: AppColors.error),
             ),
           ),
         ],

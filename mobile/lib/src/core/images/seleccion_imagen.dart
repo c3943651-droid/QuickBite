@@ -15,7 +15,8 @@ abstract interface class SelectorImagen {
 }
 
 class ImagePickerSelectorImagen implements SelectorImagen {
-  ImagePickerSelectorImagen([ImagePicker? picker]) : _picker = picker ?? ImagePicker();
+  ImagePickerSelectorImagen([ImagePicker? picker])
+    : _picker = picker ?? ImagePicker();
 
   final ImagePicker _picker;
 

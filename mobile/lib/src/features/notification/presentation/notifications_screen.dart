@@ -81,24 +81,28 @@ class _Filtros extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
-        ),
-        itemCount: FiltroNotificacion.values.length,
-        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
-        itemBuilder: (context, index) {
-          final filtro = FiltroNotificacion.values[index];
-          return CategoryChip(
-            label: filtro.etiqueta,
-            selected: filtro == seleccionado,
-            onTap: () => onSeleccionar(filtro),
-          );
-        },
+    // Sin alto fijo: la fila se mide al chip. Con un `SizedBox(height: 56)` el
+    // padding vertical de la lista se comía el espacio y el chip se estrujaba
+    // de 37 px a 24, con la etiqueta aplastada a un trazo —y con el tamaño de
+    // texto grande de Accesibilidad, aún peor.
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          for (final filtro in FiltroNotificacion.values) ...[
+            CategoryChip(
+              label: filtro.etiqueta,
+              selected: filtro == seleccionado,
+              onTap: () => onSeleccionar(filtro),
+            ),
+            if (filtro != FiltroNotificacion.values.last)
+              const SizedBox(width: AppSpacing.sm),
+          ],
+        ],
       ),
     );
   }
@@ -167,7 +171,7 @@ class _NotificacionTile extends StatelessWidget {
 
     return Material(
       color: sinLeer
-          ? AppColors.mistGray.withValues(alpha: 0.5)
+          ? AppColors.surfaceMuted.withValues(alpha: 0.5)
           : AppColors.white,
       child: InkWell(
         onTap: onTap,
@@ -180,13 +184,13 @@ class _NotificacionTile extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.mistGray,
+                  color: AppColors.surfaceMuted,
                   borderRadius: BorderRadius.circular(AppSpacing.md),
                 ),
                 child: Icon(
                   notificacion.tipo.icono,
                   size: 20,
-                  color: AppColors.textGray,
+                  color: AppColors.ink,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -202,7 +206,7 @@ class _NotificacionTile extends StatelessWidget {
                             width: 8,
                             height: 8,
                             decoration: const BoxDecoration(
-                              color: AppColors.quickbiteOrange,
+                              color: AppColors.accent,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -229,10 +233,8 @@ class _NotificacionTile extends StatelessWidget {
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       _fecha(notificacion.creadoEn),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.secondaryGray,
-                        fontSize: 11,
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: AppColors.inkMuted, fontSize: 11),
                     ),
                   ],
                 ),
@@ -241,7 +243,7 @@ class _NotificacionTile extends StatelessWidget {
                 const Icon(
                   Icons.chevron_right,
                   size: 20,
-                  color: AppColors.secondaryGray,
+                  color: AppColors.inkMuted,
                 ),
             ],
           ),
@@ -276,7 +278,7 @@ class _ListaSkeleton extends StatelessWidget {
             height: alto,
             margin: const EdgeInsets.only(bottom: AppSpacing.sm),
             decoration: BoxDecoration(
-              color: AppColors.mistGray,
+              color: AppColors.surfaceMuted,
               borderRadius: BorderRadius.circular(AppSpacing.md),
             ),
           ),

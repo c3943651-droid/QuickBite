@@ -17,8 +17,15 @@ class PrivacyScreen extends ConsumerWidget {
   /// Permisos que la app puede usar. Se listan aunque no se hayan concedido:
   /// el usuario tiene que saber qué podría pedirse, no solo lo que ya pidió.
   static const permisos = <({String nombre, String paraQueSirve})>[
-    (nombre: 'Cámara', paraQueSirve: 'Solo si capturas una foto al reportar un problema.'),
-    (nombre: 'Almacenamiento', paraQueSirve: 'Para guardar las exportaciones de datos en tu dispositivo.'),
+    (
+      nombre: 'Cámara',
+      paraQueSirve: 'Solo si capturas una foto al reportar un problema.',
+    ),
+    (
+      nombre: 'Almacenamiento',
+      paraQueSirve:
+          'Para guardar las exportaciones de datos en tu dispositivo.',
+    ),
   ];
 
   @override
@@ -43,11 +50,8 @@ class PrivacyScreen extends ConsumerWidget {
             icon: Icons.gavel_outlined,
             label: 'Términos de uso',
             subtitle: 'Las reglas de uso de la app.',
-            onTap: () => _abrirDocumento(
-              context,
-              ref,
-              EnlacesExternos.terminosUso,
-            ),
+            onTap: () =>
+                _abrirDocumento(context, ref, EnlacesExternos.terminosUso),
           ),
           const SectionHeader('Permisos de la app'),
           Padding(
@@ -71,12 +75,10 @@ class PrivacyScreen extends ConsumerWidget {
           SettingsTile(
             icon: Icons.data_usage_outlined,
             label: 'Uso de datos',
-            subtitle: 'Qué datos recogemos, para qué y cuánto tiempo los guardamos.',
-            onTap: () => _abrirDocumento(
-              context,
-              ref,
-              EnlacesExternos.usoDeDatos,
-            ),
+            subtitle:
+                'Qué datos recogemos, para qué y cuánto tiempo los guardamos.',
+            onTap: () =>
+                _abrirDocumento(context, ref, EnlacesExternos.usoDeDatos),
           ),
         ],
       ),
@@ -90,7 +92,9 @@ class PrivacyScreen extends ConsumerWidget {
     WidgetRef ref,
     String slug,
   ) async {
-    final abierto = await ref.read(enlacesExternosProvider).abrirDocumento(slug);
+    final abierto = await ref
+        .read(enlacesExternosProvider)
+        .abrirDocumento(slug);
     if (!context.mounted || abierto) return;
     AppSnackbar.showError(
       context,

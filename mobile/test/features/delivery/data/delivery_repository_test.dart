@@ -25,6 +25,7 @@ Map<String, dynamic> pedidoJson({
     'creadoEn': ?creadoEn,
   };
 }
+
 Map<String, dynamic> statsJson({
   int entregasTotales = 12,
   int entregasDelMes = 3,
@@ -50,7 +51,9 @@ void main() {
     http = FakeHttpAdapter();
     final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
       ..httpClientAdapter = http;
-    repository = DeliveryRepositoryImpl(DeliveryRemoteDataSource(ApiClient(dio: dio)));
+    repository = DeliveryRepositoryImpl(
+      DeliveryRemoteDataSource(ApiClient(dio: dio)),
+    );
   });
 
   group('pedidos disponibles (SCR-DEL-01)', () {
@@ -75,12 +78,15 @@ void main() {
       expect(await repository.pedidosDisponibles(), isEmpty);
     });
 
-    test('un campo que la API no manda deja el total en cero, sin romper', () async {
-      http.on('GET', '/delivery/available', [pedidoJson(total: 0)]);
+    test(
+      'un campo que la API no manda deja el total en cero, sin romper',
+      () async {
+        http.on('GET', '/delivery/available', [pedidoJson(total: 0)]);
 
-      final pedidos = await repository.pedidosDisponibles();
-      expect(pedidos.single.total, 0);
-    });
+        final pedidos = await repository.pedidosDisponibles();
+        expect(pedidos.single.total, 0);
+      },
+    );
   });
 
   group('aceptar entrega (SCR-DEL-02)', () {
@@ -107,10 +113,7 @@ void main() {
         body: {'message': 'El pedido ya no está disponible.'},
       );
 
-      expect(
-        () => repository.aceptar('o1'),
-        throwsA(isA<AppException>()),
-      );
+      expect(() => repository.aceptar('o1'), throwsA(isA<AppException>()));
     });
   });
 
@@ -152,17 +155,20 @@ void main() {
   });
 
   group('historial de entregas (SCR-DEL-05)', () {
-    test('lee GET /delivery/history como lista, sin envoltorio de paginación', () async {
-      http.on('GET', '/delivery/history', [
-        pedidoJson(estado: 'entregado'),
-        pedidoJson(id: 'o2', numeroPedido: 'QB-002', estado: 'entregado'),
-      ]);
+    test(
+      'lee GET /delivery/history como lista, sin envoltorio de paginación',
+      () async {
+        http.on('GET', '/delivery/history', [
+          pedidoJson(estado: 'entregado'),
+          pedidoJson(id: 'o2', numeroPedido: 'QB-002', estado: 'entregado'),
+        ]);
 
-      final historial = await repository.historialEntregas();
+        final historial = await repository.historialEntregas();
 
-      expect(historial, hasLength(2));
-      expect(historial.first.estadoPedido, EstadoPedido.entregado);
-    });
+        expect(historial, hasLength(2));
+        expect(historial.first.estadoPedido, EstadoPedido.entregado);
+      },
+    );
 
     test('un historial vacío se devuelve como lista vacía', () async {
       http.on('GET', '/delivery/history', const []);
@@ -185,7 +191,10 @@ void main() {
     });
 
     test('un repartidor sin entregas recibe ceros', () async {
-      http.on('GET', '/delivery/stats', statsJson(
+      http.on(
+        'GET',
+        '/delivery/stats',
+        statsJson(
           entregasTotales: 0,
           entregasDelMes: 0,
           tiempoPromedio: 0,

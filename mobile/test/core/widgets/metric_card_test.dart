@@ -72,7 +72,7 @@ void main() {
       expect(find.byIcon(Icons.trending_up), findsOneWidget);
       expect(
         tester.widget<Text>(find.text('+8%')).style?.color,
-        AppColors.successGreen,
+        AppColors.success,
       );
     });
 
@@ -91,7 +91,7 @@ void main() {
       expect(find.byIcon(Icons.trending_down), findsOneWidget);
       expect(
         tester.widget<Text>(find.text('-2%')).style?.color,
-        AppColors.errorRed,
+        AppColors.error,
       );
     });
 

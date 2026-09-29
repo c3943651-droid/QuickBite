@@ -1,3 +1,5 @@
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -80,7 +82,7 @@ class _EmptyState extends StatelessWidget {
             const Icon(
               Icons.location_off_outlined,
               size: 64,
-              color: AppColors.quickbiteOrange,
+              color: AppColors.accent,
             ),
             const SizedBox(height: AppSpacing.md),
             Text(

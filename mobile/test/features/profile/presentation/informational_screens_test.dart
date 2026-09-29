@@ -64,9 +64,7 @@ void main() {
 
     final router = GoRouter(
       initialLocation: ruta,
-      routes: [
-        GoRoute(path: ruta, builder: (context, state) => pantalla),
-      ],
+      routes: [GoRoute(path: ruta, builder: (context, state) => pantalla)],
     );
     addTearDown(router.dispose);
 
@@ -131,11 +129,7 @@ void main() {
     testWidgets('muestra soporte, reportar un problema y la guía', (
       tester,
     ) async {
-      await pump(
-        tester,
-        const HelpScreen(),
-        ruta: '/profile/help',
-      );
+      await pump(tester, const HelpScreen(), ruta: '/profile/help');
 
       for (final etiqueta in [
         'Contactar soporte',

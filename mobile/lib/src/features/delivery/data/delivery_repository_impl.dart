@@ -1,4 +1,5 @@
 import '../domain/delivery_repository.dart';
+import '../domain/disponibilidad.dart';
 import '../domain/estadisticas_repartidor.dart';
 import '../domain/pedido_entrega.dart';
 import 'delivery_remote_data_source.dart';
@@ -38,6 +39,13 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
   }
 
   @override
+  Future<Disponibilidad> disponibilidad() => _remote.disponibilidad();
+
+  @override
+  Future<Disponibilidad> cambiarDisponibilidad(DeliveryPersonStatus estado) =>
+      _remote.cambiarDisponibilidad(estado);
+
+  @override
   Future<EstadisticasRepartidor> estadisticas() async {
     final dto = await _remote.estadisticas();
     return EstadisticasRepartidor(
@@ -66,9 +74,8 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
   static PedidoEntregaDto _masReciente(List<PedidoEntregaDto> dtos) =>
       _ordenarPorFecha(dtos).first;
 
-  static List<PedidoEntrega> _entregas(List<PedidoEntregaDto> dtos) => dtos
-      .map(_entrega)
-      .toList(growable: false);
+  static List<PedidoEntrega> _entregas(List<PedidoEntregaDto> dtos) =>
+      dtos.map(_entrega).toList(growable: false);
 
   static PedidoEntrega _entrega(PedidoEntregaDto dto) => PedidoEntrega(
     id: dto.id,

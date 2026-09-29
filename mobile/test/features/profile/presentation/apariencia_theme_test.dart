@@ -56,7 +56,9 @@ void main() {
     test('el modo daltónico cambia el color principal', () {
       final normal = temaClaro(const PreferenciasApariencia());
       final deuteranopia = temaClaro(
-        const PreferenciasApariencia(modoDaltonismo: ModoDaltonismo.deuteranopia),
+        const PreferenciasApariencia(
+          modoDaltonismo: ModoDaltonismo.deuteranopia,
+        ),
       );
       final protanopia = temaClaro(
         const PreferenciasApariencia(modoDaltonismo: ModoDaltonismo.protanopia),
@@ -65,9 +67,18 @@ void main() {
         const PreferenciasApariencia(modoDaltonismo: ModoDaltonismo.tritanopia),
       );
 
-      expect(deuteranopia.colorScheme.primary, isNot(normal.colorScheme.primary));
-      expect(protanopia.colorScheme.primary, isNot(deuteranopia.colorScheme.primary));
-      expect(tritanopia.colorScheme.primary, isNot(protanopia.colorScheme.primary));
+      expect(
+        deuteranopia.colorScheme.primary,
+        isNot(normal.colorScheme.primary),
+      );
+      expect(
+        protanopia.colorScheme.primary,
+        isNot(deuteranopia.colorScheme.primary),
+      );
+      expect(
+        tritanopia.colorScheme.primary,
+        isNot(protanopia.colorScheme.primary),
+      );
     });
 
     test('el alto contraste lleva el texto a negro puro y refuerza bordes', () {
@@ -81,7 +92,9 @@ void main() {
       expect(normal.textTheme.bodyLarge?.color, isNot(Colors.black));
       expect(
         alto.inputDecorationTheme.focusedBorder?.borderSide.width,
-        greaterThan(normal.inputDecorationTheme.focusedBorder?.borderSide.width ?? 0),
+        greaterThan(
+          normal.inputDecorationTheme.focusedBorder?.borderSide.width ?? 0,
+        ),
       );
     });
 

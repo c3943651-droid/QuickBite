@@ -91,9 +91,18 @@ void main() {
 
       // `Contraste.normal` y `TamanoTexto.normal` comparten etiqueta ("Normal"):
       // el contraste se decide con un interruptor para no duplicar la opción.
-      expect(find.widgetWithText(SwitchListTile, 'Alto contraste'), findsOneWidget);
-      expect(find.widgetWithText(SwitchListTile, 'Reducir animaciones'), findsOneWidget);
-      expect(find.widgetWithText(RadioListTile<TamanoTexto>, 'Normal'), findsOneWidget);
+      expect(
+        find.widgetWithText(SwitchListTile, 'Alto contraste'),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(SwitchListTile, 'Reducir animaciones'),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(RadioListTile<TamanoTexto>, 'Normal'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('arranca con los valores por defecto', (tester) async {
@@ -107,13 +116,16 @@ void main() {
     });
 
     testWidgets('muestra lo que había quedado guardado', (tester) async {
-      await pumpApariencia(tester, guardadas: {
-        'quickbite_apar_tema': 'oscuro',
-        'quickbite_apar_tamano': 'muyGrande',
-        'quickbite_apar_contraste': 'alto',
-        'quickbite_apar_animaciones': true,
-        'quickbite_apar_daltonismo': 'tritanopia',
-      });
+      await pumpApariencia(
+        tester,
+        guardadas: {
+          'quickbite_apar_tema': 'oscuro',
+          'quickbite_apar_tamano': 'muyGrande',
+          'quickbite_apar_contraste': 'alto',
+          'quickbite_apar_animaciones': true,
+          'quickbite_apar_daltonismo': 'tritanopia',
+        },
+      );
 
       expect(leer().tema, TemaApp.oscuro);
       expect(leer().tamanoTexto, TamanoTexto.muyGrande);
@@ -122,7 +134,9 @@ void main() {
       expect(leer().modoDaltonismo, ModoDaltonismo.tritanopia);
     });
 
-    testWidgets('elegir tema oscuro se guarda en el dispositivo', (tester) async {
+    testWidgets('elegir tema oscuro se guarda en el dispositivo', (
+      tester,
+    ) async {
       await pumpApariencia(tester);
 
       await tester.tap(find.text('Oscuro'));
@@ -130,7 +144,9 @@ void main() {
 
       expect(leer().tema, TemaApp.oscuro);
       expect(
-        container.read(sharedPreferencesProvider).getString('quickbite_apar_tema'),
+        container
+            .read(sharedPreferencesProvider)
+            .getString('quickbite_apar_tema'),
         'oscuro',
       );
     });
@@ -143,7 +159,9 @@ void main() {
 
       expect(leer().tamanoTexto, TamanoTexto.muyGrande);
       expect(
-        container.read(sharedPreferencesProvider).getString('quickbite_apar_tamano'),
+        container
+            .read(sharedPreferencesProvider)
+            .getString('quickbite_apar_tamano'),
         'muyGrande',
       );
     });
@@ -156,7 +174,9 @@ void main() {
 
       expect(leer().contraste, Contraste.alto);
       expect(
-        container.read(sharedPreferencesProvider).getString('quickbite_apar_contraste'),
+        container
+            .read(sharedPreferencesProvider)
+            .getString('quickbite_apar_contraste'),
         'alto',
       );
     });
@@ -180,7 +200,9 @@ void main() {
 
       expect(leer().modoDaltonismo, ModoDaltonismo.protanopia);
       expect(
-        container.read(sharedPreferencesProvider).getString('quickbite_apar_daltonismo'),
+        container
+            .read(sharedPreferencesProvider)
+            .getString('quickbite_apar_daltonismo'),
         'protanopia',
       );
     });

@@ -23,7 +23,8 @@ class ConnectivityPlusConectividad implements Conectividad {
   final Connectivity _connectivity;
 
   @override
-  Future<bool> hayConexion() async => _normaliza(await _connectivity.checkConnectivity());
+  Future<bool> hayConexion() async =>
+      _normaliza(await _connectivity.checkConnectivity());
 
   @override
   Stream<bool> cambios() =>

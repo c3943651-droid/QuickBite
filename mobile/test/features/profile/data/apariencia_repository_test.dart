@@ -87,9 +87,7 @@ void main() {
     test('restablecer borra solo las claves de apariencia', () async {
       await preferences.setString('quickbite_search_history', 'burger');
       final repo = AparienciaRepository(preferences);
-      await repo.save(
-        const PreferenciasApariencia(tema: TemaApp.oscuro),
-      );
+      await repo.save(const PreferenciasApariencia(tema: TemaApp.oscuro));
 
       await repo.clear();
 

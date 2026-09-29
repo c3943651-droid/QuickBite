@@ -1,3 +1,5 @@
+import 'app_radius.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../features/profile/domain/preferencias_apariencia.dart';
@@ -150,13 +152,12 @@ abstract final class AppTheme {
 
 /// Paleta efectiva de una pantalla.
 ///
-/// Con el modo daltónico en `normal` reproduce 09 §4 tal cual. Con un modo
-/// activo se reasignan los tonos que ese tipo de daltonismo no distingue: la
-/// paleta base (naranja, rojo, amarillo) es indistinguible en los tres casos, así
-/// que se sustituye por una variante con la misma función pero perceptiblemente
-/// distinta.
-/// **Decisión provisional** pendiente de validar con usuarios: 09 §4 no fija
-/// estos hex y tampoco define el contraste alto.
+/// El modo daltónico cambia el color de marca por una variante con la misma
+/// función pero perceptiblemente distinta. La paleta base ya es un teal
+/// (frío, con mucho contraste en los tres tipos), pero aun así se reasigna:
+/// deuteranopía y protanopía no distinguen bien el eje verde-rojo, así que en
+/// esos modos el acento pasa a azul y en tritanopía a magenta, donde el eje
+/// rojo-verde sí se percibe.
 class _Paleta {
   const _Paleta({
     required this.primario,
@@ -168,6 +169,7 @@ class _Paleta {
     required this.textoSecundario,
     required this.superficie,
     required this.fondo,
+    required this.borde,
     required this.sobrePrimario,
   });
 
@@ -178,36 +180,30 @@ class _Paleta {
     final alto = prefs.altoContraste;
 
     return switch (prefs.modoDaltonismo) {
-      ModoDaltonismo.normal => _Paleta._estandar(
-        oscuro: oscuro,
-        alto: alto,
-      ),
+      ModoDaltonismo.normal => _Paleta._estandar(oscuro: oscuro, alto: alto),
       ModoDaltonismo.deuteranopia => _Paleta._estandar(
         oscuro: oscuro,
         alto: alto,
-        primario: const Color(0xFF1565C0),
-        secundario: const Color(0xFFB26A00),
-        terciario: const Color(0xFF00838F),
-        error: const Color(0xFF8E2400),
-        exito: const Color(0xFF0B6E4F),
+        primario: const Color(0xFF1D4ED8),
+        secundario: const Color(0xFF7C3AED),
+        terciario: const Color(0xFF0369A1),
+        exito: const Color(0xFF0369A1),
       ),
       ModoDaltonismo.protanopia => _Paleta._estandar(
         oscuro: oscuro,
         alto: alto,
-        primario: const Color(0xFF0D47A1),
-        secundario: const Color(0xFF00796B),
-        terciario: const Color(0xFF8D6E00),
-        error: const Color(0xFF6D1B7B),
-        exito: const Color(0xFF134E4E),
+        primario: const Color(0xFF1E40AF),
+        secundario: const Color(0xFF6D28D9),
+        terciario: const Color(0xFF0E7490),
+        exito: const Color(0xFF0E7490),
       ),
       ModoDaltonismo.tritanopia => _Paleta._estandar(
         oscuro: oscuro,
         alto: alto,
-        primario: const Color(0xFFC62828),
-        secundario: const Color(0xFF7B1FA2),
-        terciario: const Color(0xFFAD1457),
-        error: const Color(0xFF4A148C),
-        exito: const Color(0xFF2E5E1F),
+        primario: const Color(0xFFBE185D),
+        secundario: const Color(0xFF7E22CE),
+        terciario: const Color(0xFF4F46E5),
+        exito: const Color(0xFF4F46E5),
       ),
     };
   }
@@ -222,19 +218,20 @@ class _Paleta {
     Color? exito,
   }) {
     return _Paleta(
-      primario: primario ?? AppColors.quickbiteOrange,
-      secundario: secundario ?? AppColors.appetiteRed,
-      terciario: terciario ?? AppColors.energyYellow,
-      error: error ?? AppColors.errorRed,
-      exito: exito ?? AppColors.successGreen,
+      primario: primario ?? AppColors.accent,
+      secundario: secundario ?? AppColors.accentAlt,
+      terciario: terciario ?? AppColors.info,
+      error: error ?? AppColors.error,
+      exito: exito ?? AppColors.success,
       textoPrincipal: alto
-          ? (oscuro ? Colors.white : Colors.black)
-          : (oscuro ? AppColors.darkTextPrimary : AppColors.textGray),
+          ? (oscuro ? AppColors.white : Colors.black)
+          : (oscuro ? AppColors.nightInk : AppColors.ink),
       textoSecundario: alto
-          ? (oscuro ? Colors.white : Colors.black)
-          : AppColors.secondaryGray,
-      superficie: oscuro ? AppColors.darkSurface : AppColors.white,
-      fondo: oscuro ? AppColors.darkBackground : AppColors.mistGray,
+          ? (oscuro ? AppColors.white : Colors.black)
+          : (oscuro ? AppColors.inkSoft : AppColors.inkMuted),
+      superficie: oscuro ? AppColors.nightSurface : AppColors.surface,
+      fondo: oscuro ? AppColors.nightBackground : AppColors.background,
+      borde: oscuro ? AppColors.nightBorder : AppColors.border,
       sobrePrimario: Colors.white,
     );
   }
@@ -248,5 +245,6 @@ class _Paleta {
   final Color textoSecundario;
   final Color superficie;
   final Color fondo;
+  final Color borde;
   final Color sobrePrimario;
 }

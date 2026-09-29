@@ -52,16 +52,10 @@ class AppConfig {
 
   /// `mailto:` con asunto y cuerpo prellenados, que es lo que piden las
   /// pantallas de soporte y de eliminación de cuenta.
-  Uri correo({
-    required String asunto,
-    String cuerpo = '',
-  }) => Uri(
+  Uri correo({required String asunto, String cuerpo = ''}) => Uri(
     scheme: 'mailto',
     path: supportEmail,
-    queryParameters: {
-      'subject': asunto,
-      if (cuerpo.isNotEmpty) 'body': cuerpo,
-    },
+    queryParameters: {'subject': asunto, if (cuerpo.isNotEmpty) 'body': cuerpo},
   );
 }
 

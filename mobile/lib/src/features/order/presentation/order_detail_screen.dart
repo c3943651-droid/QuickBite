@@ -173,8 +173,8 @@ class _Body extends ConsumerWidget {
             icon: const Icon(Icons.close, size: 18),
             label: const Text('Cancelar pedido'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.errorRed,
-              side: const BorderSide(color: AppColors.errorRed),
+              foregroundColor: AppColors.error,
+              side: const BorderSide(color: AppColors.error),
               minimumSize: const Size.fromHeight(48),
             ),
           ),
@@ -215,7 +215,7 @@ class _Encabezado extends StatelessWidget {
             EstadoPedido.cancelado => 'Este pedido fue cancelado.',
           },
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: AppColors.secondaryGray,
+            color: AppColors.inkMuted,
           ),
         ),
       ],
@@ -283,9 +283,7 @@ class _Items extends StatelessWidget {
     if (pedido.items.isEmpty) {
       return Text(
         'Sin artículos',
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: AppColors.secondaryGray,
-        ),
+        style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.inkMuted),
       );
     }
     return Column(
@@ -376,7 +374,7 @@ class _Dato extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: AppColors.secondaryGray),
+        Icon(icon, size: 18, color: AppColors.inkMuted),
         const SizedBox(width: AppSpacing.sm),
         Expanded(child: Text(texto, style: theme.textTheme.bodyMedium)),
       ],
@@ -397,7 +395,7 @@ class _Aviso extends StatelessWidget {
       key: clave == null ? null : ValueKey(clave!),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.warningYellow.withValues(alpha: 0.15),
+        color: AppColors.warning.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppSpacing.md),
       ),
       child: Row(
@@ -430,7 +428,7 @@ class _DetalleSkeleton extends StatelessWidget {
             child: Container(
               height: alto,
               decoration: BoxDecoration(
-                color: AppColors.mistGray,
+                color: AppColors.surfaceMuted,
                 borderRadius: BorderRadius.circular(AppSpacing.md),
               ),
             ),
@@ -481,7 +479,7 @@ class _PedidoHojaCancelacionState extends State<_PedidoHojaCancelacion> {
             'Al cancelar recuperamos los productos y restauramos el stock. '
             'Esta acción no se puede deshacer.',
             style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(color: AppColors.secondaryGray),
+                ?.copyWith(color: AppColors.inkMuted),
           ),
           const SizedBox(height: AppSpacing.lg),
           AppTextField(controller: _controller, label: 'Motivo (opcional)'),

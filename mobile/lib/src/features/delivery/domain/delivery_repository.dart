@@ -1,5 +1,6 @@
-import 'pedido_entrega.dart';
+import 'disponibilidad.dart';
 import 'estadisticas_repartidor.dart';
+import 'pedido_entrega.dart';
 
 /// Datos del repartidor contra la API (07.1 SCR-DEL-01 a SCR-DEL-06).
 ///
@@ -24,4 +25,12 @@ abstract interface class DeliveryRepository {
   Future<List<PedidoEntrega>> historialEntregas();
 
   Future<EstadisticasRepartidor> estadisticas();
+
+  /// Estado de disponibilidad del repartidor autenticado.
+  Future<Disponibilidad> disponibilidad();
+
+  /// Cambia el estado y devuelve el resultante. Falla con
+  /// `BusinessRuleException` si tiene una entrega en curso y pide estar
+  /// disponible.
+  Future<Disponibilidad> cambiarDisponibilidad(DeliveryPersonStatus estado);
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:quickbite_mobile/src/features/delivery/domain/delivery_repository.dart';
+import 'package:quickbite_mobile/src/features/delivery/domain/disponibilidad.dart';
 import 'package:quickbite_mobile/src/features/delivery/domain/estadisticas_repartidor.dart';
 import 'package:quickbite_mobile/src/features/delivery/domain/pedido_entrega.dart';
 import 'package:quickbite_mobile/src/features/order/domain/order_entities.dart';
@@ -34,6 +35,22 @@ class FakeDeliveryRepository implements DeliveryRepository {
 
   /// Si se asigna, `completar` lanza este error.
   Object? completarError;
+
+  /// Estado de disponibilidad con el que responde `GET /delivery/availability`.
+  DeliveryPersonStatus estado = DeliveryPersonStatus.inactivo;
+
+  /// Si el repartidor tiene una entrega en curso (SCR-DEL-07).
+  bool tieneEntregaActiva = false;
+
+  /// Si se asigna, `disponibilidad()` lanza este error.
+  Object? estadoError;
+
+  /// Si se asigna, `cambiarDisponibilidad` lanza este error (p. ej. la regla de
+  /// negocio de "no disponible con entrega activa").
+  Object? cambiarDisponibilidadError;
+
+  /// Estados pedidos, en orden.
+  final List<DeliveryPersonStatus> cambiosDisponibilidad = [];
 
   /// Ids de los pedidos aceptados, en orden.
   final List<String> aceptados = [];
@@ -115,6 +132,30 @@ class FakeDeliveryRepository implements DeliveryRepository {
     final failure = error;
     if (failure != null) throw failure;
     return List.unmodifiable(historial);
+  }
+
+  @override
+  Future<Disponibilidad> disponibilidad() async {
+    final failure = estadoError ?? error;
+    if (failure != null) throw failure;
+    return Disponibilidad(
+      estado: estado,
+      tieneEntregaActiva: tieneEntregaActiva,
+    );
+  }
+
+  @override
+  Future<Disponibilidad> cambiarDisponibilidad(
+    DeliveryPersonStatus nuevo,
+  ) async {
+    cambiosDisponibilidad.add(nuevo);
+    final failure = cambiarDisponibilidadError ?? error;
+    if (failure != null) throw failure;
+    estado = nuevo;
+    return Disponibilidad(
+      estado: estado,
+      tieneEntregaActiva: tieneEntregaActiva,
+    );
   }
 
   @override

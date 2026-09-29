@@ -37,15 +37,13 @@ class PollingIndicator extends StatelessWidget {
             height: 12,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: AppColors.textGray,
+              color: AppColors.ink,
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Text(
             label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: AppColors.textGray,
-            ),
+            style: theme.textTheme.labelSmall?.copyWith(color: AppColors.ink),
           ),
         ],
       ),

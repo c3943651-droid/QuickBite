@@ -42,8 +42,12 @@ void main() {
     });
 
     test('solo un pedido listo se puede aceptar', () {
-      PedidoEntrega construir(String estado) =>
-          PedidoEntrega(id: 'o1', numeroPedido: 'QB-001', estado: estado, total: 1);
+      PedidoEntrega construir(String estado) => PedidoEntrega(
+        id: 'o1',
+        numeroPedido: 'QB-001',
+        estado: estado,
+        total: 1,
+      );
 
       expect(construir('listo').sePuedeAceptar, isTrue);
       expect(construir('en_camino').sePuedeAceptar, isFalse);
@@ -72,7 +76,10 @@ void main() {
         creadoEn: DateTime.utc(2026, 9, 28, 18),
       );
 
-      expect(pedido.minutosDesdeCreacion(DateTime.utc(2026, 9, 28, 18, 42)), 42);
+      expect(
+        pedido.minutosDesdeCreacion(DateTime.utc(2026, 9, 28, 18, 42)),
+        42,
+      );
     });
 
     test('un reloj anterior a la creación no da un tiempo negativo', () {

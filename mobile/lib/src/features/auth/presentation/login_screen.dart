@@ -91,11 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: AppSpacing.xl),
-                const Icon(
-                  Icons.restaurant,
-                  size: 56,
-                  color: AppColors.quickbiteOrange,
-                ),
+                const Icon(Icons.restaurant, size: 56, color: AppColors.accent),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   'QuickBite',
@@ -141,7 +137,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : (value) => setState(() => _rememberMe = value),
                   title: const Text('Mantener sesión iniciada'),
                   contentPadding: EdgeInsets.zero,
-                  activeThumbColor: AppColors.quickbiteOrange,
+                  activeThumbColor: AppColors.accent,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 PrimaryButton(

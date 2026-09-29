@@ -12,7 +12,9 @@ void main() {
     testWidgets('no muestra nada cuando hay conexion', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [conectividadProvider.overrideWithValue(FakeConectividad())],
+          overrides: [
+            conectividadProvider.overrideWithValue(FakeConectividad()),
+          ],
           child: const MaterialApp(
             home: Scaffold(body: OverlayConexion(child: Text('contenido'))),
           ),
@@ -24,7 +26,9 @@ void main() {
       expect(find.text('Sin conexión a internet'), findsNothing);
     });
 
-    testWidgets('muestra el aviso cuando se pierde la conexion', (tester) async {
+    testWidgets('muestra el aviso cuando se pierde la conexion', (
+      tester,
+    ) async {
       final fake = FakeConectividad(conectado: true);
       await tester.pumpWidget(
         ProviderScope(
@@ -46,7 +50,9 @@ void main() {
       expect(find.byIcon(Icons.cloud_off), findsOneWidget);
     });
 
-    testWidgets('el boton Reintentar consulta de nuevo la conexion', (tester) async {
+    testWidgets('el boton Reintentar consulta de nuevo la conexion', (
+      tester,
+    ) async {
       final fake = FakeConectividad(conectado: false);
       await tester.pumpWidget(
         ProviderScope(
@@ -122,7 +128,9 @@ void main() {
     ) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [conectividadProvider.overrideWithValue(FakeConectividad())],
+          overrides: [
+            conectividadProvider.overrideWithValue(FakeConectividad()),
+          ],
           child: const MaterialApp(home: Scaffold(body: SinConexionView())),
         ),
       );
@@ -134,7 +142,9 @@ void main() {
       expect(find.text('Reintentar'), findsOneWidget);
     });
 
-    testWidgets('Reintentar vuelve a consultar el estado de red', (tester) async {
+    testWidgets('Reintentar vuelve a consultar el estado de red', (
+      tester,
+    ) async {
       final fake = FakeConectividad();
       await tester.pumpWidget(
         ProviderScope(

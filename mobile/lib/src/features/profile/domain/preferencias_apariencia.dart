@@ -71,7 +71,8 @@ class PreferenciasApariencia extends Equatable {
   PreferenciasApariencia conTamanoTexto(TamanoTexto value) =>
       copiar(tamanoTexto: value);
 
-  PreferenciasApariencia conContraste(Contraste value) => copiar(contraste: value);
+  PreferenciasApariencia conContraste(Contraste value) =>
+      copiar(contraste: value);
 
   PreferenciasApariencia conReducirAnimaciones(bool value) =>
       copiar(reducirAnimaciones: value);

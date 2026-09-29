@@ -51,11 +51,13 @@ void main() {
           routes: [
             GoRoute(
               path: 'password',
-              builder: (context, state) => pantallas['/profile/security/password']!,
+              builder: (context, state) =>
+                  pantallas['/profile/security/password']!,
             ),
             GoRoute(
               path: 'sessions',
-              builder: (context, state) => pantallas['/profile/security/sessions']!,
+              builder: (context, state) =>
+                  pantallas['/profile/security/sessions']!,
             ),
           ],
         ),
@@ -83,8 +85,11 @@ void main() {
     matching: find.byIcon(Icons.check_circle),
   );
 
-  Future<void> pumpSeguridad(WidgetTester tester) =>
-      pumpPantalla(tester, const SecurityScreen(), rutaInicial: '/profile/security');
+  Future<void> pumpSeguridad(WidgetTester tester) => pumpPantalla(
+    tester,
+    const SecurityScreen(),
+    rutaInicial: '/profile/security',
+  );
 
   Future<void> pumpSesiones(WidgetTester tester) => pumpPantalla(
     tester,
@@ -136,10 +141,7 @@ void main() {
       await tester.tap(find.text('Cambiar contraseña'));
       await tester.pumpAndSettle();
 
-      expect(
-        router.state.uri.path,
-        '/profile/security/password',
-      );
+      expect(router.state.uri.path, '/profile/security/password');
       expect(find.byType(ChangePasswordScreen), findsOneWidget);
     });
 
@@ -150,10 +152,7 @@ void main() {
       await tester.tap(find.text('Sesiones activas'));
       await tester.pumpAndSettle();
 
-      expect(
-        router.state.uri.path,
-        '/profile/security/sessions',
-      );
+      expect(router.state.uri.path, '/profile/security/sessions');
       expect(find.byType(SessionsScreen), findsOneWidget);
     });
   });
@@ -247,7 +246,10 @@ void main() {
       await pumpSesiones(tester);
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('No pudimos cargar tus sesiones'), findsOneWidget);
+      expect(
+        find.textContaining('No pudimos cargar tus sesiones'),
+        findsOneWidget,
+      );
       expect(find.text('Reintentar'), findsOneWidget);
     });
   });
@@ -323,9 +325,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
       await tester.pumpAndSettle();
 
-      expect(repository.cambios, [
-        (actual: 'Vieja1!', nueva: 'Nueva23#'),
-      ]);
+      expect(repository.cambios, [(actual: 'Vieja1!', nueva: 'Nueva23#')]);
       expect(find.text('Contraseña actualizada'), findsOneWidget);
     });
 
@@ -351,10 +351,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('La contraseña actual es incorrecta.'),
-        findsOneWidget,
-      );
+      expect(find.text('La contraseña actual es incorrecta.'), findsOneWidget);
     });
   });
 }

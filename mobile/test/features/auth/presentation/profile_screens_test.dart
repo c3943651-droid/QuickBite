@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/error/app_exception.dart';
 import 'package:quickbite_mobile/src/core/images/seleccion_imagen.dart';
+import 'package:quickbite_mobile/src/features/delivery/domain/delivery_repository.dart';
+import 'package:quickbite_mobile/src/features/delivery/presentation/delivery_providers.dart';
 import 'package:quickbite_mobile/src/core/session/token_storage.dart';
 import 'package:quickbite_mobile/src/core/widgets/state_views.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
@@ -22,14 +24,20 @@ class FakeProfileRepository implements AuthRepository {
   FakeProfileRepository({this.profile, this.fetchError, this.updateError});
 
   UserProfile? profile;
-  final Object? fetchError;
+  Object? fetchError;
+
+  /// Veces que se pidió el perfil: sirve para comprobar que "Reintentar" vuelve
+  /// a consultar en vez de solo repintar.
+  int fetchCalls = 0;
   final Object? updateError;
   final List<({String? nombre, String? telefono})> updates = [];
 
   @override
   Future<UserProfile> fetchProfile() async {
-    if (fetchError != null) {
-      throw fetchError!;
+    fetchCalls++;
+    final failure = fetchError;
+    if (failure != null) {
+      throw failure;
     }
     return profile ??
         const UserProfile(
@@ -126,6 +134,8 @@ void main() {
     AuthSession session = cliente,
     NotificationRepository? notificaciones,
     SelectorImagen? selectorImagen,
+    DeliveryRepository? delivery,
+    bool rapido = false,
   }) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
@@ -140,6 +150,8 @@ void main() {
           notificationRepositoryProvider.overrideWithValue(notificaciones),
         if (selectorImagen != null)
           selectorImagenProvider.overrideWithValue(selectorImagen),
+        if (delivery != null)
+          deliveryRepositoryProvider.overrideWithValue(delivery),
       ],
     );
     addTearDown(container.dispose);
@@ -152,8 +164,107 @@ void main() {
         child: MaterialApp.router(routerConfig: router),
       ),
     );
+    // `rapido` avanza solo un par de frames: es lo que hace falta para ver el
+    // estado en el que *cae* la pantalla, sin darle tiempo a que riverpod
+    // agote sus reintentos automáticos y termine mostrando el error igual.
+    if (rapido) {
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      return;
+    }
     await tester.pumpAndSettle();
   }
+
+  group('ProfileScreen estados de carga y error (SCR-PROF-01)', () {
+    testWidgets('un fallo de la API muestra el error, no un spinner eterno', (
+      tester,
+    ) async {
+      auth.fetchError = const ServerException();
+
+      await pumpAt(
+        tester,
+        '/profile',
+        notificaciones: FakeNotificationRepository(),
+        rapido: true,
+      );
+
+      // Riverpod 3 reintenta solo: sin `noAutoRetry` la pantalla vuelve a
+      // "cargando" y el usuario ve un spinner en vez del error, sin poder
+      // hacer nada hasta que se agoten los reintentos.
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(ErrorStateView), findsOneWidget);
+      expect(find.text('Reintentar'), findsOneWidget);
+    });
+
+    testWidgets('reintentar vuelve a pedir el perfil', (tester) async {
+      auth.fetchError = const ServerException();
+      await pumpAt(
+        tester,
+        '/profile',
+        notificaciones: FakeNotificationRepository(),
+      );
+      final llamadasAntes = auth.fetchCalls;
+
+      auth.fetchError = null;
+      await tester.tap(find.text('Reintentar'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(auth.fetchCalls, greaterThan(llamadasAntes));
+      expect(find.text('Carlos Pérez'), findsOneWidget);
+    });
+
+    testWidgets('un perfil con nombre vacío no rompe el encabezado', (
+      tester,
+    ) async {
+      auth.profile = const UserProfile(
+        id: '33333333-3333-3333-3333-333333333333',
+        nombre: '',
+        email: '',
+        rol: 'cliente',
+      );
+
+      await pumpAt(tester, '/profile');
+
+      // Sin nombre la pantalla sigue siendo usable: no hay un hueco en blanco
+      // ni un error rojo en el AppBar.
+      expect(find.byType(ErrorStateView), findsNothing);
+      expect(find.text('Cerrar sesión'), findsOneWidget);
+    });
+
+    testWidgets('si el perfil no trae rol, se usan las secciones del cliente', (
+      tester,
+    ) async {
+      auth.profile = const UserProfile(
+        id: '33333333-3333-3333-3333-333333333333',
+        nombre: 'Carlos Pérez',
+        email: 'carlos@quickbite.mx',
+        rol: '',
+      );
+
+      await pumpAt(tester, '/profile');
+
+      // La sesión sí conoce el rol (es lo que usa el guard): si el perfil
+      // llega sin él, se cae al de la sesión y no a un reparto imposible.
+      expect(find.text('Mis direcciones'), findsOneWidget);
+    });
+
+    testWidgets('un teléfono vacío no deja una línea en blanco', (
+      tester,
+    ) async {
+      auth.profile = const UserProfile(
+        id: '33333333-3333-3333-3333-333333333333',
+        nombre: 'Carlos Pérez',
+        email: 'carlos@quickbite.mx',
+        rol: 'cliente',
+        telefono: '',
+      );
+
+      await pumpAt(tester, '/profile');
+
+      expect(find.text(''), findsNothing);
+    });
+  });
 
   group('ProfileScreen (07.1 SCR-PROF-01)', () {
     testWidgets('muestra el encabezado con nombre, email y teléfono', (
@@ -375,6 +486,56 @@ void main() {
       expect(auth.updates.single.nombre, 'Carlos P. Actualizado');
       expect(auth.updates.single.telefono, '55 9999 0000');
       expect(find.text('Mis direcciones'), findsOneWidget);
+    });
+
+    testWidgets('el repartidor ve sus secciones y el cliente no', (
+      tester,
+    ) async {
+      // El rol de la pantalla sale del perfil que devuelve la API, no de la
+      // sesión: por eso el doble hay que ajustarlo, no solo la sesión.
+      auth.profile = const UserProfile(
+        id: '44444444-4444-4444-4444-444444444444',
+        nombre: 'Luis García',
+        email: 'luis@quickbite.mx',
+        rol: 'repartidor',
+      );
+      await pumpAt(tester, '/profile', session: repartidor);
+
+      expect(find.text('Mis estadísticas'), findsOneWidget);
+      expect(find.text('Disponibilidad'), findsOneWidget);
+      expect(find.text('Mis direcciones'), findsNothing);
+    });
+
+    testWidgets('el repartidor abre sus estadísticas', (tester) async {
+      auth.profile = const UserProfile(
+        id: '44444444-4444-4444-4444-444444444444',
+        nombre: 'Luis García',
+        email: 'luis@quickbite.mx',
+        rol: 'repartidor',
+      );
+      await pumpAt(tester, '/profile', session: repartidor);
+
+      await tester.tap(find.text('Mis estadísticas'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.widgetWithText(AppBar, 'Mis estadísticas'), findsOneWidget);
+    });
+
+    testWidgets('el repartidor abre su disponibilidad', (tester) async {
+      auth.profile = const UserProfile(
+        id: '44444444-4444-4444-4444-444444444444',
+        nombre: 'Luis García',
+        email: 'luis@quickbite.mx',
+        rol: 'repartidor',
+      );
+      await pumpAt(tester, '/profile', session: repartidor);
+
+      await tester.tap(find.text('Disponibilidad'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.widgetWithText(AppBar, 'Disponibilidad'), findsOneWidget);
     });
 
     testWidgets('un fallo del backend no navega', (tester) async {

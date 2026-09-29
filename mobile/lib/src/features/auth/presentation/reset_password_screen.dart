@@ -119,7 +119,7 @@ class _MissingToken extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: AppSpacing.xl),
-        const Icon(Icons.link_off, size: 56, color: AppColors.quickbiteOrange),
+        const Icon(Icons.link_off, size: 56, color: AppColors.accent),
         const SizedBox(height: AppSpacing.md),
         Text(
           'Enlace incompleto',
@@ -183,11 +183,7 @@ class _ResetForm extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: AppSpacing.xl),
-          const Icon(
-            Icons.password,
-            size: 56,
-            color: AppColors.quickbiteOrange,
-          ),
+          const Icon(Icons.password, size: 56, color: AppColors.accent),
           const SizedBox(height: AppSpacing.md),
           Text(
             'Restablece tu contraseña',

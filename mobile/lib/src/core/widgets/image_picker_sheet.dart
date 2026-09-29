@@ -60,7 +60,7 @@ class _Opcion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.quickbiteOrange),
+      leading: Icon(icon, color: AppColors.accent),
       title: Text(label),
       onTap: onTap,
     );

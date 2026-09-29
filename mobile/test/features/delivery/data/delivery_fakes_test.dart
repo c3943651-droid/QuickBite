@@ -33,17 +33,20 @@ void main() {
     expect((await repository.estadisticas()).estaVacia, isTrue);
   });
 
-  test('aceptar quita el pedido de disponibles y abre la entrega activa', () async {
-    await repository.aceptar('o1');
+  test(
+    'aceptar quita el pedido de disponibles y abre la entrega activa',
+    () async {
+      await repository.aceptar('o1');
 
-    final disponibles = await repository.pedidosDisponibles();
-    final activa = await repository.entregaActiva();
+      final disponibles = await repository.pedidosDisponibles();
+      final activa = await repository.entregaActiva();
 
-    expect(repository.aceptados, ['o1']);
-    expect(disponibles.map((p) => p.id), ['o2']);
-    expect(activa?.id, 'o1');
-    expect(activa?.estadoPedido, EstadoPedido.enCamino);
-  });
+      expect(repository.aceptados, ['o1']);
+      expect(disponibles.map((p) => p.id), ['o2']);
+      expect(activa?.id, 'o1');
+      expect(activa?.estadoPedido, EstadoPedido.enCamino);
+    },
+  );
 
   test('completar cierra la entrega y la deja en el historial', () async {
     await repository.aceptar('o1');

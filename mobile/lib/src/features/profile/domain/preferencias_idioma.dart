@@ -59,11 +59,12 @@ class PreferenciasIdioma extends Equatable {
   final FormatoFecha formatoFecha;
   final FormatoHora formatoHora;
 
-  PreferenciasIdioma conFormatoFecha(FormatoFecha formato) => PreferenciasIdioma(
-    idioma: idioma,
-    formatoFecha: formato,
-    formatoHora: formatoHora,
-  );
+  PreferenciasIdioma conFormatoFecha(FormatoFecha formato) =>
+      PreferenciasIdioma(
+        idioma: idioma,
+        formatoFecha: formato,
+        formatoHora: formatoHora,
+      );
 
   PreferenciasIdioma conFormatoHora(FormatoHora formato) => PreferenciasIdioma(
     idioma: idioma,

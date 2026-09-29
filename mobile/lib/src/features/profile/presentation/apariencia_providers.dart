@@ -26,25 +26,20 @@ class AparienciaNotifier extends AsyncNotifier<PreferenciasApariencia> {
     return ref.watch(aparienciaRepositoryProvider).read();
   }
 
-  Future<void> cambiarTema(TemaApp tema) => _guardar(
-    (actuales) => actuales.conTema(tema),
-  );
+  Future<void> cambiarTema(TemaApp tema) =>
+      _guardar((actuales) => actuales.conTema(tema));
 
-  Future<void> cambiarTamanoTexto(TamanoTexto tamano) => _guardar(
-    (actuales) => actuales.conTamanoTexto(tamano),
-  );
+  Future<void> cambiarTamanoTexto(TamanoTexto tamano) =>
+      _guardar((actuales) => actuales.conTamanoTexto(tamano));
 
-  Future<void> cambiarContraste(Contraste contraste) => _guardar(
-    (actuales) => actuales.conContraste(contraste),
-  );
+  Future<void> cambiarContraste(Contraste contraste) =>
+      _guardar((actuales) => actuales.conContraste(contraste));
 
-  Future<void> cambiarReducirAnimaciones(bool activar) => _guardar(
-    (actuales) => actuales.conReducirAnimaciones(activar),
-  );
+  Future<void> cambiarReducirAnimaciones(bool activar) =>
+      _guardar((actuales) => actuales.conReducirAnimaciones(activar));
 
-  Future<void> cambiarModoDaltonismo(ModoDaltonismo modo) => _guardar(
-    (actuales) => actuales.conModoDaltonismo(modo),
-  );
+  Future<void> cambiarModoDaltonismo(ModoDaltonismo modo) =>
+      _guardar((actuales) => actuales.conModoDaltonismo(modo));
 
   /// Deja las preferencias como venían de fábrica. Lo usa "Restablecer
   /// preferencias" en Avanzado (07.1 SCR-PROF-14), que es una acción de

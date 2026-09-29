@@ -60,24 +60,28 @@ class _Filtros extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
-        ),
-        itemCount: FiltroPedido.values.length,
-        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
-        itemBuilder: (context, index) {
-          final filtro = FiltroPedido.values[index];
-          return CategoryChip(
-            label: filtro.etiqueta,
-            selected: filtro == seleccionado,
-            onTap: () => onSeleccionar(filtro),
-          );
-        },
+    // Sin alto fijo: la fila se mide al chip. Con un `SizedBox(height: 56)` el
+    // padding vertical de la lista se comía el espacio y el chip se estrujaba
+    // de 37 px a 24, con la etiqueta aplastada a un trazo —y con el tamaño de
+    // texto grande de Accesibilidad, aún peor.
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.md,
+      ),
+      child: Row(
+        children: [
+          for (final filtro in FiltroPedido.values) ...[
+            CategoryChip(
+              label: filtro.etiqueta,
+              selected: filtro == seleccionado,
+              onTap: () => onSeleccionar(filtro),
+            ),
+            if (filtro != FiltroPedido.values.last)
+              const SizedBox(width: AppSpacing.sm),
+          ],
+        ],
       ),
     );
   }
@@ -163,7 +167,7 @@ class _OrderCard extends StatelessWidget {
                       'es',
                     ).format(pedido.creadoEn!.toLocal()),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: AppColors.secondaryGray,
+                color: AppColors.inkMuted,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -213,7 +217,7 @@ class _CardSkeleton extends StatelessWidget {
     return Container(
       height: 104,
       decoration: BoxDecoration(
-        color: AppColors.mistGray,
+        color: AppColors.surfaceMuted,
         borderRadius: BorderRadius.circular(AppSpacing.md),
       ),
     );

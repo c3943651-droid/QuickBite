@@ -1,3 +1,5 @@
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,22 +29,32 @@ class SessionsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Sesiones activas')),
       body: switch (sesiones) {
-        AsyncData(:final value) => value.isEmpty
-            ? const EmptyStateView(
-                message: 'No hay sesiones activas',
-                icon: Icons.devices_other_outlined,
-              )
-            : _Lista(sesiones: value),
+        AsyncData(:final value) =>
+          value.isEmpty
+              ? const EmptyStateView(
+                  message: 'No hay sesiones activas',
+                  icon: Icons.devices_other_outlined,
+                )
+              : _Lista(sesiones: value),
         AsyncError(:final error) => ErrorStateView(
-            message: error is AppException
-                ? error.userMessage
-                : 'No pudimos cargar tus sesiones. Inténtalo de nuevo.',
-            onRetry: () => ref.read(sesionesProvider.notifier).recargar(),
-          ),
+          message: error is AppException
+              ? error.userMessage
+              : 'No pudimos cargar tus sesiones. Inténtalo de nuevo.',
+          onRetry: () => ref.read(sesionesProvider.notifier).recargar(),
+        ),
         _ => const Center(child: CircularProgressIndicator()),
       },
     );
   }
+}
+
+/// Fecha de la sesión con el formato que la persona eligió.
+///
+/// Si el backend no mandó la fecha, se dice "Sin fecha": inventar una fecha
+/// (por ejemplo la época) haría creer que la sesión es de otra época.
+String _fecha(DateTime? valor, PreferenciasIdioma preferencias) {
+  if (valor == null) return 'Sin fecha';
+  return preferencias.formatearFechaHora(valor.toLocal());
 }
 
 class _Lista extends ConsumerWidget {
@@ -136,13 +148,13 @@ class _Tarjeta extends StatelessWidget {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.quickbiteOrange.withValues(alpha: 0.16),
+                      color: AppColors.accent.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(AppRadius.chip),
                     ),
                     child: Text(
                       'Esta sesión',
                       style: texto.labelSmall?.copyWith(
-                        color: AppColors.quickbiteOrange,
+                        color: AppColors.accent,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -153,11 +165,11 @@ class _Tarjeta extends StatelessWidget {
             Text(sesion.direccion, style: texto.bodyMedium),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Emitida ${_preferencias.formatearFechaHora(sesion.creadoEn.toLocal())}',
+              'Emitida ${_fecha(sesion.creadoEn, _preferencias)}',
               style: texto.bodySmall,
             ),
             Text(
-              'Expira ${_preferencias.formatearFechaHora(sesion.expiraEn.toLocal())}',
+              'Expira ${_fecha(sesion.expiraEn, _preferencias)}',
               style: texto.bodySmall,
             ),
             if (sesion.puedeRevocarse) ...[

@@ -2,11 +2,83 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
 
+import 'package:quickbite_mobile/src/core/theme/app_colors.dart';
+import 'package:quickbite_mobile/src/core/theme/app_theme.dart';
+import 'package:quickbite_mobile/src/features/delivery/domain/pedido_entrega.dart';
+
+import '../../support/delivery_fakes.dart';
 import '../../support/router_harness.dart';
+
+/// Repartidor con una entrega en curso, para que `/delivery/active` se pueda
+/// resolver en su propia ruta.
+FakeDeliveryRepository repartidorConEntrega() => FakeDeliveryRepository()
+  ..activa = PedidoEntrega(
+    id: 'a1',
+    numeroPedido: 'QB-1001',
+    estado: 'EnCamino',
+    total: 250,
+  );
 
 void main() {
   final cliente = sessionFor('cliente');
   final repartidor = sessionFor('repartidor');
+
+  group('barra de navegación inferior (09 §8.8)', () {
+    testWidgets('el indicador activo usa el acento de la marca', (
+      tester,
+    ) async {
+      await pumpRouter(tester, cliente);
+
+      final barra = tester.widget<NavigationBar>(find.byType(NavigationBar));
+
+      // 09 §8.8: "Indicador de píldora detrás del icono activo". Con 16 % de
+      // opacidad la píldora se perdía sobre superficies claras.
+      expect(barra.indicatorColor, AppColors.accent);
+    });
+
+    testWidgets('el fondo sigue al tema en vez de quedar fijo en blanco', (
+      tester,
+    ) async {
+      await pumpRouter(tester, cliente, theme: AppTheme.dark);
+      await settle(tester);
+
+      // Un fondo blanco fijo dejaba la barra ilegible en modo oscuro.
+      final tarjeta = tester.widget<Container>(
+        find
+            .ancestor(
+              of: find.byType(NavigationBar),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final color = (tarjeta.decoration as BoxDecoration).color!;
+      expect(ThemeData.estimateBrightnessForColor(color), Brightness.dark);
+    });
+
+    testWidgets('el icono de la pestaña inactiva no se lava con el fondo', (
+      tester,
+    ) async {
+      await pumpRouter(tester, cliente);
+      await settle(tester);
+
+      // La pestaña activa va en blanco sobre el indicador de acento; lo que se
+      // comprueba es que la **inactiva** conserve un color legible y no se
+      // funda con la superficie blanca de la barra.
+      final inactivo = find.descendant(
+        of: find.byType(NavigationDestination).last,
+        matching: find.byType(Icon),
+      );
+      final icono = tester.widget<Icon>(inactivo.first);
+      final color =
+          icono.color ??
+          Theme.of(tester.element(find.byType(NavigationBar)))
+              .colorScheme
+              .onSurfaceVariant;
+
+      expect(color, isNot(AppColors.white));
+      expect(color.computeLuminance(), lessThan(0.75));
+    });
+  });
 
   group('pestañas del cliente (07 §10.4)', () {
     testWidgets(
@@ -259,6 +331,10 @@ void main() {
       '/addresses',
       '/search',
       '/product/7',
+      '/delivery/available',
+      '/delivery/active',
+      '/delivery/history',
+      '/delivery/stats',
     };
 
     Future<void> expectResolves(
@@ -266,7 +342,13 @@ void main() {
       AuthSession? session,
       String path,
     ) async {
-      final router = await pumpRouter(tester, session);
+      final router = await pumpRouter(
+        tester,
+        session,
+        // Con entrega en curso: `/delivery/active` redirige a disponibles
+        // cuando no hay ninguna, y entonces no resolvería en su propia ruta.
+        delivery: repartidorConEntrega(),
+      );
       router.go(path);
       await settle(tester);
 
@@ -276,35 +358,34 @@ void main() {
       }
     }
 
-    testWidgets(
-      'las pantallas de ajustes ya no son marcadores de posición',
-      (tester) async {
-        for (final entrada in {
-          '/profile/appearance': 'Apariencia',
-          '/profile/language': 'Idioma y región',
-          '/profile/privacy': 'Privacidad',
-          '/profile/help': 'Ayuda y soporte',
-          '/profile/about': 'Acerca de',
-          '/profile/advanced': 'Avanzado',
-          '/profile/delete-account': 'Eliminar cuenta',
-        }.entries) {
-          final router = await pumpRouter(tester, cliente);
-          router.go(entrada.key);
-          await settle(tester);
+    testWidgets('las pantallas de ajustes ya no son marcadores de posición', (
+      tester,
+    ) async {
+      for (final entrada in {
+        '/profile/appearance': 'Apariencia',
+        '/profile/language': 'Idioma y región',
+        '/profile/privacy': 'Privacidad',
+        '/profile/help': 'Ayuda y soporte',
+        '/profile/about': 'Acerca de',
+        '/profile/advanced': 'Avanzado',
+        '/profile/delete-account': 'Eliminar cuenta',
+      }.entries) {
+        final router = await pumpRouter(tester, cliente);
+        router.go(entrada.key);
+        await settle(tester);
 
-          expect(
-            pendingAt(entrada.key),
-            findsNothing,
-            reason: '${entrada.key} ya tiene pantalla propia',
-          );
-          expect(
-            find.widgetWithText(AppBar, entrada.value),
-            findsOneWidget,
-            reason: '${entrada.key} debe abrir ${entrada.value}',
-          );
-        }
-      },
-    );
+        expect(
+          pendingAt(entrada.key),
+          findsNothing,
+          reason: '${entrada.key} ya tiene pantalla propia',
+        );
+        expect(
+          find.widgetWithText(AppBar, entrada.value),
+          findsOneWidget,
+          reason: '${entrada.key} debe abrir ${entrada.value}',
+        );
+      }
+    });
 
     testWidgets('/profile/account redirige a la pantalla de eliminar cuenta', (
       tester,
@@ -380,6 +461,37 @@ void main() {
         await expectResolves(tester, repartidor, path);
       }
     });
+
+    testWidgets(
+      'las cuatro pantallas de repartidor ya no son marcadores de posición',
+      (tester) async {
+        for (final entrada in {
+          '/delivery/available': 'Pedidos disponibles',
+          '/delivery/active': 'Entrega activa',
+          '/delivery/history': 'Historial de entregas',
+          '/delivery/stats': 'Mis estadísticas',
+        }.entries) {
+          final router = await pumpRouter(
+            tester,
+            repartidor,
+            delivery: repartidorConEntrega(),
+          );
+          router.go(entrada.key);
+          await settle(tester);
+
+          expect(
+            pendingAt(entrada.key),
+            findsNothing,
+            reason: '${entrada.key} ya tiene pantalla propia',
+          );
+          expect(
+            find.widgetWithText(AppBar, entrada.value),
+            findsOneWidget,
+            reason: '${entrada.key} debe abrir ${entrada.value}',
+          );
+        }
+      },
+    );
 
     testWidgets('la raíz verifica la sesión y lleva a cada rol a su inicio', (
       tester,

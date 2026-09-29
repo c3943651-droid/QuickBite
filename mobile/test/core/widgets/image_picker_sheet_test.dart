@@ -7,7 +7,10 @@ import 'package:quickbite_mobile/src/core/widgets/image_picker_sheet.dart';
 import '../../support/widget_harness.dart';
 
 void main() {
-  Future<String?> abrirHoja(WidgetTester tester, {required SelectorImagen selector}) async {
+  Future<String?> abrirHoja(
+    WidgetTester tester, {
+    required SelectorImagen selector,
+  }) async {
     String? elegida;
     await tester.pumpWidget(
       ProviderScope(
@@ -55,7 +58,9 @@ void main() {
     expect(find.byIcon(Icons.photo_library_outlined), findsOneWidget);
   });
 
-  testWidgets('elegir camara devuelve la ruta y cierra la hoja', (tester) async {
+  testWidgets('elegir camara devuelve la ruta y cierra la hoja', (
+    tester,
+  ) async {
     final selector = FakeSelectorImagen('/tmp/camara.jpg');
 
     await abrirHoja(tester, selector: selector);

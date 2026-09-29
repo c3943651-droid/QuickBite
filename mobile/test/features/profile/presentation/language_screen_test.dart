@@ -53,8 +53,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  PreferenciasIdioma leer() =>
-      container.read(idiomaProvider).requireValue;
+  PreferenciasIdioma leer() => container.read(idiomaProvider).requireValue;
 
   group('LanguageScreen (07.1 SCR-PROF-10)', () {
     testWidgets('muestra idioma, fecha, hora y la moneda informativa', (
@@ -88,10 +87,13 @@ void main() {
     });
 
     testWidgets('muestra lo que había quedado guardado', (tester) async {
-      await pumpIdioma(tester, guardadas: {
-        'quickbite_idioma_fecha': 'anoMesDia',
-        'quickbite_idioma_hora': 'doce',
-      });
+      await pumpIdioma(
+        tester,
+        guardadas: {
+          'quickbite_idioma_fecha': 'anoMesDia',
+          'quickbite_idioma_hora': 'doce',
+        },
+      );
 
       expect(leer().formatoFecha, FormatoFecha.anoMesDia);
       expect(leer().formatoHora, FormatoHora.doce);
@@ -122,12 +124,16 @@ void main() {
 
       expect(leer().formatoHora, FormatoHora.doce);
       expect(
-        container.read(sharedPreferencesProvider).getString('quickbite_idioma_hora'),
+        container
+            .read(sharedPreferencesProvider)
+            .getString('quickbite_idioma_hora'),
         'doce',
       );
     });
 
-    testWidgets('la moneda se informa pero no se puede cambiar', (tester) async {
+    testWidgets('la moneda se informa pero no se puede cambiar', (
+      tester,
+    ) async {
       await pumpIdioma(tester);
 
       expect(find.textContaining('MXN'), findsOneWidget);

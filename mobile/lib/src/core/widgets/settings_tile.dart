@@ -22,10 +22,8 @@ class SectionHeader extends StatelessWidget {
       ),
       child: Text(
         titulo,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: AppColors.quickbiteOrange,
-          fontWeight: FontWeight.w700,
-        ),
+        style: Theme.of(context).textTheme.labelMedium
+            ?.copyWith(color: AppColors.accent, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -61,16 +59,10 @@ class SettingsTile extends StatelessWidget {
 
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(
-        label,
-        style: destructive ? TextStyle(color: color) : null,
-      ),
+      title: Text(label, style: destructive ? TextStyle(color: color) : null),
       subtitle: subtitle == null
           ? null
-          : Text(
-              subtitle!,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+          : Text(subtitle!, style: Theme.of(context).textTheme.bodySmall),
       trailing:
           trailing ?? (onTap == null ? null : const Icon(Icons.chevron_right)),
       onTap: onTap,

@@ -59,7 +59,11 @@ class SesionesNotifier extends AsyncNotifier<List<SesionUsuario>> {
 /// persiste es [guardado], que la pantalla usa para volver a Seguridad.
 @immutable
 class CambioPasswordState {
-  const CambioPasswordState({this.loading = false, this.guardado = false, this.error});
+  const CambioPasswordState({
+    this.loading = false,
+    this.guardado = false,
+    this.error,
+  });
 
   final bool loading;
   final bool guardado;

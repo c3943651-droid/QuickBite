@@ -73,9 +73,8 @@ class _Body extends ConsumerWidget {
             style: Theme.of(context).textTheme.bodySmall,
           ),
           value: preferencias.altoContraste,
-          onChanged: (v) => notifier.cambiarContraste(
-            v ? Contraste.alto : Contraste.normal,
-          ),
+          onChanged: (v) =>
+              notifier.cambiarContraste(v ? Contraste.alto : Contraste.normal),
         ),
         SwitchListTile(
           title: const Text('Reducir animaciones'),
@@ -133,4 +132,3 @@ class _Body extends ConsumerWidget {
     ],
   );
 }
-

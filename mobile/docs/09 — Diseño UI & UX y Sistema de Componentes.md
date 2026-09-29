@@ -38,9 +38,9 @@ Las decisiones canónicas que afectan al diseño (polling, pagos simulados, modo
 
 QuickBite se posiciona como una solución moderna, rápida y cercana para restaurantes de comida rápida. Su identidad evoca:
 
-- **Energía y dinamismo:** colores cálidos y formas redondeadas.
-- **Confianza y limpieza:** espacios blancos y tipografía clara.
-- **Apetito:** tonos anaranjados y rojizos.
+- **Energía y dinamismo:** formas redondeadas y degradados suaves.
+- **Confianza y limpieza:** espacios claros y tipografía nítida.
+- **Apetito:** un único acento frío que deja hablar a la comida.
 
 ### 3.2. Logotipo
 
@@ -56,39 +56,48 @@ QuickBite se posiciona como una solución moderna, rápida y cercana para restau
 
 ## 4. Paleta de Colores
 
+> **Implementación:** `lib/src/core/theme/app_colors.dart`. Contraste verificado
+> en `test/core/theme/premium_palette_test.dart`.
+
 ### 4.1. Colores de Marca
 
 | Nombre | Código | Uso principal |
 | :--- | :--- | :--- |
-| Naranja QuickBite | `#FF6B35` | Color principal: botones primarios, encabezados, acentos |
-| Rojo Apetito | `#D62828` | Color secundario: badges de notificación, alertas, descuentos |
-| Amarillo Energía | `#F7B801` | Color terciario: destacados, promociones, calificaciones |
+| Verde Esmeralda (acento) | `#0D9488` | Color principal: botones primarios, estado activo, iconos de acción |
+| Esmeralda Profundo | `#0F766E` | Parada del degradado del acento; marca y banners |
+| Cobalto (acento alterno) | `#2563EB` | Segundo acento cuando conviven dos en la misma pantalla |
+
+La paleta es **pizarra (slate) con un único acento frío**. La identidad anterior
+era cálida (naranja/rojo/amarillo) y se descartó: el naranja se confundía con
+"descuento" y "urgente", así que el acento es frío y el contenido manda.
 
 ### 4.2. Colores Neutros
 
 | Nombre | Código | Uso principal |
 | :--- | :--- | :--- |
-| Blanco Puro | `#FFFFFF` | Fondos principales y tarjetas |
-| Gris Niebla | `#F5F5F5` | Fondos secundarios y separadores |
-| Gris Texto | `#4A4A4A` | Texto principal sobre fondos claros |
-| Gris Secundario | `#9E9E9E` | Texto secundario y placeholders |
-| Negro Suave | `#1A1A1A` | Texto de alto contraste y modo oscuro |
+| Pizarra 50 (fondo) | `#F8FAFC` | Fondo de pantalla: más suave que el blanco puro |
+| Blanco Superficie | `#FFFFFF` | Tarjetas, campos, barra de navegación |
+| Pizarra 100 | `#F1F5F9` | Superficies secundarias, chips inactivos, placeholders |
+| Pizarra 200 | `#E2E8F0` | Borde de tarjeta y separador |
+| Ciruela (texto) | `#0F172A` | Texto principal |
+| Pizarra 600 | `#475569` | Texto secundario |
+| Pizarra 400 | `#94A3B8` | Iconos terciarios y placeholders |
 
 ### 4.3. Colores Semánticos
 
 | Nombre | Código | Uso principal |
 | :--- | :--- | :--- |
-| Verde Éxito | `#2E7D32` | Confirmaciones, pedido entregado, stock disponible |
-| Rojo Error | `#C62828` | Errores, cancelaciones, stock agotado |
-| Amarillo Advertencia | `#F9A825` | Advertencias, pedido en preparación, stock bajo |
-| Azul Información | `#1565C0` | Mensajes informativos, enlaces, pedido en camino |
+| Verde Éxito | `#059669` | Confirmaciones, pedido entregado, stock disponible |
+| Rojo Error | `#DC2626` | Errores, cancelaciones, stock agotado |
+| Ámbar Quemado | `#B45309` | Advertencias: el amarillo puro no llega a 3:1 sobre blanco |
+| Cobalto Información | `#2563EB` | Mensajes informativos, enlaces, pedido en camino |
 
 ### 4.4. Reglas de Uso
 
-- El naranja QuickBite se reserva para acciones principales. **Un solo botón primario por pantalla.**
-- El rojo se usa con moderación, solo en elementos críticos.
+- El acento esmera se reserva para acciones principales. **Un solo botón primario por pantalla.**
+- **Los colores cálidos no se usan como acento.** El ámbar quemado y el rojo son exclusivamente semánticos.
 - Los colores semánticos nunca se usan como decoración: siempre comunican un estado.
-- El contraste de texto sobre fondo cumple WCAG 2.1 AA en todos los casos.
+- El contraste de texto sobre fondo cumple WCAG 2.1 AA en todos los casos: el texto principal mide 14.6:1 sobre el fondo.
 
 ### 4.5. Modo Oscuro
 
@@ -96,11 +105,14 @@ El modo oscuro es una opción disponible en la app y en el panel, activable desd
 
 | Elemento | Código |
 | :--- | :--- |
-| Fondo principal | `#121212` |
-| Superficie de tarjetas | `#1E1E1E` |
-| Texto principal | `#E0E0E0` |
-| Texto secundario | `#9E9E9E` |
+| Fondo principal | `#0B1220` |
+| Superficie de tarjetas | `#111C2E` |
+| Borde de tarjeta | `#1E293B` |
+| Texto principal | `#F1F5F9` |
 | Colores de marca | Se mantienen, con ajuste de brillo para mantener contraste |
+
+El fondo oscuro es **pizarra profunda, no negro plano**: el negro puro dejaba los
+bordes de tarjeta invisibles y el conjunto se veía roto.
 
 ### 4.6. Contraste alto y modos de daltonismo
 
@@ -117,7 +129,7 @@ los campos, botones y separadores a 2 px.
 | Texto principal | `#000000` | `#FFFFFF` |
 | Texto secundario | `#000000` | `#FFFFFF` |
 
-**Modos de daltonismo.** La paleta base (naranja, rojo, amarillo) es
+**Modos de daltonismo.** La paleta base (pizarra + esmeralda) es
 indistinguible para deuteranopía, protanopía y tritanopía, así que cada modo
 sustituye los tonos por otros con la misma función. Valores vigentes en
 `app_theme.dart`:
@@ -227,9 +239,9 @@ Los componentes se describen por su comportamiento y aspecto. Los componentes na
 
 | Tipo | Apariencia | Uso |
 | :--- | :--- | :--- |
-| Primario | Fondo naranja, texto blanco, bordes redondeados, altura 48 px | Acción principal de la pantalla |
-| Secundario | Fondo transparente, borde naranja 2 px, texto naranja | Acciones alternativas |
-| Terciario | Sin fondo ni borde, texto naranja | Acciones menores |
+| Primario | Degradado esmeralda, texto blanco, bordes redondeados, altura 52 px | Acción principal de la pantalla |
+| Secundario | Fondo transparente, borde esmeralda 2 px, texto esmeralda | Acciones alternativas |
+| Terciario | Sin fondo ni borde, texto esmeralda | Acciones menores |
 | Peligro | Fondo rojo, texto blanco | Acciones destructivas |
 | Deshabilitado | Fondo gris claro, texto gris | Acción no disponible |
 
@@ -240,7 +252,7 @@ Los componentes se describen por su comportamiento y aspecto. Los componentes na
 | Aspecto | Definición |
 | :--- | :--- |
 | Altura | 56 px |
-| Borde | Redondeado 8 px; al enfocar, borde naranja 2 px |
+| Borde | Redondeado 12 px; al enfocar, borde esmeralda 2 px |
 | Etiqueta flotante | Se mueve hacia arriba al enfocar o con contenido |
 | Iconos | Opcionales a la izquierda o derecha |
 | Validación | Mensaje de error en rojo debajo del campo con icono |
@@ -262,7 +274,7 @@ Elevación nivel 1, esquinas redondeadas 16 px.
 | Tipo | Apariencia |
 | :--- | :--- |
 | Chip de estado | Fondo del color semántico con opacidad 20 %, texto del color semántico |
-| Chip de categoría | Fondo gris claro; cuando está activo, fondo naranja |
+| Chip de categoría | Píldora con fondo pizarra 100; cuando está activo, degradado esmeralda con texto blanco |
 | Badge de notificación | Círculo rojo con número blanco |
 | Badge de estado | Píldora con texto y color según estado |
 
@@ -300,7 +312,7 @@ Elevación nivel 1, esquinas redondeadas 16 px.
 | Cliente | Catálogo, Carrito, Historial, Perfil |
 | Repartidor | Disponibles, Entrega activa, Historial |
 
-**Estilo:** iconos outlined cuando no están activos; iconos filled cuando están activos. Color activo naranja. Indicador de píldora detrás del icono activo.
+**Estilo:** iconos outlined cuando no están activos; iconos filled cuando están activos. Color activo esmeralda. Indicador de píldora detrás del icono activo.
 
 ### 8.9. Barra Superior
 
@@ -309,7 +321,7 @@ Elevación nivel 1, esquinas redondeadas 16 px.
 | Título | Centrado o alineado a la izquierda según la pantalla |
 | Acciones | Iconos de notificaciones, carrito (si aplica), menú de perfil |
 | Elevación | 0 en reposo; nivel 2 al hacer scroll |
-| Color | Fondo blanco con texto oscuro; fondo naranja con texto blanco en pantallas de bienvenida |
+| Color | Fondo blanco con texto oscuro; banda con degradado pizarra y texto blanco en pantallas de bienvenida |
 
 ### 8.10. Menú Lateral (Blazor)
 
@@ -452,7 +464,7 @@ Los siguientes estados aparecen en múltiples pantallas y siguen las mismas regl
 - Fondo principal: blanco puro.
 - Fondos secundarios: gris niebla.
 - Texto: gris texto o negro suave.
-- Colores de marca: naranja, rojo, amarillo.
+- Colores de marca: escala pizarra con acento esmeralda.
 
 ### 13.2. Tema Oscuro
 

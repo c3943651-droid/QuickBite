@@ -35,13 +35,51 @@ void main() {
 
   setUp(() {
     http = FakeHttpAdapter();
-    tokens = InMemoryTokenStorage(accessToken: 'access-1', refreshToken: 'refresh-1');
+    tokens = InMemoryTokenStorage(
+      accessToken: 'access-1',
+      refreshToken: 'refresh-1',
+    );
     final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
       ..httpClientAdapter = http;
     repository = SeguridadRepositoryImpl(
       SeguridadRemoteDataSource(ApiClient(dio: dio)),
       tokens,
     );
+  });
+
+  group('mapeo tolerante de sesiones', () {
+    test('una fecha mal formada no tira la lista entera', () async {
+      http.on('GET', '/users/sessions', [
+        sesionJson(id: 's1'),
+        sesionJson(id: 's2', creadoEn: 'no-es-una-fecha'),
+      ]);
+
+      final sesiones = await repository.fetchSessions();
+
+      // La fila sobrevive: solo se pierde la fecha, que es un dato informativo.
+      expect(sesiones, hasLength(2));
+      expect(sesiones.first.creadoEn, isNotNull);
+      expect(sesiones.last.creadoEn, isNull);
+    });
+
+    test('sin `es_actual` la sesión no se marca como actual', () async {
+      final body = sesionJson()..remove('es_actual');
+      http.on('GET', '/users/sessions', [body]);
+
+      final sesiones = await repository.fetchSessions();
+
+      expect(sesiones.single.esActual, isFalse);
+    });
+
+    test('sin `id` la sesión no rompe la lista', () async {
+      final body = sesionJson()..remove('id');
+      http.on('GET', '/users/sessions', [body]);
+
+      final sesiones = await repository.fetchSessions();
+
+      expect(sesiones, hasLength(1));
+      expect(sesiones.single.id, '');
+    });
   });
 
   group('listar sesiones (04 §4.9)', () {
@@ -60,17 +98,20 @@ void main() {
       expect(sesiones.single.esActual, isFalse);
     });
 
-    test('envía el refresh token para que la API marque la sesión actual', () async {
-      http.on('GET', '/users/sessions', <Map<String, dynamic>>[]);
+    test(
+      'envía el refresh token para que la API marque la sesión actual',
+      () async {
+        http.on('GET', '/users/sessions', <Map<String, dynamic>>[]);
 
-      await repository.fetchSessions();
+        await repository.fetchSessions();
 
-      expect(
-        http.lastRequest().headers['X-Refresh-Token'],
-        'refresh-1',
-        reason: 'sin el token la API no puede resolver es_actual (04 §4.9)',
-      );
-    });
+        expect(
+          http.lastRequest().headers['X-Refresh-Token'],
+          'refresh-1',
+          reason: 'sin el token la API no puede resolver es_actual (04 §4.9)',
+        );
+      },
+    );
 
     test('sin sesión guardada no envía la cabecera de sesión actual', () async {
       http.on('GET', '/users/sessions', <Map<String, dynamic>>[]);
@@ -142,34 +183,34 @@ void main() {
         'message': 'Contraseña actualizada.',
       });
 
-      await repository.changePassword(
-        actual: 'Vieja1!',
-        nueva: 'Nueva23#',
-      );
+      await repository.changePassword(actual: 'Vieja1!', nueva: 'Nueva23#');
 
       final enviado = http.lastRequest().data as Map<String, dynamic>;
       expect(enviado['currentPassword'], 'Vieja1!');
       expect(enviado['newPassword'], 'Nueva23#');
     });
 
-    test('la contraseña actual incorrecta llega como ValidationException', () async {
-      http.onError(
-        'PUT',
-        '/users/change-password',
-        statusCode: 400,
-        body: errorBodyJson('La contraseña actual es incorrecta.'),
-      );
+    test(
+      'la contraseña actual incorrecta llega como ValidationException',
+      () async {
+        http.onError(
+          'PUT',
+          '/users/change-password',
+          statusCode: 400,
+          body: errorBodyJson('La contraseña actual es incorrecta.'),
+        );
 
-      await expectLater(
-        repository.changePassword(actual: 'Mal1!', nueva: 'Nueva23#'),
-        throwsA(
-          isA<ValidationException>().having(
-            (e) => e.userMessage,
-            'userMessage',
-            'La contraseña actual es incorrecta.',
+        await expectLater(
+          repository.changePassword(actual: 'Mal1!', nueva: 'Nueva23#'),
+          throwsA(
+            isA<ValidationException>().having(
+              (e) => e.userMessage,
+              'userMessage',
+              'La contraseña actual es incorrecta.',
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   });
 }

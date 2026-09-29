@@ -50,10 +50,8 @@ class EnlacesExternos {
 
   Future<bool> abrirLicencias() => abrirDocumento(licencias);
 
-  Future<bool> escribirSoporte({
-    required String asunto,
-    String cuerpo = '',
-  }) => _launcher.abrir(_config.correo(asunto: asunto, cuerpo: cuerpo));
+  Future<bool> escribirSoporte({required String asunto, String cuerpo = ''}) =>
+      _launcher.abrir(_config.correo(asunto: asunto, cuerpo: cuerpo));
 
   /// Pide la eliminación de la cuenta. El cuerpo va prellenado con los datos
   /// que el usuario ya ve en la pantalla para no tener que escribirlos otra vez.
@@ -62,7 +60,8 @@ class EnlacesExternos {
     required String nombreUsuario,
   }) => escribirSoporte(
     asunto: 'Solicitud de eliminación de cuenta',
-    cuerpo: '''
+    cuerpo:
+        '''
 Hola, solicito la eliminación de mi cuenta de QuickBite.
 
 Nombre: $nombreUsuario

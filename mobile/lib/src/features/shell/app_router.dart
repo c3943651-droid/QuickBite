@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_snackbar.dart';
+import 'floating_nav_bar.dart';
 import '../address/presentation/address_form_screen.dart';
 import '../address/presentation/addresses_screen.dart';
 import '../auth/domain/auth_entities.dart';
@@ -16,6 +16,12 @@ import '../auth/presentation/profile_screen.dart';
 import '../auth/presentation/register_screen.dart';
 import '../auth/presentation/reset_password_screen.dart';
 import '../cart/presentation/cart_screen.dart';
+import '../delivery/presentation/active_delivery_screen.dart';
+import '../delivery/presentation/available_order_detail_screen.dart';
+import '../delivery/presentation/available_orders_screen.dart';
+import '../delivery/presentation/delivery_availability_screen.dart';
+import '../delivery/presentation/delivery_history_screen.dart';
+import '../delivery/presentation/delivery_stats_screen.dart';
 import '../catalog/presentation/home_screen.dart';
 import '../catalog/presentation/product_detail_screen.dart';
 import '../order/presentation/checkout_screen.dart';
@@ -34,7 +40,6 @@ import '../profile/presentation/change_password_screen.dart';
 import '../profile/presentation/language_screen.dart';
 import '../profile/presentation/security_screen.dart';
 import '../profile/presentation/sessions_screen.dart';
-import 'pending_screen.dart';
 import 'splash_screen.dart';
 
 typedef SessionReader = Future<AuthSession?> Function();
@@ -348,10 +353,15 @@ GoRouter createRouter(
             routes: [
               GoRoute(
                 path: '/delivery/available',
-                builder: (context, state) => const PendingScreen(
-                  location: '/delivery/available',
-                  title: 'Pedidos disponibles',
-                ),
+                builder: (context, state) => const AvailableOrdersScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => AvailableOrderDetailScreen(
+                      pedidoId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -359,10 +369,7 @@ GoRouter createRouter(
             routes: [
               GoRoute(
                 path: '/delivery/active',
-                builder: (context, state) => const PendingScreen(
-                  location: '/delivery/active',
-                  title: 'Entrega activa',
-                ),
+                builder: (context, state) => const ActiveDeliveryScreen(),
               ),
             ],
           ),
@@ -370,10 +377,15 @@ GoRouter createRouter(
             routes: [
               GoRoute(
                 path: '/delivery/history',
-                builder: (context, state) => const PendingScreen(
-                  location: '/delivery/history',
-                  title: 'Historial de entregas',
-                ),
+                builder: (context, state) => const DeliveryHistoryScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => DeliveryHistoryDetailScreen(
+                      pedidoId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -425,10 +437,11 @@ GoRouter createRouter(
       ),
       GoRoute(
         path: '/delivery/stats',
-        builder: (context, state) => const PendingScreen(
-          location: '/delivery/stats',
-          title: 'Estadísticas',
-        ),
+        builder: (context, state) => const DeliveryStatsScreen(),
+      ),
+      GoRoute(
+        path: '/delivery/availability',
+        builder: (context, state) => const DeliveryAvailabilityScreen(),
       ),
     ],
   );
@@ -443,32 +456,6 @@ class MainShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rol = ref.watch(sessionProvider).value?.user.rol ?? 'cliente';
-    final tabs = shellTabsFor(rol);
-    final selected = tabs.indexWhere(
-      (tab) => tab.branchIndex == navigationShell.currentIndex,
-    );
-
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selected < 0 ? 0 : selected,
-        backgroundColor: AppColors.white,
-        indicatorColor: AppColors.quickbiteOrange.withValues(alpha: 0.16),
-        onDestinationSelected: (index) => navigationShell.goBranch(
-          tabs[index].branchIndex,
-          initialLocation: index == 0,
-        ),
-        destinations: [
-          for (final tab in tabs)
-            NavigationDestination(
-              icon: Icon(tab.icon),
-              selectedIcon: Icon(tab.selectedIcon),
-              label: tab.label,
-            ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) =>
+      PremiumMainShell(navigationShell: navigationShell);
 }

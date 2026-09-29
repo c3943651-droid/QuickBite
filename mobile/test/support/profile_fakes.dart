@@ -33,7 +33,10 @@ class FakeSeguridadRepository implements SeguridadRepository {
   }
 
   @override
-  Future<void> changePassword({required String actual, required String nueva}) async {
+  Future<void> changePassword({
+    required String actual,
+    required String nueva,
+  }) async {
     if (error != null) throw error!;
     cambios.add((actual: actual, nueva: nueva));
   }

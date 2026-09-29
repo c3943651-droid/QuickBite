@@ -22,13 +22,11 @@ class IdiomaNotifier extends AsyncNotifier<PreferenciasIdioma> {
     return ref.watch(idiomaRepositoryProvider).read();
   }
 
-  Future<void> cambiarFormatoFecha(FormatoFecha formato) => _guardar(
-    (actuales) => actuales.conFormatoFecha(formato),
-  );
+  Future<void> cambiarFormatoFecha(FormatoFecha formato) =>
+      _guardar((actuales) => actuales.conFormatoFecha(formato));
 
-  Future<void> cambiarFormatoHora(FormatoHora formato) => _guardar(
-    (actuales) => actuales.conFormatoHora(formato),
-  );
+  Future<void> cambiarFormatoHora(FormatoHora formato) =>
+      _guardar((actuales) => actuales.conFormatoHora(formato));
 
   /// Deja los formatos como venían de fábrica. Lo invoca "Restablecer
   /// preferencias" en Avanzado (07.1 SCR-PROF-14).

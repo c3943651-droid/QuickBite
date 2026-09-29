@@ -16,9 +16,7 @@ class SeguridadRepositoryImpl implements SeguridadRepository {
   Future<List<SesionUsuario>> fetchSessions() async {
     final stored = await _tokenStorage.read();
     final refreshToken = stored?.refreshToken;
-    final dtos = await _remote.fetchSessions(
-      refreshToken: refreshToken,
-    );
+    final dtos = await _remote.fetchSessions(refreshToken: refreshToken);
     return dtos.map(_aEntidad).toList();
   }
 

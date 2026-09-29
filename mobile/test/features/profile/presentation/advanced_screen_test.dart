@@ -126,7 +126,9 @@ void main() {
     expect(find.text('Exportar historial de pedidos'), findsOneWidget);
   });
 
-  testWidgets('limpiar la caché pide confirmación y luego la borra', (tester) async {
+  testWidgets('limpiar la caché pide confirmación y luego la borra', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -185,7 +187,12 @@ void main() {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await montar(tester, prefs: {'quickbite_search_history': ['pizza']});
+    await montar(
+      tester,
+      prefs: {
+        'quickbite_search_history': ['pizza'],
+      },
+    );
     await container.read(searchHistoryProvider.future);
     expect(container.read(searchHistoryProvider).value!.terms, ['pizza']);
 
@@ -198,39 +205,37 @@ void main() {
     expect(find.textContaining('Historial borrado'), findsOneWidget);
   });
 
-  testWidgets('restablecer deja apariencia, idioma y notificaciones de fábrica', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    await montar(tester);
-    await container.read(aparienciaProvider.future);
-    await container.read(idiomaProvider.future);
-    await container.read(preferenciasNotificacionProvider.future);
-    await container
-        .read(aparienciaProvider.notifier)
-        .cambiarTema(TemaApp.oscuro);
-    await container
-        .read(idiomaProvider.notifier)
-        .cambiarFormatoFecha(FormatoFecha.mesDiaAno);
+  testWidgets(
+    'restablecer deja apariencia, idioma y notificaciones de fábrica',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await montar(tester);
+      await container.read(aparienciaProvider.future);
+      await container.read(idiomaProvider.future);
+      await container.read(preferenciasNotificacionProvider.future);
+      await container
+          .read(aparienciaProvider.notifier)
+          .cambiarTema(TemaApp.oscuro);
+      await container
+          .read(idiomaProvider.notifier)
+          .cambiarFormatoFecha(FormatoFecha.mesDiaAno);
 
-    await tester.tap(find.text('Restablecer preferencias'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Sí, restablecer'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Restablecer preferencias'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sí, restablecer'));
+      await tester.pumpAndSettle();
 
-    expect(container.read(aparienciaProvider).value?.tema, TemaApp.sistema);
-    expect(
-      container.read(idiomaProvider).value?.formatoFecha,
-      FormatoFecha.diaMesAno,
-    );
-    expect(
-      container.read(preferenciasNotificacionProvider).value,
-      isNotNull,
-    );
-    expect(find.textContaining('Preferencias restablecidas'), findsOneWidget);
-  });
+      expect(container.read(aparienciaProvider).value?.tema, TemaApp.sistema);
+      expect(
+        container.read(idiomaProvider).value?.formatoFecha,
+        FormatoFecha.diaMesAno,
+      );
+      expect(container.read(preferenciasNotificacionProvider).value, isNotNull);
+      expect(find.textContaining('Preferencias restablecidas'), findsOneWidget);
+    },
+  );
 
   testWidgets('exportar mis datos genera el archivo y avisa dónde quedó', (
     tester,
@@ -274,6 +279,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Archivo generado'), findsNothing);
-    expect(find.textContaining('No se pudo generar el archivo'), findsOneWidget);
+    expect(
+      find.textContaining('No se pudo generar el archivo'),
+      findsOneWidget,
+    );
   });
 }

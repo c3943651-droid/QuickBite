@@ -54,7 +54,7 @@ class _Body extends ConsumerWidget {
           subtitle: const Text(
             'Español es el único idioma disponible en la v1.0.',
           ),
-          trailing: const Icon(Icons.check, color: AppColors.successGreen),
+          trailing: const Icon(Icons.check, color: AppColors.success),
         ),
         const Divider(height: AppSpacing.xl),
         const SectionHeader('Formato de fecha'),

@@ -8,17 +8,13 @@ part of 'user_profile_dto.dart';
 
 UserProfileDto _$UserProfileDtoFromJson(Map<String, dynamic> json) =>
     UserProfileDto(
-      id: json['id'] as String,
-      nombre: json['nombre'] as String,
-      email: json['email'] as String,
-      rol: json['rol'] as String,
-      telefono: json['telefono'] as String?,
-      creadoEn: json['creado_en'] == null
-          ? null
-          : DateTime.parse(json['creado_en'] as String),
-      ultimoLogin: json['ultimo_login'] == null
-          ? null
-          : DateTime.parse(json['ultimo_login'] as String),
+      id: _texto(json['id']),
+      nombre: _texto(json['nombre']),
+      email: _texto(json['email']),
+      rol: _texto(json['rol']),
+      telefono: _textoOpcional(json['telefono']),
+      creadoEn: _fechaOpcional(json['creado_en']),
+      ultimoLogin: _fechaOpcional(json['ultimo_login']),
     );
 
 Map<String, dynamic> _$UserProfileDtoToJson(UserProfileDto instance) =>

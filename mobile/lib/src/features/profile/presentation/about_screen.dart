@@ -1,3 +1,5 @@
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -59,7 +61,7 @@ class AboutScreen extends ConsumerWidget {
                   width: 96,
                   height: 96,
                   decoration: BoxDecoration(
-                    color: AppColors.quickbiteOrange,
+                    color: AppColors.accent,
                     borderRadius: BorderRadius.circular(AppRadius.image),
                   ),
                   child: const Icon(
@@ -69,7 +71,10 @@ class AboutScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Text('QuickBite', style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  'QuickBite',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 info.when(
                   loading: () => const Text('Leyendo la versión…'),

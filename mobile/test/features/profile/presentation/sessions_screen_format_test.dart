@@ -32,9 +32,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    repository = FakeSeguridadRepository(
-      sesiones: [sesion(creadoEn: creada)],
-    );
+    repository = FakeSeguridadRepository(sesiones: [sesion(creadoEn: creada)]);
 
     final container = ProviderContainer(
       overrides: [
@@ -69,10 +67,13 @@ void main() {
     testWidgets('con AAAA-MM-DD y 12 horas pinta esa fecha y esa hora', (
       tester,
     ) async {
-      await pumpSesiones(tester, guardadas: {
-        'quickbite_idioma_fecha': 'anoMesDia',
-        'quickbite_idioma_hora': 'doce',
-      });
+      await pumpSesiones(
+        tester,
+        guardadas: {
+          'quickbite_idioma_fecha': 'anoMesDia',
+          'quickbite_idioma_hora': 'doce',
+        },
+      );
 
       expect(
         find.textContaining(FormatoFecha.anoMesDia.formatear(local)),

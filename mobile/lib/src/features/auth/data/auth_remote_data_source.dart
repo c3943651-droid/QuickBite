@@ -3,15 +3,23 @@ import 'dtos/auth_dtos.dart';
 import 'dtos/user_profile_dto.dart';
 
 class AuthRemoteDataSource {
-  const AuthRemoteDataSource(this._client);
+  const AuthRemoteDataSource(this._client, {ApiClient? authClient})
+    : _authClient = authClient ?? _client;
 
+  /// Cliente **con** `AuthInterceptor`: cabecera `Authorization`, renovación
+  /// transparente y expiración de sesión. Lo usan los endpoints que requieren
+  /// token ([fetchProfile], [updateProfile]).
   final ApiClient _client;
+
+  /// Cliente **sin** interceptor para `/auth/*`: el refresh no puede pasar por
+  /// el mismo interceptor que lo dispara, o se entra en bucle.
+  final ApiClient _authClient;
 
   Future<AuthResponseDto> login({
     required String email,
     required String password,
   }) async {
-    final response = await _client.post(
+    final response = await _authClient.post(
       '/auth/login',
       data: LoginRequestDto(email: email, password: password).toJson(),
     );
@@ -25,7 +33,7 @@ class AuthRemoteDataSource {
     String? telefono,
     required String rol,
   }) async {
-    await _client.post(
+    await _authClient.post(
       '/auth/register',
       data: RegisterRequestDto(
         nombre: nombre,
@@ -62,7 +70,7 @@ class AuthRemoteDataSource {
   }
 
   Future<void> forgotPassword({required String email}) async {
-    await _client.post(
+    await _authClient.post(
       '/auth/forgot-password',
       data: ForgotPasswordRequestDto(email: email).toJson(),
     );
@@ -72,7 +80,7 @@ class AuthRemoteDataSource {
     required String token,
     required String newPassword,
   }) async {
-    await _client.post(
+    await _authClient.post(
       '/auth/reset-password',
       data: ResetPasswordRequestDto(
         token: token,
@@ -82,7 +90,7 @@ class AuthRemoteDataSource {
   }
 
   Future<RefreshResponseDto> refresh({required String refreshToken}) async {
-    final response = await _client.post(
+    final response = await _authClient.post(
       '/auth/refresh',
       data: RefreshRequestDto(refreshToken: refreshToken).toJson(),
     );
@@ -90,7 +98,7 @@ class AuthRemoteDataSource {
   }
 
   Future<void> logout({required String refreshToken}) async {
-    await _client.post(
+    await _authClient.post(
       '/auth/logout',
       data: LogoutRequestDto(refreshToken: refreshToken).toJson(),
     );

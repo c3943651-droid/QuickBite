@@ -1,3 +1,5 @@
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -36,10 +38,10 @@ class DeleteAccountScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.errorRed.withValues(alpha: 0.10),
+              color: AppColors.error.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(AppRadius.card),
               border: Border.all(
-                color: AppColors.errorRed.withValues(alpha: 0.35),
+                color: AppColors.error.withValues(alpha: 0.35),
               ),
             ),
             child: Column(
@@ -47,15 +49,19 @@ class DeleteAccountScreen extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.warning_amber_outlined, color: AppColors.errorRed),
+                    const Icon(
+                      Icons.warning_amber_outlined,
+                      color: AppColors.error,
+                    ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
                         'La eliminación es manual',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.errorRed,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: AppColors.error,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                     ),
                   ],
@@ -82,7 +88,7 @@ class DeleteAccountScreen extends ConsumerWidget {
                   Text(
                     '${i + 1}.',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.quickbiteOrange,
+                      color: AppColors.accent,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -135,10 +141,9 @@ class DeleteAccountScreen extends ConsumerWidget {
     String email,
     String nombre,
   ) async {
-    final enviado = await ref.read(enlacesExternosProvider).solicitarEliminacionCuenta(
-      emailUsuario: email,
-      nombreUsuario: nombre,
-    );
+    final enviado = await ref
+        .read(enlacesExternosProvider)
+        .solicitarEliminacionCuenta(emailUsuario: email, nombreUsuario: nombre);
     if (!context.mounted || enviado) return;
     AppSnackbar.showError(context, 'No se pudo abrir tu app de correo.');
   }

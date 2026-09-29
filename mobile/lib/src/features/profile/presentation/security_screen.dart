@@ -41,13 +41,15 @@ class SecurityScreen extends ConsumerWidget {
 
   /// El contador se degrada a "—" si la lista no cargó: un "0 sesiones" sería
   /// una afirmación falsa sobre la seguridad de la cuenta.
-  static String _contador(AsyncValue<List<SesionUsuario>> sesiones) =>
-      switch (sesiones) {
-        AsyncData(:final value) => value.isEmpty
-            ? 'Sin sesiones'
-            : '${value.length} ${value.length == 1 ? 'sesión activa' : 'sesiones activas'}',
-        _ => '—',
-      };
+  static String _contador(
+    AsyncValue<List<SesionUsuario>> sesiones,
+  ) => switch (sesiones) {
+    AsyncData(:final value) =>
+      value.isEmpty
+          ? 'Sin sesiones'
+          : '${value.length} ${value.length == 1 ? 'sesión activa' : 'sesiones activas'}',
+    _ => '—',
+  };
 }
 
 class _Fila extends StatelessWidget {
