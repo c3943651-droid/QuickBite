@@ -14,10 +14,6 @@ import '../data/dtos/user_profile_dto.dart';
 import '../domain/auth_entities.dart';
 import '../domain/auth_repository.dart';
 
-final appConfigProvider = Provider<AppConfig>(
-  (ref) => AppConfig.fromEnvironment(),
-);
-
 final tokenStorageProvider = Provider<TokenStorage>((ref) {
   return SecureTokenStorage(const FlutterSecureStorage());
 });

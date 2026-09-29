@@ -47,6 +47,9 @@ class PreferenciasNotificacionNotifier
     await _guardar(actuales.conIntervalo(intervalo));
   }
 
+  /// Vuelve a los valores de fábrica (07.1 SCR-PROF-14).
+  Future<void> restablecer() => _guardar(const PreferenciasNotificacion());
+
   Future<void> _guardar(PreferenciasNotificacion prefs) async {
     state = AsyncData(prefs);
     await ref.read(preferenciasRepositoryProvider).save(prefs);

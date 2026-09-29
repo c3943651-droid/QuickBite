@@ -66,9 +66,14 @@ class ApiClient {
   Future<Response<dynamic>> get(
     String path, {
     Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? headers,
   }) {
     return _guard(
-      () => dio.get<dynamic>(path, queryParameters: queryParameters),
+      () => dio.get<dynamic>(
+        path,
+        queryParameters: queryParameters,
+        options: headers == null ? null : Options(headers: headers),
+      ),
     );
   }
 

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/error/app_exception.dart';
 import '../../../core/polling/polling_controller.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/settings_tile.dart';
 import '../../../core/widgets/state_views.dart';
 import '../domain/notification_entities.dart';
 import '../domain/preferencias_notificacion.dart';
@@ -51,7 +52,7 @@ class _Body extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
-        const _Seccion('Tipos de notificación'),
+        const SectionHeader('Tipos de notificación'),
         _interruptor(
           context,
           etiqueta: 'Pedidos nuevos',
@@ -88,7 +89,7 @@ class _Body extends ConsumerWidget {
               notifier.actualizarTipo(TipoNotificacion.recordatorio, v),
         ),
         const Divider(height: AppSpacing.xl),
-        const _Seccion('Alertas'),
+        const SectionHeader('Alertas'),
         _interruptor(
           context,
           etiqueta: 'Sonido',
@@ -102,7 +103,7 @@ class _Body extends ConsumerWidget {
           onChanged: notifier.cambiarVibracion,
         ),
         const Divider(height: AppSpacing.xl),
-        const _Seccion('Frecuencia de actualización'),
+        const SectionHeader('Frecuencia de actualización'),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: Column(
@@ -168,27 +169,3 @@ class _Body extends ConsumerWidget {
   );
 }
 
-class _Seccion extends StatelessWidget {
-  const _Seccion(this.titulo);
-
-  final String titulo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.md,
-        AppSpacing.md,
-        AppSpacing.xs,
-      ),
-      child: Text(
-        titulo,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: AppColors.quickbiteOrange,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}

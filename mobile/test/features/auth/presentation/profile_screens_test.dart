@@ -168,6 +168,7 @@ void main() {
       for (final label in [
         'Editar perfil',
         'Cambiar contraseña',
+        'Sesiones activas',
         'Mis direcciones',
         'Notificaciones',
         'Apariencia',

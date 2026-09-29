@@ -24,6 +24,16 @@ import '../notification/presentation/notification_preferences_screen.dart';
 import '../notification/presentation/notifications_screen.dart';
 import '../order/presentation/order_detail_screen.dart';
 import '../order/presentation/orders_screen.dart';
+import '../profile/presentation/appearance_screen.dart';
+import '../profile/presentation/about_screen.dart';
+import '../profile/presentation/advanced_screen.dart';
+import '../profile/presentation/delete_account_screen.dart';
+import '../profile/presentation/help_screen.dart';
+import '../profile/presentation/privacy_screen.dart';
+import '../profile/presentation/change_password_screen.dart';
+import '../profile/presentation/language_screen.dart';
+import '../profile/presentation/security_screen.dart';
+import '../profile/presentation/sessions_screen.dart';
 import 'pending_screen.dart';
 import 'splash_screen.dart';
 
@@ -267,17 +277,27 @@ GoRouter createRouter(
                   ),
                   GoRoute(
                     path: 'security',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/security',
-                      title: 'Seguridad',
-                    ),
+                    builder: (context, state) => const SecurityScreen(),
+                    routes: [
+                      // El subhub de 07.1 es el padre de sus dos secciones: al
+                      // abrir cualquiera de ellas queda debajo, así que volver
+                      // con el gesto del sistema regresa a Seguridad.
+                      GoRoute(
+                        path: 'password',
+                        builder: (context, state) =>
+                            const ChangePasswordScreen(),
+                      ),
+                      GoRoute(
+                        path: 'sessions',
+                        builder: (context, state) => const SessionsScreen(),
+                      ),
+                    ],
                   ),
+                  // 07 §10.2 lista las sesiones como ruta plana y 07.1 las
+                  // anida bajo Seguridad. Ambas resuelven a la misma pantalla.
                   GoRoute(
                     path: 'sessions',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/sessions',
-                      title: 'Sesiones activas',
-                    ),
+                    builder: (context, state) => const SessionsScreen(),
                   ),
                   GoRoute(
                     path: 'notifications',
@@ -286,52 +306,38 @@ GoRouter createRouter(
                   ),
                   GoRoute(
                     path: 'appearance',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/appearance',
-                      title: 'Apariencia',
-                    ),
+                    builder: (context, state) => const AppearanceScreen(),
                   ),
                   GoRoute(
                     path: 'privacy',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/privacy',
-                      title: 'Privacidad',
-                    ),
+                    builder: (context, state) => const PrivacyScreen(),
                   ),
                   GoRoute(
                     path: 'help',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/help',
-                      title: 'Ayuda',
-                    ),
+                    builder: (context, state) => const HelpScreen(),
                   ),
                   GoRoute(
                     path: 'about',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/about',
-                      title: 'Acerca de',
-                    ),
+                    builder: (context, state) => const AboutScreen(),
                   ),
                   GoRoute(
                     path: 'advanced',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/advanced',
-                      title: 'Avanzado',
-                    ),
+                    builder: (context, state) => const AdvancedScreen(),
                   ),
                   GoRoute(
                     path: 'language',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/language',
-                      title: 'Idioma y región',
-                    ),
+                    builder: (context, state) => const LanguageScreen(),
                   ),
                   GoRoute(
                     path: 'delete-account',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/delete-account',
-                      title: 'Eliminar cuenta',
-                    ),
+                    builder: (context, state) => const DeleteAccountScreen(),
+                  ),
+                  // `/profile/account` fue el nombre con el que se enlazaba
+                  // "Eliminar cuenta" en las maquetas: se conserva y redirige
+                  // a la ruta buena.
+                  GoRoute(
+                    path: 'account',
+                    redirect: (context, state) => '/profile/delete-account',
                   ),
                 ],
               ),

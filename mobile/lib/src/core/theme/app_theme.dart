@@ -1,55 +1,60 @@
 import 'package:flutter/material.dart';
 
+import '../../features/profile/domain/preferencias_apariencia.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
 abstract final class AppTheme {
-  static ThemeData get light {
+  static ThemeData get light => claro(const PreferenciasApariencia());
+
+  static ThemeData get dark => oscuro(const PreferenciasApariencia());
+
+  /// Tema claro con la paleta derivada de las preferencias de accesibilidad
+  /// (07.1 SCR-PROF-09).
+  static ThemeData claro(PreferenciasApariencia prefs) =>
+      _construir(prefs: prefs, brightness: Brightness.light);
+
+  /// Tema oscuro con la misma paleta de accesibilidad.
+  static ThemeData oscuro(PreferenciasApariencia prefs) =>
+      _construir(prefs: prefs, brightness: Brightness.dark);
+
+  static ThemeData _construir({
+    required PreferenciasApariencia prefs,
+    required Brightness brightness,
+  }) {
+    final paleta = _Paleta.desdePreferencias(
+      prefs: prefs,
+      oscuro: brightness == Brightness.dark,
+    );
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.quickbiteOrange,
-      primary: AppColors.quickbiteOrange,
-      secondary: AppColors.appetiteRed,
-      tertiary: AppColors.energyYellow,
-      surface: AppColors.white,
-      error: AppColors.errorRed,
+      seedColor: paleta.primario,
+      brightness: brightness,
+      primary: paleta.primario,
+      secondary: paleta.secundario,
+      tertiary: paleta.terciario,
+      surface: paleta.superficie,
+      error: paleta.error,
     );
 
-    return _base(colorScheme).copyWith(
-      scaffoldBackgroundColor: AppColors.mistGray,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.textGray,
+    return _base(colorScheme, prefs: prefs, paleta: paleta).copyWith(
+      scaffoldBackgroundColor: paleta.fondo,
+      appBarTheme: AppBarTheme(
+        backgroundColor: paleta.superficie,
+        foregroundColor: paleta.textoPrincipal,
         elevation: 0,
         centerTitle: false,
       ),
-      textTheme: _textTheme(AppColors.textGray, AppColors.secondaryGray),
+      textTheme: _textTheme(paleta.textoPrincipal, paleta.textoSecundario),
     );
   }
 
-  static ThemeData get dark {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.quickbiteOrange,
-      brightness: Brightness.dark,
-      primary: AppColors.quickbiteOrange,
-      secondary: AppColors.appetiteRed,
-      tertiary: AppColors.energyYellow,
-      surface: AppColors.darkSurface,
-      error: AppColors.errorRed,
-    );
+  static ThemeData _base(
+    ColorScheme colorScheme, {
+    required PreferenciasApariencia prefs,
+    required _Paleta paleta,
+  }) {
+    final grosor = prefs.altoContraste ? 2.0 : 1.0;
 
-    return _base(colorScheme).copyWith(
-      scaffoldBackgroundColor: AppColors.darkBackground,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.darkSurface,
-        foregroundColor: AppColors.darkTextPrimary,
-        elevation: 0,
-        centerTitle: false,
-      ),
-      textTheme: _textTheme(AppColors.darkTextPrimary, AppColors.secondaryGray),
-    );
-  }
-
-  static ThemeData _base(ColorScheme colorScheme) {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
@@ -61,18 +66,18 @@ abstract final class AppTheme {
           horizontal: AppSpacing.md,
           vertical: AppSpacing.md,
         ),
-        border: _border(colorScheme.outlineVariant),
-        enabledBorder: _border(colorScheme.outlineVariant),
-        focusedBorder: _border(AppColors.quickbiteOrange, width: 2),
-        errorBorder: _border(AppColors.errorRed),
-        focusedErrorBorder: _border(AppColors.errorRed, width: 2),
-        errorStyle: AppTextStyles.label.copyWith(color: AppColors.errorRed),
+        border: _border(colorScheme.outlineVariant, width: grosor),
+        enabledBorder: _border(colorScheme.outlineVariant, width: grosor),
+        focusedBorder: _border(colorScheme.primary, width: grosor + 1),
+        errorBorder: _border(paleta.error, width: grosor),
+        focusedErrorBorder: _border(paleta.error, width: grosor + 1),
+        errorStyle: AppTextStyles.label.copyWith(color: paleta.error),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(AppSizes.buttonHeight),
-          backgroundColor: AppColors.quickbiteOrange,
-          foregroundColor: AppColors.white,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: paleta.sobrePrimario,
           textStyle: AppTextStyles.label.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -85,8 +90,8 @@ abstract final class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(AppSizes.buttonHeight),
-          foregroundColor: AppColors.quickbiteOrange,
-          side: const BorderSide(color: AppColors.quickbiteOrange, width: 2),
+          foregroundColor: colorScheme.primary,
+          side: BorderSide(color: colorScheme.primary, width: grosor + 1),
           textStyle: AppTextStyles.label.copyWith(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -112,9 +117,9 @@ abstract final class AppTheme {
         ),
         labelStyle: AppTextStyles.label.copyWith(color: colorScheme.onSurface),
       ),
-      dividerTheme: const DividerThemeData(
-        color: Color(0x1F000000),
-        thickness: 1,
+      dividerTheme: DividerThemeData(
+        color: colorScheme.outlineVariant,
+        thickness: grosor,
         space: 1,
       ),
     );
@@ -141,4 +146,107 @@ abstract final class AppTheme {
       labelSmall: AppTextStyles.caption.copyWith(color: secondary),
     );
   }
+}
+
+/// Paleta efectiva de una pantalla.
+///
+/// Con el modo daltónico en `normal` reproduce 09 §4 tal cual. Con un modo
+/// activo se reasignan los tonos que ese tipo de daltonismo no distingue: la
+/// paleta base (naranja, rojo, amarillo) es indistinguible en los tres casos, así
+/// que se sustituye por una variante con la misma función pero perceptiblemente
+/// distinta.
+/// **Decisión provisional** pendiente de validar con usuarios: 09 §4 no fija
+/// estos hex y tampoco define el contraste alto.
+class _Paleta {
+  const _Paleta({
+    required this.primario,
+    required this.secundario,
+    required this.terciario,
+    required this.error,
+    required this.exito,
+    required this.textoPrincipal,
+    required this.textoSecundario,
+    required this.superficie,
+    required this.fondo,
+    required this.sobrePrimario,
+  });
+
+  factory _Paleta.desdePreferencias({
+    required PreferenciasApariencia prefs,
+    required bool oscuro,
+  }) {
+    final alto = prefs.altoContraste;
+
+    return switch (prefs.modoDaltonismo) {
+      ModoDaltonismo.normal => _Paleta._estandar(
+        oscuro: oscuro,
+        alto: alto,
+      ),
+      ModoDaltonismo.deuteranopia => _Paleta._estandar(
+        oscuro: oscuro,
+        alto: alto,
+        primario: const Color(0xFF1565C0),
+        secundario: const Color(0xFFB26A00),
+        terciario: const Color(0xFF00838F),
+        error: const Color(0xFF8E2400),
+        exito: const Color(0xFF0B6E4F),
+      ),
+      ModoDaltonismo.protanopia => _Paleta._estandar(
+        oscuro: oscuro,
+        alto: alto,
+        primario: const Color(0xFF0D47A1),
+        secundario: const Color(0xFF00796B),
+        terciario: const Color(0xFF8D6E00),
+        error: const Color(0xFF6D1B7B),
+        exito: const Color(0xFF134E4E),
+      ),
+      ModoDaltonismo.tritanopia => _Paleta._estandar(
+        oscuro: oscuro,
+        alto: alto,
+        primario: const Color(0xFFC62828),
+        secundario: const Color(0xFF7B1FA2),
+        terciario: const Color(0xFFAD1457),
+        error: const Color(0xFF4A148C),
+        exito: const Color(0xFF2E5E1F),
+      ),
+    };
+  }
+
+  factory _Paleta._estandar({
+    required bool oscuro,
+    required bool alto,
+    Color? primario,
+    Color? secundario,
+    Color? terciario,
+    Color? error,
+    Color? exito,
+  }) {
+    return _Paleta(
+      primario: primario ?? AppColors.quickbiteOrange,
+      secundario: secundario ?? AppColors.appetiteRed,
+      terciario: terciario ?? AppColors.energyYellow,
+      error: error ?? AppColors.errorRed,
+      exito: exito ?? AppColors.successGreen,
+      textoPrincipal: alto
+          ? (oscuro ? Colors.white : Colors.black)
+          : (oscuro ? AppColors.darkTextPrimary : AppColors.textGray),
+      textoSecundario: alto
+          ? (oscuro ? Colors.white : Colors.black)
+          : AppColors.secondaryGray,
+      superficie: oscuro ? AppColors.darkSurface : AppColors.white,
+      fondo: oscuro ? AppColors.darkBackground : AppColors.mistGray,
+      sobrePrimario: Colors.white,
+    );
+  }
+
+  final Color primario;
+  final Color secundario;
+  final Color terciario;
+  final Color error;
+  final Color exito;
+  final Color textoPrincipal;
+  final Color textoSecundario;
+  final Color superficie;
+  final Color fondo;
+  final Color sobrePrimario;
 }

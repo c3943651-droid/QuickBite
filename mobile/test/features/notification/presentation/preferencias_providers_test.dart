@@ -58,6 +58,27 @@ void main() {
       );
     });
 
+    test('restablecer vuelve las notificaciones a su valor inicial', () async {
+      final container = await contenedorCon({
+        'quickbite_prefs_tipos': {'recordatorio': false},
+        'quickbite_prefs_sonido': false,
+        'quickbite_prefs_intervalo': 30,
+      });
+      await container.read(preferenciasNotificacionProvider.future);
+
+      await container
+          .read(preferenciasNotificacionProvider.notifier)
+          .restablecer();
+
+      final prefs = container.read(preferenciasNotificacionProvider).value;
+      expect(prefs, const PreferenciasNotificacion());
+      expect(
+        await container.read(preferenciasNotificacionProvider.future),
+        const PreferenciasNotificacion(),
+        reason: 'también debe quedar escrito en el almacenamiento',
+      );
+    });
+
     test('la frecuencia elegida alimenta el polling del seguimiento', () async {
       final container = await contenedorCon({});
       await container.read(preferenciasNotificacionProvider.future);

@@ -14,6 +14,8 @@ const testConfig = AppConfig(
   apiBaseUrl: 'https://api.test',
   connectTimeout: Duration(seconds: 5),
   receiveTimeout: Duration(seconds: 10),
+  supportEmail: 'soporte@test.mx',
+  legalBaseUrl: 'https://test.mx/legal',
 );
 
 AuthSession sessionFor(String rol) {

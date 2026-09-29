@@ -59,7 +59,12 @@ class _ProfileBody extends ConsumerWidget {
         _Row(
           icon: Icons.lock_outline,
           label: 'Cambiar contraseña',
-          onTap: () => context.push('/profile/security'),
+          onTap: () => context.push('/profile/security/password'),
+        ),
+        _Row(
+          icon: Icons.devices_outlined,
+          label: 'Sesiones activas',
+          onTap: () => context.push('/profile/security/sessions'),
         ),
         if (isCliente)
           _Row(

@@ -102,6 +102,39 @@ El modo oscuro es una opción disponible en la app y en el panel, activable desd
 | Texto secundario | `#9E9E9E` |
 | Colores de marca | Se mantienen, con ajuste de brillo para mantener contraste |
 
+### 4.6. Contraste alto y modos de daltonismo
+
+Ambos ajustes se eligen en la pantalla de Apariencia (07.1 `SCR-PROF-09`) y se
+aplican en caliente, sin reiniciar la app. En ambos casos el resto de la paleta
+se conserva: solo cambian los tonos que el modo activo no permite distinguir.
+
+**Contraste alto.** No cambia los colores de marca; lleva el texto principal y
+el secundario a blanco (tema oscuro) o negro (tema claro) y refuerza el borde de
+los campos, botones y separadores a 2 px.
+
+| Elemento | Tema claro | Tema oscuro |
+| :--- | :--- | :--- |
+| Texto principal | `#000000` | `#FFFFFF` |
+| Texto secundario | `#000000` | `#FFFFFF` |
+
+**Modos de daltonismo.** La paleta base (naranja, rojo, amarillo) es
+indistinguible para deuteranopía, protanopía y tritanopía, así que cada modo
+sustituye los tonos por otros con la misma función. Valores vigentes en
+`app_theme.dart`:
+
+| Rol | Normal | Deuteranopía | Protanopía | Tritanopía |
+| :--- | :--- | :--- | :--- | :--- |
+| Primario | `#FF6B35` | `#1565C0` | `#0D47A1` | `#C62828` |
+| Secundario | `#D62828` | `#B26A00` | `#00796B` | `#7B1FA2` |
+| Terciario | `#F7B801` | `#00838F` | `#8D6E00` | `#AD1457` |
+| Error | `#C62828` | `#8E2400` | `#6D1B7B` | `#4A148C` |
+| Éxito | `#2E7D32` | `#0B6E4F` | `#134E4E` | `#2E5E1F` |
+
+> **Decisión provisional.** Ni esta sección ni 09 §4 fijaban estos hex ni
+>el contraste alto: se eligieron para que cada par de roles sea separable
+> con el tipo de daltonismo que corrigen. Pendientes de validación con usuarios
+> reales y de incorporate al diseño cuando el negocio lo defina.
+
 ---
 
 ## 5. Tipografía

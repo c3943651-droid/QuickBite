@@ -205,13 +205,17 @@ void main() {
       '/profile',
       '/profile/edit',
       '/profile/security',
+      '/profile/security/password',
+      '/profile/security/sessions',
       '/profile/sessions',
       '/profile/notifications',
       '/profile/appearance',
+      '/profile/language',
       '/profile/privacy',
       '/profile/help',
       '/profile/about',
       '/profile/advanced',
+      '/profile/delete-account',
       '/notifications',
     ];
     const repartidorRoutes = [
@@ -241,6 +245,17 @@ void main() {
       '/profile',
       '/profile/edit',
       '/profile/notifications',
+      '/profile/appearance',
+      '/profile/language',
+      '/profile/privacy',
+      '/profile/help',
+      '/profile/about',
+      '/profile/advanced',
+      '/profile/delete-account',
+      '/profile/security',
+      '/profile/security/password',
+      '/profile/security/sessions',
+      '/profile/sessions',
       '/addresses',
       '/search',
       '/product/7',
@@ -260,6 +275,47 @@ void main() {
         expect(pendingAt(path), findsOneWidget, reason: 'falta $path');
       }
     }
+
+    testWidgets(
+      'las pantallas de ajustes ya no son marcadores de posición',
+      (tester) async {
+        for (final entrada in {
+          '/profile/appearance': 'Apariencia',
+          '/profile/language': 'Idioma y región',
+          '/profile/privacy': 'Privacidad',
+          '/profile/help': 'Ayuda y soporte',
+          '/profile/about': 'Acerca de',
+          '/profile/advanced': 'Avanzado',
+          '/profile/delete-account': 'Eliminar cuenta',
+        }.entries) {
+          final router = await pumpRouter(tester, cliente);
+          router.go(entrada.key);
+          await settle(tester);
+
+          expect(
+            pendingAt(entrada.key),
+            findsNothing,
+            reason: '${entrada.key} ya tiene pantalla propia',
+          );
+          expect(
+            find.widgetWithText(AppBar, entrada.value),
+            findsOneWidget,
+            reason: '${entrada.key} debe abrir ${entrada.value}',
+          );
+        }
+      },
+    );
+
+    testWidgets('/profile/account redirige a la pantalla de eliminar cuenta', (
+      tester,
+    ) async {
+      final router = await pumpRouter(tester, cliente);
+      router.go('/profile/account');
+      await settle(tester);
+
+      expect(locationOf(router), '/profile/delete-account');
+      expect(pendingAt('/profile/account'), findsNothing);
+    });
 
     testWidgets('rutas públicas', (tester) async {
       for (final path in publicRoutes) {
