@@ -1,3 +1,5 @@
+import '../theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -19,7 +21,7 @@ abstract final class AppBottomSheet {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: AppColors.softBlack.withValues(alpha: 0.45),
+      barrierColor: AppColors.ink.withValues(alpha: 0.45),
       builder: (context) => _Sheet(title: title, child: child),
     );
   }
@@ -91,7 +93,7 @@ class SheetDragHandle extends StatelessWidget {
           width: 32,
           height: 4,
           decoration: BoxDecoration(
-            color: AppColors.mistGray,
+            color: AppColors.surfaceMuted,
             borderRadius: BorderRadius.circular(AppRadius.button),
           ),
         ),

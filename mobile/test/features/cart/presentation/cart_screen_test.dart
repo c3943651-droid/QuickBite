@@ -1,3 +1,4 @@
+import 'package:quickbite_mobile/src/core/theme/app_radius.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -182,6 +183,25 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Checkout real'), findsOneWidget);
+    });
+
+    testWidgets('el carrito vacío usa la tarjeta del design system', (
+      tester,
+    ) async {
+      await pumpCart(
+        tester,
+        cart: Cart(id: 'cart-1', items: const [], total: 0),
+      );
+
+      // 09 §8.6: el estado vacío es un componente del design system, con su
+      // tarjeta de elevación 1 y esquinas de 16 px.
+      expect(find.text('Tu carrito está vacío'), findsOneWidget);
+      final tarjeta = tester.widget<Card>(find.byType(Card).first);
+      expect(tarjeta.elevation, 1);
+      expect(
+        (tarjeta.shape as RoundedRectangleBorder).borderRadius,
+        BorderRadius.circular(AppRadius.card),
+      );
     });
 
     testWidgets('el carrito vacío ofrece explorar el menú', (tester) async {

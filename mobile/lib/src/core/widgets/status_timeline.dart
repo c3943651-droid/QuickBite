@@ -96,7 +96,7 @@ class _Paso extends StatelessWidget {
                           ? FontWeight.w600
                           : FontWeight.w400,
                       color: paso.state == TimelineStepState.pending
-                          ? AppColors.secondaryGray
+                          ? AppColors.inkMuted
                           : theme.colorScheme.onSurface,
                     ),
                   ),
@@ -105,7 +105,7 @@ class _Paso extends StatelessWidget {
                     Text(
                       timestamp,
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: AppColors.secondaryGray,
+                        color: AppColors.inkMuted,
                       ),
                     ),
                   ],
@@ -138,8 +138,8 @@ class _Marca extends StatelessWidget {
               child: Container(
                 width: 2,
                 color: paso.state == TimelineStepState.completed
-                    ? AppColors.successGreen
-                    : AppColors.mistGray,
+                    ? AppColors.success
+                    : AppColors.surfaceMuted,
               ),
             ),
         ],
@@ -161,7 +161,7 @@ class _Punto extends StatelessWidget {
         width: 24,
         height: 24,
         decoration: const BoxDecoration(
-          color: AppColors.successGreen,
+          color: AppColors.success,
           shape: BoxShape.circle,
         ),
         child: const Icon(Icons.check, size: 14, color: AppColors.white),
@@ -171,7 +171,7 @@ class _Punto extends StatelessWidget {
         width: 24,
         height: 24,
         decoration: const BoxDecoration(
-          color: AppColors.errorRed,
+          color: AppColors.error,
           shape: BoxShape.circle,
         ),
         child: const Icon(Icons.close, size: 14, color: AppColors.white),
@@ -180,11 +180,11 @@ class _Punto extends StatelessWidget {
         width: 24,
         height: 24,
         decoration: BoxDecoration(
-          color: AppColors.mistGray,
+          color: AppColors.surfaceMuted,
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.secondaryGray, width: 1),
+          border: Border.all(color: AppColors.inkMuted, width: 1),
         ),
-        child: Icon(step.icon, size: 12, color: AppColors.secondaryGray),
+        child: Icon(step.icon, size: 12, color: AppColors.inkMuted),
       ),
     };
 
@@ -219,7 +219,7 @@ class _PuntoActual extends StatelessWidget {
       width: radio,
       height: radio,
       decoration: BoxDecoration(
-        color: AppColors.quickbiteOrange,
+        color: AppColors.accent,
         shape: BoxShape.circle,
       ),
       child: Icon(icon, size: 12, color: AppColors.white),

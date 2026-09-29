@@ -12,11 +12,13 @@ class AuthInterceptor extends Interceptor {
     required this.tokenStorage,
     required this.onRefresh,
     required this.dioProvider,
+    this.onSessionInvalid,
     ErrorMapper? errorMapper,
   }) : _errorMapper = errorMapper ?? const ErrorMapper();
   final TokenStorage tokenStorage;
   final RefreshCallback onRefresh;
   final Dio Function() dioProvider;
+  final void Function()? onSessionInvalid;
   final ErrorMapper _errorMapper;
 
   static const _retriedFlag = 'quickbite_retried';
@@ -60,6 +62,7 @@ class AuthInterceptor extends Interceptor {
     final session = await _refresh();
     if (session == null) {
       await tokenStorage.clear();
+      onSessionInvalid?.call();
       return handler.next(err.copyWith(error: _errorMapper.map(err)));
     }
 
@@ -72,6 +75,7 @@ class AuthInterceptor extends Interceptor {
     } on DioException catch (retryError) {
       if (retryError.response?.statusCode == 401) {
         await tokenStorage.clear();
+        onSessionInvalid?.call();
       }
       return handler.next(retryError);
     }

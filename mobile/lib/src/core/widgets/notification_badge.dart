@@ -10,7 +10,7 @@ class NotificationBadge extends StatelessWidget {
     super.key,
     required this.count,
     required this.child,
-    this.color = AppColors.appetiteRed,
+    this.color = AppColors.accentAlt,
   });
 
   final int count;

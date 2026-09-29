@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:quickbite_mobile/src/features/search/data/search_history_repository.dart';
 import 'package:quickbite_mobile/src/features/search/domain/search_history.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -9,12 +9,11 @@ void main() {
   late SearchHistoryRepository repository;
 
   setUp(() async {
-    // Mock token storage to provide a consistent key for tests
-    final tokenStorage = _MockTokenStorage('test-token');
-    repository = SQLiteSearchHistoryRepository(tokenStorage);
+    SharedPreferences.setMockInitialValues({});
+    repository = SearchHistoryRepository(await SharedPreferences.getInstance());
   });
 
-  group('SearchHistoryRepository (05 D-13, SQLite)', () {
+  group('SearchHistoryRepository (05 D-13)', () {
     test('empieza vacío cuando no hay nada guardado', () async {
       expect((await repository.read()).terms, isEmpty);
     });
@@ -91,28 +90,15 @@ void main() {
       expect(history.terms, ['tacos']);
     });
 
-    test('guarda la persistencia correctamente', () async {
-      // Guardar un término
-      await repository.save(const SearchHistory(['tacos']));
-      
-      // Leer lo guardado
-      final readHistory = await repository.read();
-      expect(readHistory.terms, ['tacos']);
-      
-      // Guardar otro término
-      await repository.save(const SearchHistory(['pastor']));
-      
-      // Debería tener ambos, con el más reciente primero
-      final readHistory2 = await repository.read();
-      expect(readHistory2.terms, ['pastor', 'tacos']);
+    test('tolera almacenamiento corrupto sin romper la app', () async {
+      SharedPreferences.setMockInitialValues({
+        'quickbite_search_history': 'no-es-una-lista',
+      });
+      final corrupted = SearchHistoryRepository(
+        await SharedPreferences.getInstance(),
+      );
+
+      expect((await corrupted.read()).terms, isEmpty);
     });
   });
-}
-
-class _MockTokenStorage {
-  _MockTokenStorage(this._token);
-
-  final String _token;
-
-  String? readAccessToken() => _token;
 }

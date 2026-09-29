@@ -1,3 +1,4 @@
+import 'package:quickbite_mobile/src/core/theme/app_radius.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +11,7 @@ import 'package:quickbite_mobile/src/features/order/domain/order_entities.dart';
 import 'package:quickbite_mobile/src/features/order/presentation/checkout_providers.dart';
 import 'package:quickbite_mobile/src/features/order/presentation/order_list_providers.dart';
 import 'package:quickbite_mobile/src/features/order/presentation/order_tracking_providers.dart';
+import 'package:quickbite_mobile/src/core/widgets/chips.dart';
 import 'package:quickbite_mobile/src/features/shell/app_router.dart';
 
 import '../../../support/catalog_fakes.dart';
@@ -100,6 +102,30 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  group('formato de fecha (intl)', () {
+    testWidgets('el historial muestra la fecha del pedido en español', (
+      tester,
+    ) async {
+      orders.pedidos = [
+        Order(
+          id: 'o4',
+          numeroPedido: 'QB-CON-FECHA',
+          estado: 'Entregado',
+          total: 100,
+          direccionEntrega: '',
+          items: const [],
+          creadoEn: DateTime.utc(2026, 9, 20, 15, 30),
+        ),
+      ];
+
+      await pumpAt(tester, '/history');
+
+      // `DateFormat(..., 'es')` sin `initializeDateFormatting` lanza
+      // LocaleDataException y la pantalla se queda en rojo.
+      expect(find.textContaining('2026'), findsOneWidget);
+    });
+  });
+
   group('ordersProvider', () {
     test('trae el historial del cliente', () async {
       final container = ProviderContainer(
@@ -177,6 +203,50 @@ void main() {
       }
     });
 
+    testWidgets('los chips de filtro se muestran enteros, sin recorte', (
+      tester,
+    ) async {
+      // La fila de filtros tenía un alto fijo (56 px) que ya incluía el padding
+      // vertical de la propia lista, así que al chip le quedaban 24 px de los 37
+      // que necesita: su etiqueta se estrujaba a 6 px y quedaba reducida a un
+      // trazo. En modo claro eso se lee como "texto invisible".
+      await pumpAt(tester, '/history');
+
+      final chipEnFiltros = tester.getSize(
+        find
+            .ancestor(
+              of: find.text('Pendientes'),
+              matching: find.byType(CategoryChip),
+            )
+            .first,
+      );
+
+      // Referencia: el mismo chip, sin la restricción de alto de la fila.
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: CategoryChip(
+                label: 'Pendientes',
+                selected: false,
+                onTap: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final chipNatural = tester.getSize(find.byType(CategoryChip));
+
+      expect(
+        chipEnFiltros.height,
+        chipNatural.height,
+        reason:
+            'la píldora se comprime a ${chipEnFiltros.height} px de los '
+            '${chipNatural.height} px que necesita, y su texto se corta',
+      );
+    });
+
     testWidgets('al elegir un chip solo quedan los pedidos de ese estado', (
       tester,
     ) async {
@@ -202,11 +272,21 @@ void main() {
       expect(find.textContaining('No tienes pedidos'), findsOneWidget);
     });
 
-    testWidgets('sin pedidos muestra el estado vacío', (tester) async {
+    testWidgets('sin pedidos muestra el estado vacío del design system', (
+      tester,
+    ) async {
       orders.pedidos = [];
       await pumpAt(tester, '/history');
 
       expect(find.textContaining('No tienes pedidos'), findsOneWidget);
+      // 09 §8.6: tarjeta con elevación 1 y esquinas de 16 px, igual que el
+      // carrito, para que "vacío" signifique lo mismo en toda la app.
+      final tarjeta = tester.widget<Card>(find.byType(Card).first);
+      expect(tarjeta.elevation, 1);
+      expect(
+        (tarjeta.shape as RoundedRectangleBorder).borderRadius,
+        BorderRadius.circular(AppRadius.card),
+      );
     });
 
     testWidgets('un error muestra el mensaje y reintenta', (tester) async {

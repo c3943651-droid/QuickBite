@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_snackbar.dart';
+import 'floating_nav_bar.dart';
 import '../address/presentation/address_form_screen.dart';
 import '../address/presentation/addresses_screen.dart';
 import '../auth/domain/auth_entities.dart';
@@ -16,6 +16,12 @@ import '../auth/presentation/profile_screen.dart';
 import '../auth/presentation/register_screen.dart';
 import '../auth/presentation/reset_password_screen.dart';
 import '../cart/presentation/cart_screen.dart';
+import '../delivery/presentation/active_delivery_screen.dart';
+import '../delivery/presentation/available_order_detail_screen.dart';
+import '../delivery/presentation/available_orders_screen.dart';
+import '../delivery/presentation/delivery_availability_screen.dart';
+import '../delivery/presentation/delivery_history_screen.dart';
+import '../delivery/presentation/delivery_stats_screen.dart';
 import '../catalog/presentation/home_screen.dart';
 import '../catalog/presentation/product_detail_screen.dart';
 import '../order/presentation/checkout_screen.dart';
@@ -24,7 +30,16 @@ import '../notification/presentation/notification_preferences_screen.dart';
 import '../notification/presentation/notifications_screen.dart';
 import '../order/presentation/order_detail_screen.dart';
 import '../order/presentation/orders_screen.dart';
-import 'pending_screen.dart';
+import '../profile/presentation/appearance_screen.dart';
+import '../profile/presentation/about_screen.dart';
+import '../profile/presentation/advanced_screen.dart';
+import '../profile/presentation/delete_account_screen.dart';
+import '../profile/presentation/help_screen.dart';
+import '../profile/presentation/privacy_screen.dart';
+import '../profile/presentation/change_password_screen.dart';
+import '../profile/presentation/language_screen.dart';
+import '../profile/presentation/security_screen.dart';
+import '../profile/presentation/sessions_screen.dart';
 import 'splash_screen.dart';
 
 typedef SessionReader = Future<AuthSession?> Function();
@@ -267,17 +282,27 @@ GoRouter createRouter(
                   ),
                   GoRoute(
                     path: 'security',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/security',
-                      title: 'Seguridad',
-                    ),
+                    builder: (context, state) => const SecurityScreen(),
+                    routes: [
+                      // El subhub de 07.1 es el padre de sus dos secciones: al
+                      // abrir cualquiera de ellas queda debajo, así que volver
+                      // con el gesto del sistema regresa a Seguridad.
+                      GoRoute(
+                        path: 'password',
+                        builder: (context, state) =>
+                            const ChangePasswordScreen(),
+                      ),
+                      GoRoute(
+                        path: 'sessions',
+                        builder: (context, state) => const SessionsScreen(),
+                      ),
+                    ],
                   ),
+                  // 07 §10.2 lista las sesiones como ruta plana y 07.1 las
+                  // anida bajo Seguridad. Ambas resuelven a la misma pantalla.
                   GoRoute(
                     path: 'sessions',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/sessions',
-                      title: 'Sesiones activas',
-                    ),
+                    builder: (context, state) => const SessionsScreen(),
                   ),
                   GoRoute(
                     path: 'notifications',
@@ -286,52 +311,38 @@ GoRouter createRouter(
                   ),
                   GoRoute(
                     path: 'appearance',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/appearance',
-                      title: 'Apariencia',
-                    ),
+                    builder: (context, state) => const AppearanceScreen(),
                   ),
                   GoRoute(
                     path: 'privacy',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/privacy',
-                      title: 'Privacidad',
-                    ),
+                    builder: (context, state) => const PrivacyScreen(),
                   ),
                   GoRoute(
                     path: 'help',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/help',
-                      title: 'Ayuda',
-                    ),
+                    builder: (context, state) => const HelpScreen(),
                   ),
                   GoRoute(
                     path: 'about',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/about',
-                      title: 'Acerca de',
-                    ),
+                    builder: (context, state) => const AboutScreen(),
                   ),
                   GoRoute(
                     path: 'advanced',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/advanced',
-                      title: 'Avanzado',
-                    ),
+                    builder: (context, state) => const AdvancedScreen(),
                   ),
                   GoRoute(
                     path: 'language',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/language',
-                      title: 'Idioma y región',
-                    ),
+                    builder: (context, state) => const LanguageScreen(),
                   ),
                   GoRoute(
                     path: 'delete-account',
-                    builder: (context, state) => const PendingScreen(
-                      location: '/profile/delete-account',
-                      title: 'Eliminar cuenta',
-                    ),
+                    builder: (context, state) => const DeleteAccountScreen(),
+                  ),
+                  // `/profile/account` fue el nombre con el que se enlazaba
+                  // "Eliminar cuenta" en las maquetas: se conserva y redirige
+                  // a la ruta buena.
+                  GoRoute(
+                    path: 'account',
+                    redirect: (context, state) => '/profile/delete-account',
                   ),
                 ],
               ),
@@ -342,10 +353,15 @@ GoRouter createRouter(
             routes: [
               GoRoute(
                 path: '/delivery/available',
-                builder: (context, state) => const PendingScreen(
-                  location: '/delivery/available',
-                  title: 'Pedidos disponibles',
-                ),
+                builder: (context, state) => const AvailableOrdersScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => AvailableOrderDetailScreen(
+                      pedidoId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -353,10 +369,7 @@ GoRouter createRouter(
             routes: [
               GoRoute(
                 path: '/delivery/active',
-                builder: (context, state) => const PendingScreen(
-                  location: '/delivery/active',
-                  title: 'Entrega activa',
-                ),
+                builder: (context, state) => const ActiveDeliveryScreen(),
               ),
             ],
           ),
@@ -364,10 +377,15 @@ GoRouter createRouter(
             routes: [
               GoRoute(
                 path: '/delivery/history',
-                builder: (context, state) => const PendingScreen(
-                  location: '/delivery/history',
-                  title: 'Historial de entregas',
-                ),
+                builder: (context, state) => const DeliveryHistoryScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => DeliveryHistoryDetailScreen(
+                      pedidoId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -419,10 +437,11 @@ GoRouter createRouter(
       ),
       GoRoute(
         path: '/delivery/stats',
-        builder: (context, state) => const PendingScreen(
-          location: '/delivery/stats',
-          title: 'Estadísticas',
-        ),
+        builder: (context, state) => const DeliveryStatsScreen(),
+      ),
+      GoRoute(
+        path: '/delivery/availability',
+        builder: (context, state) => const DeliveryAvailabilityScreen(),
       ),
     ],
   );
@@ -437,32 +456,6 @@ class MainShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rol = ref.watch(sessionProvider).value?.user.rol ?? 'cliente';
-    final tabs = shellTabsFor(rol);
-    final selected = tabs.indexWhere(
-      (tab) => tab.branchIndex == navigationShell.currentIndex,
-    );
-
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selected < 0 ? 0 : selected,
-        backgroundColor: AppColors.white,
-        indicatorColor: AppColors.quickbiteOrange.withValues(alpha: 0.16),
-        onDestinationSelected: (index) => navigationShell.goBranch(
-          tabs[index].branchIndex,
-          initialLocation: index == 0,
-        ),
-        destinations: [
-          for (final tab in tabs)
-            NavigationDestination(
-              icon: Icon(tab.icon),
-              selectedIcon: Icon(tab.selectedIcon),
-              label: tab.label,
-            ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context, WidgetRef ref) =>
+      PremiumMainShell(navigationShell: navigationShell);
 }

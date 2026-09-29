@@ -1,3 +1,4 @@
+import 'package:quickbite_mobile/src/core/theme/app_radius.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/widgets/product_card.dart';
@@ -35,6 +36,47 @@ void main() {
       ),
     ),
   );
+
+  group('ProductCard — tarjeta del catálogo (09 §7.2, §7.3 y §8.3)', () {
+    BoxDecoration decoracionTarjeta(WidgetTester tester) =>
+        tester
+                .widgetList<Container>(find.byType(Container))
+                .firstWhere((c) => c.decoration is BoxDecoration)
+                .decoration!
+            as BoxDecoration;
+
+    testWidgets('la rejilla usa radio amplio y sombra difusa', (tester) async {
+      await tester.pumpWidget(card(disponible: true));
+
+      // 09 §7.2: las tarjetas redondean; el rediseño sube a 18 px.
+      final decoracion = decoracionTarjeta(tester);
+      expect(decoracion.borderRadius, BorderRadius.circular(AppRadius.card));
+      expect(AppRadius.card, greaterThanOrEqualTo(18));
+      // Sombra difusa, no la elevación dura de Material.
+      expect(decoracion.boxShadow, isNotNull);
+      expect(decoracion.boxShadow!.first.blurRadius, greaterThan(10));
+    });
+
+    testWidgets('la tarjeta de lista comparte la misma envoltura', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        card(disponible: true, layout: ProductCardLayout.list),
+      );
+
+      final decoracion = decoracionTarjeta(tester);
+      expect(decoracion.borderRadius, BorderRadius.circular(AppRadius.card));
+      expect(decoracion.boxShadow, isNotNull);
+    });
+
+    testWidgets('la imagen se recorta con las esquinas de la tarjeta', (
+      tester,
+    ) async {
+      await tester.pumpWidget(card(disponible: true));
+
+      expect(find.byType(ClipRRect), findsWidgets);
+    });
+  });
 
   group('ProductCard (07.1 SCR-CAT-01 · SCR-CAT-04)', () {
     testWidgets('un producto agotado se marca como Agotado', (tester) async {

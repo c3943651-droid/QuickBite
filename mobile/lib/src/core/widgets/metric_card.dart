@@ -1,3 +1,5 @@
+import '../theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -106,10 +108,10 @@ class _Icono extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: AppColors.quickbiteOrange.withValues(alpha: 0.12),
+        color: AppColors.accent.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppRadius.button),
       ),
-      child: Icon(icon, size: 20, color: AppColors.quickbiteOrange),
+      child: Icon(icon, size: 20, color: AppColors.accent),
     );
   }
 }
@@ -122,9 +124,7 @@ class _Tendencia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = trend == MetricTrend.up
-        ? AppColors.successGreen
-        : AppColors.errorRed;
+    final color = trend == MetricTrend.up ? AppColors.success : AppColors.error;
     final icon = trend == MetricTrend.up
         ? Icons.trending_up
         : Icons.trending_down;

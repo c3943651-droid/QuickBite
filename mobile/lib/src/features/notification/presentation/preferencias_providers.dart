@@ -14,11 +14,10 @@ final preferenciasRepositoryProvider = Provider<PreferenciasRepository>(
 /// [AsyncNotifier] porque lee de [SharedPreferences] al entrar; cada cambio se
 /// aplica al instante en memoria y se persiste en segundo plano.
 final preferenciasNotificacionProvider =
-    AsyncNotifierProvider<PreferenciasNotificacionNotifier,
-        PreferenciasNotificacion>(
-      PreferenciasNotificacionNotifier.new,
-      retry: noAutoRetry,
-    );
+    AsyncNotifierProvider<
+      PreferenciasNotificacionNotifier,
+      PreferenciasNotificacion
+    >(PreferenciasNotificacionNotifier.new, retry: noAutoRetry);
 
 class PreferenciasNotificacionNotifier
     extends AsyncNotifier<PreferenciasNotificacion> {
@@ -47,6 +46,9 @@ class PreferenciasNotificacionNotifier
     final actuales = state.value ?? const PreferenciasNotificacion();
     await _guardar(actuales.conIntervalo(intervalo));
   }
+
+  /// Vuelve a los valores de fábrica (07.1 SCR-PROF-14).
+  Future<void> restablecer() => _guardar(const PreferenciasNotificacion());
 
   Future<void> _guardar(PreferenciasNotificacion prefs) async {
     state = AsyncData(prefs);

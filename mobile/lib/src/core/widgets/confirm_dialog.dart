@@ -1,3 +1,5 @@
+import '../theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -31,7 +33,7 @@ abstract final class ConfirmDialog {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: destructive ? AppColors.errorRed : null,
+              backgroundColor: destructive ? AppColors.error : null,
               foregroundColor: destructive ? AppColors.white : null,
             ),
             onPressed: () => Navigator.of(context).pop(true),

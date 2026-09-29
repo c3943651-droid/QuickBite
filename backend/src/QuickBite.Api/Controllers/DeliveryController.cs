@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuickBite.Api.Configuration;
 using QuickBite.Application.Delivery;
+using QuickBite.Application.Delivery.Dtos;
+using QuickBite.Domain.Enums;
 
 namespace QuickBite.Api.Controllers;
 
@@ -49,4 +51,11 @@ public class DeliveryController : ControllerBase
     [HttpGet("stats")]
     public async Task<IActionResult> Stats(CancellationToken cancellationToken)
         => Ok(await _deliveryService.StatsAsync(CurrentUserId, cancellationToken));
+
+    [HttpPut("availability")]
+    public async Task<IActionResult> SetAvailability([FromBody] SetAvailabilityRequest request, CancellationToken cancellationToken)
+    {
+        var estado = (DeliveryPersonStatus)request.Estado;
+        return Ok(await _deliveryService.SetAvailabilityAsync(CurrentUserId, estado, cancellationToken));
+    }
 }

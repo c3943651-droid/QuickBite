@@ -1,24 +1,74 @@
 import 'package:flutter/material.dart';
 
+/// Paleta de marca de QuickBite.
+///
+/// Escala pizarra (slate) para superficies y texto, con un único acento teal.
+/// La regla que motiva la paleta: **los colores cálidos no se usan como acento**
+/// —el naranja de la identidad anterior se confundía con "descuento" y
+/// "urgente"—, así que el acento es frío y el contenido manda.
+///
+/// Contraste verificado en `test/core/theme/premium_palette_test.dart`: texto
+/// principal 14.6:1 sobre el fondo, muy por encima del 4.5:1 de WCAG AA.
 abstract final class AppColors {
-  static const Color quickbiteOrange = Color(0xFFFF6B35);
-  static const Color appetiteRed = Color(0xFFD62828);
-  static const Color energyYellow = Color(0xFFF7B801);
-
+  /// Blanco puro para texto e iconos **sobre** el acento o superficies oscuras.
+  /// Sobre superficies claras se usa [ink].
   static const Color white = Color(0xFFFFFFFF);
-  static const Color mistGray = Color(0xFFF5F5F5);
-  static const Color textGray = Color(0xFF4A4A4A);
-  static const Color secondaryGray = Color(0xFF9E9E9E);
-  static const Color softBlack = Color(0xFF1A1A1A);
 
-  static const Color successGreen = Color(0xFF2E7D32);
-  static const Color errorRed = Color(0xFFC62828);
-  static const Color warningYellow = Color(0xFFF9A825);
-  static const Color infoBlue = Color(0xFF1565C0);
+  // Superficies
+  /// Fondo de pantalla: pizarra muy clara, más suave que el blanco puro para
+  /// que las tarjetas blancas se recorten sin necesidad de bordes gruesos.
+  static const Color background = Color(0xFFF8FAFC);
 
-  static const Color darkBackground = Color(0xFF121212);
-  static const Color darkSurface = Color(0xFF1E1E1E);
-  static const Color darkTextPrimary = Color(0xFFE0E0E0);
+  /// Superficie de tarjeta y de app bar: blanco puro.
+  static const Color surface = Color(0xFFFFFFFF);
+
+  /// Superficie secundaria (chips inactivos, bloques): pizarra 100.
+  static const Color surfaceMuted = Color(0xFFF1F5F9);
+
+  /// Borde suave de tarjeta y separador: pizarra 200.
+  static const Color border = Color(0xFFE2E8F0);
+
+  // Acento
+  /// Verde esmeralda: botones primarios, estado activo, iconos de acción.
+  static const Color accent = Color(0xFF0D9488);
+
+  /// Final del degradado del acento: una parada más profunda para que el
+  /// botón no se lea como un rectángulo de color plano.
+  static const Color accentDeep = Color(0xFF0F766E);
+
+  /// Acento secundario: cobalto, para distinguirlo del esmeralda cuando
+  /// conviven dos acentos en la misma pantalla.
+  static const Color accentAlt = Color(0xFF2563EB);
+
+  // Texto
+  /// Texto principal: ciruela profunda.
+  static const Color ink = Color(0xFF0F172A);
+
+  /// Texto secundario: pizarra 600. El 500 (#64748B) se queda en 4.3:1 sobre
+  /// el fondo, apenas por debajo de AA, así que se bajó un escalón.
+  static const Color inkMuted = Color(0xFF475569);
+
+  /// Íconos terciarios, separadores y placeholders. Exento de contraste AA por
+  /// no ser texto informativo, pero se mantiene por encima de 2:1 para que no
+  /// desaparezca a pleno sol.
+  static const Color inkSoft = Color(0xFF94A3B8);
+
+  // Semánticos
+  static const Color success = Color(0xFF059669);
+  static const Color error = Color(0xFFDC2626);
+
+  /// El aviso usa ámbar quemado en vez de amarillo: el amarillo puro sobre
+  /// blanco no llega a 3:1 y es el color peor perceptible en pantallas al sol.
+  static const Color warning = Color(0xFFB45309);
+  static const Color info = AppColors.accentAlt;
+
+  // Modo oscuro
+  /// Pizarra profunda, no negro plano: el negro puro "#121212" dejaba los
+  /// bordes de tarjeta invisibles y el conjunto se veía roto.
+  static const Color nightBackground = Color(0xFF0B1220);
+  static const Color nightSurface = Color(0xFF111C2E);
+  static const Color nightBorder = Color(0xFF1E293B);
+  static const Color nightInk = Color(0xFFF1F5F9);
 }
 
 abstract final class AppSpacing {
@@ -28,19 +78,4 @@ abstract final class AppSpacing {
   static const double lg = 24;
   static const double xl = 32;
   static const double xxl = 48;
-}
-
-abstract final class AppRadius {
-  static const double button = 12;
-  static const double card = 16;
-  static const double field = 8;
-  static const double image = 12;
-  static const double modal = 24;
-  static const double chip = 20;
-}
-
-abstract final class AppSizes {
-  static const double buttonHeight = 48;
-  static const double fieldHeight = 56;
-  static const double minTapTarget = 48;
 }

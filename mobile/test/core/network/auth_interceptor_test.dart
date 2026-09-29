@@ -98,6 +98,7 @@ class ScriptedServer implements HttpClientAdapter {
 Dio buildDio({
   required TokenStorage storage,
   required Future<StoredSession?> Function() onRefresh,
+  void Function()? onSessionInvalid,
   ScriptedServer? server,
 }) {
   final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
@@ -107,6 +108,7 @@ Dio buildDio({
       tokenStorage: storage,
       onRefresh: onRefresh,
       dioProvider: () => dio,
+      onSessionInvalid: onSessionInvalid,
     ),
   );
   return dio;
@@ -199,6 +201,39 @@ void main() {
         reason: 'un 401 tras reintentar debe cerrar la sesión',
       );
     });
+
+    test(
+      'avisa de sesión inválida cuando el reintento también falla con 401',
+      () async {
+        final storage = FakeTokenStorage(accessToken: 'expired-token');
+        final server = ScriptedServer(unauthorizedTimes: 5);
+        var sessionInvalidCalls = 0;
+        final dio = buildDio(
+          storage: storage,
+          server: server,
+          onRefresh: () async => const StoredSession(
+            accessToken: 'fresh-token',
+            refreshToken: 'refresh-2',
+            expiresIn: 3600,
+          ),
+          onSessionInvalid: () {
+            sessionInvalidCalls++;
+          },
+        );
+
+        await expectLater(
+          dio.get<String>('/products'),
+          throwsA(isA<DioException>()),
+        );
+
+        expect(
+          sessionInvalidCalls,
+          1,
+          reason:
+              'un 401 irrecoverable debe notificar que la sesión es inválida',
+        );
+      },
+    );
 
     test('deduplica refreshes concurrentes en una sola llamada', () async {
       final storage = FakeTokenStorage(accessToken: 'expired-token');

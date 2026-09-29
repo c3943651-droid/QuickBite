@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,13 +12,10 @@ import '../../../core/retry_policy.dart';
 import '../../../core/session/token_storage.dart';
 import '../data/auth_remote_data_source.dart';
 import '../data/auth_repository_impl.dart';
+import '../data/dtos/auth_dtos.dart';
 import '../data/dtos/user_profile_dto.dart';
 import '../domain/auth_entities.dart';
 import '../domain/auth_repository.dart';
-
-final appConfigProvider = Provider<AppConfig>(
-  (ref) => AppConfig.fromEnvironment(),
-);
 
 final tokenStorageProvider = Provider<TokenStorage>((ref) {
   return SecureTokenStorage(const FlutterSecureStorage());
@@ -31,7 +30,13 @@ final dioProvider = Provider<DioClient>((ref) {
   return DioClient(
     config: ref.watch(appConfigProvider),
     tokenStorage: ref.watch(tokenStorageProvider),
-    onRefresh: () => _refreshSession(ref),
+    onRefresh: () => ref.read(refreshTokensProvider.future),
+    // Solo se marca la expiración: cerrar la sesión lo hace quien la observa
+    // (ver `routerRefreshProvider`). Leer `sessionProvider` desde aquí lanzaría
+    // `CircularDependencyError`, porque `sessionProvider` llega a
+    // `apiClientProvider` → `dioProvider`, que es justo este provider.
+    onSessionInvalid: () =>
+        ref.read(sessionExpiryProvider.notifier).markRefreshFailed(),
     httpClientAdapter: ref.watch(httpClientAdapterProvider),
   );
 });
@@ -53,9 +58,21 @@ final authApiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(dio: buildDio(config, ref.watch(httpClientAdapterProvider)));
 });
 
+/// El datasource usa **dos** clientes a propósito:
+///
+/// - `apiClientProvider` (con `AuthInterceptor`) para lo que necesita token:
+///   `GET/PUT /users/profile`. Con un solo cliente, el perfil salía sin
+///   cabecera `Authorization`, el backend respondía 401 y —al no pasar por el
+///   interceptor— nadie limpiaba la sesión: la pantalla se quedaba en error
+///   con un "Reintentar" que no podía arreglar nada.
+/// - `authApiClientProvider` (sin interceptor) para `/auth/*`, porque el refresh
+///   no puede pasar por el interceptor que lo dispara.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(
-    AuthRemoteDataSource(ref.watch(authApiClientProvider)),
+    AuthRemoteDataSource(
+      ref.watch(apiClientProvider),
+      authClient: ref.watch(authApiClientProvider),
+    ),
     ref.watch(tokenStorageProvider),
   );
 });
@@ -85,15 +102,34 @@ class SessionExpiryNotifier extends Notifier<SessionExpiry> {
 }
 
 class SessionNotifier extends AsyncNotifier<AuthSession?> {
+  /// La sesión actual quedó inservible: un `build()` que esté en curso no puede
+  /// resucitarla.
+  ///
+  /// Hace falta porque restaurar la sesión pide `GET /users/profile` para
+  /// resolver el usuario, y esa misma llamada puede venir con un 401 que
+  /// dispara [expire]. Sin esta marca, el `build` terminaba devolviendo la
+  /// sesión caducada y la app se quedaba dentro con peticiones que siempre
+  ///Responderían 401.
+  bool _expirada = false;
+
   @override
   Future<AuthSession?> build() async {
+    // La capa HTTP solo puede avisar de que el refresh falló (leer este
+    // provider desde `dioProvider` cerraría un ciclo de dependencias); cerrar la
+    // sesión se hace aquí, que es quien la posee. El listener vive en `build`
+    // para que exista aunque nadie haya creado todavía el router.
+    ref.listen(sessionExpiryProvider, (_, next) {
+      if (next == SessionExpiry.refreshFailed) {
+        expire();
+      }
+    });
     final repository = ref.watch(authRepositoryProvider);
     final stored = await repository.restoreSession();
-    if (stored == null) {
+    if (stored == null || _expirada) {
       return null;
     }
     final user = await _resolveUser();
-    if (user == null) {
+    if (user == null || _expirada) {
       await ref.read(tokenStorageProvider).clear();
       return null;
     }
@@ -108,6 +144,10 @@ class SessionNotifier extends AsyncNotifier<AuthSession?> {
   }
 
   Future<void> login({required String email, required String password}) async {
+    // Volver a entrar limpia cualquier expiración previa: si no, el login
+    // following a un 401 volvería a mostrar "Tu sesión ha expirado".
+    _expirada = false;
+    ref.read(sessionExpiryProvider.notifier).reset();
     state = const AsyncLoading<AuthSession?>();
     state = await AsyncValue.guard(() async {
       final repository = ref.read(authRepositoryProvider);
@@ -141,11 +181,17 @@ class SessionNotifier extends AsyncNotifier<AuthSession?> {
 
   /// Invalida la sesión en curso sin haberlo pedido el usuario. El motivo
   /// queda en [sessionExpiryProvider] para que la app avise (SCR-COM-03).
+  ///
+  /// No borra los tokens: quien los encontró inválidos es el interceptor, y ya
+  /// los limpia. Aquí solo se cierra la sesión en memoria para que el guard
+  /// redirija a `/login`.
   void expire() {
+    _expirada = true;
     state = const AsyncData<AuthSession?>(null);
   }
 
   Future<void> logout() async {
+    _expirada = false;
     final current = state.value;
     try {
       if (current != null) {
@@ -183,9 +229,14 @@ class SessionNotifier extends AsyncNotifier<AuthSession?> {
 /// Perfil del usuario autenticado (07.1 SCR-PROF-01/02). El refresh manual
 /// se dispara desde el propio hub con `ref.invalidate`, así que la pantalla no
 /// necesita un notifier con estado propio.
-final userProfileProvider = FutureProvider.autoDispose<UserProfile>((ref) {
-  return ref.watch(authRepositoryProvider).fetchProfile();
-});
+///
+/// `noAutoRetry` es obligatorio: sin él, riverpod 3 reintenta solo y el hub se
+/// queda girando en "cargando" sin llegar a mostrar ni el error ni el botón
+/// "Reintentar" (ver `core/retry_policy.dart`).
+final userProfileProvider = FutureProvider.autoDispose<UserProfile>(
+  (ref) => ref.watch(authRepositoryProvider).fetchProfile(),
+  retry: noAutoRetry,
+);
 
 /// Estado de `PUT /users/profile`. La pantalla de edición lo consume con
 /// `ref.listen`: `saved` marca el éxito y provoca volver al hub (SCR-PROF-02).
@@ -288,35 +339,46 @@ class PasswordRecoveryNotifier extends Notifier<PasswordRecoveryState> {
   void clear() => state = const PasswordRecoveryState();
 }
 
-Future<StoredSession?> _refreshSession(Ref ref) async {
-  final stored = await ref.read(tokenStorageProvider).read();
+/// Renovación de tokens (SCR-COM-03, 07.3 H0.1).
+///
+/// Es un provider propio y **no** usa `authRepositoryProvider` a propósito: lo
+/// dispara el `AuthInterceptor` que se está construyéndose, y como el
+/// repositorio de perfil depende de `apiClientProvider` (que a su vez depende
+/// de `dioProvider`), pasar por él cerraría el ciclo
+/// `dioProvider → onRefresh → authRepository → apiClient → dioProvider`. Con el
+/// ciclo cerrado, riverpod lanza `CircularDependencyError`, el refresh falla y
+/// el interceptor expira la sesión en cada petición.
+///
+/// Aquí solo depende de `authApiClientProvider` (sin interceptor, por diseño) y
+/// del almacenamiento, así que la renovación sí ocurre.
+///
+/// `retry: noAutoRetry` es obligatorio: con el reintento automático de riverpod
+/// 3, `ref.read(refreshTokensProvider.future)` **no termina nunca** cuando la
+/// renovación falla, y el interceptor se queda colgado en `await` sin llegar a
+/// expirar la sesión. La persona se queda mirando la pantalla de error del
+/// endpoint que falló, con un "Reintentar" que no arregla nada.
+final refreshTokensProvider = FutureProvider<StoredSession>((ref) async {
+  final storage = ref.watch(tokenStorageProvider);
+  final stored = await storage.read();
   if (stored == null) {
-    return null;
+    throw StateError('No hay sesión guardada que renovar.');
   }
-  try {
-    final tokens = await ref
-        .read(authRepositoryProvider)
-        .refresh(refreshToken: stored.refreshToken);
-    final session = StoredSession(
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      expiresIn: tokens.expiresIn,
-    );
-    await ref.read(tokenStorageProvider).save(session);
-    return session;
-  } on Object {
-    _expireSession(ref);
-    return null;
-  }
-}
-
-/// Publica la sesión como nula tras una renovación irreparable. Sin esto el
-/// `sessionProvider` seguiría anunciando una sesión viva y el usuario
-/// quedaría atrapado en la app con peticiones que siempre devuelven 401.
-void _expireSession(Ref ref) {
-  ref.read(sessionExpiryProvider.notifier).markRefreshFailed();
-  ref.read(sessionProvider.notifier).expire();
-}
+  final response = await ref
+      .read(authApiClientProvider)
+      .post('/auth/refresh', data: {'refreshToken': stored.refreshToken});
+  // `POST /auth/refresh` no devuelve el usuario, solo los tokens nuevos: por eso
+  // se parsea `RefreshResponseDto` y no el sobre de `AuthResponseDto`.
+  final dto = RefreshResponseDto.fromJson(
+    response.data as Map<String, dynamic>,
+  );
+  final renewed = StoredSession(
+    accessToken: dto.accessToken,
+    refreshToken: dto.refreshToken,
+    expiresIn: dto.expiresIn,
+  );
+  await storage.save(renewed);
+  return renewed;
+}, retry: noAutoRetry);
 
 /// Puente Riverpod → go_router. `GoRouter` solo reevalúa su guard cuando su
 /// `refreshListenable` notifica, así que los cambios de sesión deben

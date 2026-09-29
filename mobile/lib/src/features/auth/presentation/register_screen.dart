@@ -196,7 +196,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             setState(() => _acceptedTerms = value ?? false),
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
-                  activeColor: AppColors.quickbiteOrange,
+                  activeColor: AppColors.accent,
                   title: const Text('Acepto la política de privacidad'),
                   subtitle: TextButton(
                     onPressed: () => AppSnackbar.showInfo(
@@ -275,8 +275,8 @@ class _PasswordRequirements extends StatelessWidget {
                       : Icons.radio_button_unchecked,
                   size: 16,
                   color: requirement.met
-                      ? AppColors.successGreen
-                      : AppColors.secondaryGray,
+                      ? AppColors.success
+                      : AppColors.inkMuted,
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Text(

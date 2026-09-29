@@ -62,9 +62,7 @@ void main() {
     });
 
     test('un booleano guardado con otro tipo no rompe la lectura', () async {
-      SharedPreferences.setMockInitialValues({
-        'quickbite_prefs_sonido': 'sí',
-      });
+      SharedPreferences.setMockInitialValues({'quickbite_prefs_sonido': 'sí'});
       final conTipoInvalido = PreferenciasRepository(
         await SharedPreferences.getInstance(),
       );

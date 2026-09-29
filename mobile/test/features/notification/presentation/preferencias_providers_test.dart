@@ -4,19 +4,26 @@ import 'package:quickbite_mobile/src/core/polling/polling_controller.dart';
 import 'package:quickbite_mobile/src/features/notification/domain/notification_entities.dart';
 import 'package:quickbite_mobile/src/features/notification/domain/preferencias_notificacion.dart';
 import 'package:quickbite_mobile/src/features/notification/presentation/preferencias_providers.dart';
+import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
 import 'package:quickbite_mobile/src/features/order/presentation/order_tracking_providers.dart';
 import 'package:quickbite_mobile/src/features/search/presentation/search_providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/fake_token_storage.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  Future<ProviderContainer> contenedorCon() async {
+  Future<ProviderContainer> contenedorCon([
+    Map<String, Object> guardadas = const {},
+  ]) async {
+    SharedPreferences.setMockInitialValues(guardadas);
+    final prefs = await SharedPreferences.getInstance();
     final tokenStorage = InMemoryTokenStorage();
     final container = ProviderContainer(
       overrides: [
         tokenStorageProvider.overrideWithValue(tokenStorage),
+        sharedPreferencesProvider.overrideWithValue(prefs),
       ],
     );
     addTearDown(container.dispose);
@@ -27,7 +34,9 @@ void main() {
     test('carga los valores por defecto sin datos guardados', () async {
       final container = await contenedorCon();
 
-      final prefs = await container.read(preferenciasNotificacionProvider.future);
+      final prefs = await container.read(
+        preferenciasNotificacionProvider.future,
+      );
 
       expect(prefs, const PreferenciasNotificacion());
     });
@@ -46,6 +55,27 @@ void main() {
         (await container.read(preferenciasNotificacionProvider.future))
             .permite(TipoNotificacion.recordatorio),
         isFalse,
+      );
+    });
+
+    test('restablecer vuelve las notificaciones a su valor inicial', () async {
+      final container = await contenedorCon({
+        'quickbite_prefs_tipos': {'recordatorio': false},
+        'quickbite_prefs_sonido': false,
+        'quickbite_prefs_intervalo': 30,
+      });
+      await container.read(preferenciasNotificacionProvider.future);
+
+      await container
+          .read(preferenciasNotificacionProvider.notifier)
+          .restablecer();
+
+      final prefs = container.read(preferenciasNotificacionProvider).value;
+      expect(prefs, const PreferenciasNotificacion());
+      expect(
+        await container.read(preferenciasNotificacionProvider.future),
+        const PreferenciasNotificacion(),
+        reason: 'también debe quedar escrito en el almacenamiento',
       );
     });
 
@@ -69,9 +99,9 @@ void main() {
     });
 
     test('un intervalo guardado fuera de rango se acota al leer', () async {
-      final container = await contenedorCon(
-        {'quickbite_prefs_intervalo_segundos': 5},
-      );
+      final container = await contenedorCon({
+        'quickbite_prefs_intervalo_segundos': 5,
+      });
       await container.read(preferenciasNotificacionProvider.future);
 
       expect(

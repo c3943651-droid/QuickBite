@@ -14,6 +14,10 @@ Future<void> pumpApp(
 }) async {
   tester.view.physicalSize = const Size(1080, 2400);
   tester.view.devicePixelRatio = 1;
+  // Ver `router_harness`: sin inset inferior las `SafeArea` no hacen nada y los
+  // tests no reproducen lo que pasa en el dispositivo con 3 botones.
+  tester.view.padding = const FakeViewPadding(top: 51, bottom: 48);
+  tester.view.viewPadding = const FakeViewPadding(top: 51, bottom: 48);
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(

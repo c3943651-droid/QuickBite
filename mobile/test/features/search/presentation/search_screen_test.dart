@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import '../../../src/core/session/token_storage.dart';
-import '../../../src/features/auth/domain/auth_entities.dart';
-import '../../../src/features/auth/domain/auth_repository.dart';
-import '../../../src/features/auth/presentation/auth_providers.dart';
-import '../../../src/features/catalog/domain/catalog_entities.dart';
-import '../../../src/features/catalog/domain/catalog_repository.dart';
-import '../../../src/features/catalog/presentation/catalog_providers.dart';
-import '../../../src/features/search/presentation/search_providers.dart';
-import '../../../src/features/search/presentation/search_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:quickbite_mobile/src/core/session/token_storage.dart';
+import 'package:quickbite_mobile/src/core/widgets/state_views.dart';
+import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
+import 'package:quickbite_mobile/src/features/auth/domain/auth_repository.dart';
+import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
+import 'package:quickbite_mobile/src/features/catalog/domain/catalog_entities.dart';
+import 'package:quickbite_mobile/src/features/catalog/domain/catalog_repository.dart';
+import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_providers.dart';
+import 'package:quickbite_mobile/src/features/search/presentation/search_providers.dart';
+import 'package:quickbite_mobile/src/features/search/presentation/search_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/catalog_fakes.dart';
+import '../../../support/fake_token_storage.dart';
 
 class _SearchCatalogRepository implements CatalogRepository {
   List<Product> matches = const [quickbitePastor];
@@ -111,6 +114,9 @@ void main() {
         catalogRepositoryProvider.overrideWithValue(catalog),
         authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
+        sharedPreferencesProvider.overrideWithValue(
+          await SharedPreferences.getInstance(),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -119,6 +125,36 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(home: SearchScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> pumpSearchWithRouter(
+    WidgetTester tester,
+    GoRouter router,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final container = ProviderContainer(
+      overrides: [
+        catalogRepositoryProvider.overrideWithValue(catalog),
+        authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
+        sharedPreferencesProvider.overrideWithValue(
+          await SharedPreferences.getInstance(),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    router.go('/search');
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(routerConfig: router),
       ),
     );
     await tester.pumpAndSettle();
@@ -228,6 +264,47 @@ void main() {
 
       expect(find.text('Tacos al pastor'), findsOneWidget);
       expect(find.text(r'$85.50'), findsOneWidget);
+    });
+
+    testWidgets('tocar un resultado navega al detalle del producto', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        routes: [
+          GoRoute(path: '/search', builder: (_, _) => const SearchScreen()),
+          GoRoute(
+            path: '/product/:id',
+            builder: (_, state) =>
+                Scaffold(body: Text('Detalle ${state.pathParameters['id']}')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await pumpSearchWithRouter(tester, router);
+
+      await tester.enterText(find.byType(TextField), 'tacos');
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Tacos al pastor'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Detalle p1'), findsOneWidget);
+    });
+
+    testWidgets('el error de búsqueda usa ErrorStateView con reintentar', (
+      tester,
+    ) async {
+      catalog.error = Exception('boom');
+      await pumpSearch(tester);
+
+      await tester.enterText(find.byType(TextField), 'tacos');
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ErrorStateView), findsOneWidget);
+      expect(find.text('Reintentar'), findsOneWidget);
     });
 
     testWidgets('sin resultados muestra el mensaje de búsqueda vacía', (

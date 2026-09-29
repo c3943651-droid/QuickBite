@@ -1,3 +1,5 @@
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -164,7 +166,7 @@ class _CartItemTile extends ConsumerWidget {
                         onPressed: () => notifier.removeItem(item.id),
                         icon: const Icon(Icons.delete_outline, size: 20),
                         tooltip: 'Eliminar del carrito',
-                        color: AppColors.errorRed,
+                        color: AppColors.error,
                       ),
                     ],
                   ),
@@ -188,7 +190,7 @@ class _QuantityStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.mistGray),
+        border: Border.all(color: AppColors.surfaceMuted),
         borderRadius: BorderRadius.circular(AppRadius.chip),
       ),
       child: Row(
@@ -235,17 +237,30 @@ class _SummaryBar extends StatelessWidget {
           AppSpacing.md,
           AppSpacing.sm,
         ),
-        decoration: const BoxDecoration(
+        // Resumen como tarjeta flotante: superficie blanca con borde suave y
+        // sombra difusa, en vez de una franja blanca pegada al borde que
+        // recortaba contra el fondo claro.
+        decoration: BoxDecoration(
           color: AppColors.white,
-          border: Border(top: BorderSide(color: AppColors.mistGray)),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: AppColors.border),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0F0F172A),
+              blurRadius: 24,
+              spreadRadius: -6,
+              offset: Offset(0, 8),
+            ),
+          ],
         ),
+        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _SummaryRow(label: 'Subtotal', value: cart.subtotal),
             const SizedBox(height: AppSpacing.xs),
             _SummaryRow(label: 'Costo de envío', value: cart.costoEnvio),
-            const Divider(height: AppSpacing.lg),
+            const Divider(height: AppSpacing.lg, color: AppColors.border),
             _SummaryRow(label: 'Total', value: cart.total, isTotal: true),
             const SizedBox(height: AppSpacing.sm),
             SizedBox(
@@ -253,7 +268,7 @@ class _SummaryBar extends StatelessWidget {
               child: FilledButton(
                 onPressed: () => context.go('/checkout'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.quickbiteOrange,
+                  backgroundColor: AppColors.accent,
                   minimumSize: const Size(0, AppSizes.buttonHeight),
                 ),
                 child: const Text('Proceder al pago'),
@@ -305,13 +320,13 @@ class _Thumb extends StatelessWidget {
       width: 56,
       height: 56,
       decoration: BoxDecoration(
-        color: AppColors.mistGray,
+        color: AppColors.surfaceMuted,
         borderRadius: BorderRadius.circular(AppRadius.image),
       ),
       child: url == null || url!.isEmpty
           ? Icon(
               Icons.fastfood_outlined,
-              color: AppColors.secondaryGray,
+              color: AppColors.inkMuted,
               semanticLabel: nombre,
             )
           : ClipRRect(
@@ -323,7 +338,7 @@ class _Thumb extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => Icon(
                   Icons.fastfood_outlined,
-                  color: AppColors.secondaryGray,
+                  color: AppColors.inkMuted,
                   semanticLabel: nombre,
                 ),
               ),

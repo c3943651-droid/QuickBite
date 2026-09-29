@@ -1,3 +1,6 @@
+import '../../../core/widgets/product_card.dart';
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -187,7 +190,13 @@ class _DetalleBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       children: [
-        _ImagenProducto(url: producto.imagenUrl, nombre: producto.nombre),
+        _ImagenProducto(
+          url: producto.imagenUrl,
+          nombre: producto.nombre,
+          // Misma etiqueta que la tarjeta: es lo que hace que la imagen vuele
+          // de una pantalla a la otra en vez de desaparecer y reaparecer.
+          hero: heroProducto(producto.id),
+        ),
         Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
@@ -201,7 +210,7 @@ class _DetalleBody extends StatelessWidget {
               Text(
                 CurrencyFormatter.format(producto.precio),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppColors.quickbiteOrange,
+                  color: AppColors.accent,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -334,7 +343,7 @@ class _ResumenPrecio extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.mistGray.withValues(alpha: 0.4),
+        color: AppColors.surfaceMuted.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(AppRadius.card),
       ),
       child: Column(
@@ -396,7 +405,7 @@ class _SelectorCantidad extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.mistGray),
+        border: Border.all(color: AppColors.surfaceMuted),
         borderRadius: BorderRadius.circular(AppRadius.chip),
       ),
       child: Row(
@@ -457,7 +466,7 @@ class _BarraAgregar extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: const BoxDecoration(
           color: AppColors.white,
-          border: Border(top: BorderSide(color: AppColors.mistGray)),
+          border: Border(top: BorderSide(color: AppColors.surfaceMuted)),
         ),
         child: PrimaryButton(
           label: producto.disponible
@@ -472,7 +481,9 @@ class _BarraAgregar extends StatelessWidget {
 }
 
 class _ImagenProducto extends StatelessWidget {
-  const _ImagenProducto({required this.url, required this.nombre});
+  const _ImagenProducto({required this.url, required this.nombre, this.hero});
+
+  final Object? hero;
 
   final String? url;
   final String nombre;
@@ -480,31 +491,33 @@ class _ImagenProducto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final placeholder = ColoredBox(
-      color: AppColors.mistGray,
+      color: AppColors.surfaceMuted,
       child: SizedBox(
         height: 240,
         width: double.infinity,
         child: Icon(
           Icons.fastfood_outlined,
           size: 64,
-          color: AppColors.secondaryGray,
+          color: AppColors.inkMuted,
           semanticLabel: nombre,
         ),
       ),
     );
 
-    return Stack(
-      children: [
-        if (url == null || url!.isEmpty)
-          placeholder
-        else
-          Image.network(
+    final imagen = url == null || url!.isEmpty
+        ? placeholder
+        : Image.network(
             url!,
             height: 240,
             width: double.infinity,
             fit: BoxFit.cover,
             errorBuilder: (_, _, _) => placeholder,
-          ),
+          );
+    final tag = hero;
+
+    return Stack(
+      children: [
+        if (tag == null) imagen else Hero(tag: tag, child: imagen),
         Positioned(
           top: AppSpacing.sm,
           left: AppSpacing.sm,

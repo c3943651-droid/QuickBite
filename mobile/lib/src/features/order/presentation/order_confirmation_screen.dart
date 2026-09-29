@@ -45,7 +45,7 @@ class OrderConfirmationScreen extends ConsumerWidget {
               child: Icon(
                 Icons.check_circle,
                 size: 88,
-                color: AppColors.successGreen,
+                color: AppColors.success,
               ),
             ),
             const SizedBox(height: AppSpacing.md),

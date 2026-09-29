@@ -91,7 +91,7 @@ void main() {
       final boton = tester.widget<FilledButton>(
         find.widgetWithText(FilledButton, 'Eliminar'),
       );
-      expect(boton.style?.backgroundColor?.resolve({}), AppColors.errorRed);
+      expect(boton.style?.backgroundColor?.resolve({}), AppColors.error);
     });
 
     testWidgets('permite personalizar las etiquetas de los botones', (

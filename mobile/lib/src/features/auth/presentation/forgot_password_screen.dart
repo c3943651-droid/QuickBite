@@ -99,11 +99,7 @@ class _RequestForm extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: AppSpacing.xl),
-          const Icon(
-            Icons.lock_reset,
-            size: 56,
-            color: AppColors.quickbiteOrange,
-          ),
+          const Icon(Icons.lock_reset, size: 56, color: AppColors.accent),
           const SizedBox(height: AppSpacing.md),
           Text(
             'Recupera tu contraseña',
@@ -160,7 +156,7 @@ class _Confirmation extends StatelessWidget {
         const Icon(
           Icons.mark_email_read_outlined,
           size: 56,
-          color: AppColors.quickbiteOrange,
+          color: AppColors.accent,
         ),
         const SizedBox(height: AppSpacing.md),
         Text(

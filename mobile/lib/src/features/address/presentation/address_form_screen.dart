@@ -316,7 +316,7 @@ class _AddressFormState extends ConsumerState<_AddressForm> {
                         setState(() => _esPredeterminada = value ?? false),
               title: const Text('Marcar como predeterminada'),
               contentPadding: EdgeInsets.zero,
-              activeColor: AppColors.quickbiteOrange,
+              activeColor: AppColors.accent,
               controlAffinity: ListTileControlAffinity.leading,
             ),
             const SizedBox(height: AppSpacing.md),

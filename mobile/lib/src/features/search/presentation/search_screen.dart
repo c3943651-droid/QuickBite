@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../core/widgets/scrollable_fill.dart';
 import '../../../core/widgets/state_views.dart';
 import 'search_providers.dart';
 
@@ -92,14 +94,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               _ when state.loading => const Center(
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              _ when state.error != null => _ScrollableFill(
+              _ when state.error != null => ScrollableFill(
                 child: ErrorStateView(
                   message: _messageFor(state.error!),
                   onRetry: () =>
                       ref.read(searchResultsProvider.notifier).retry(),
                 ),
               ),
-              _ when state.isEmpty => const _ScrollableFill(
+              _ when state.isEmpty => const ScrollableFill(
                 child: EmptyStateView(message: 'No encontramos productos'),
               ),
               _ => ListView.separated(
@@ -112,7 +114,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   return ProductCard(
                     product: product,
                     layout: ProductCardLayout.list,
-                    onTap: () {},
+                    onTap: () => context.push('/product/${product.id}'),
                   );
                 },
               ),
@@ -140,7 +142,7 @@ class _RecentSearches extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (history.isEmpty) {
-      return const _ScrollableFill(
+      return const ScrollableFill(
         child: EmptyStateView(message: 'Busca productos del menú'),
       );
     }
@@ -201,24 +203,5 @@ class _RecentSearches extends ConsumerWidget {
     if (confirmed == true) {
       await ref.read(searchHistoryProvider.notifier).clear();
     }
-  }
-}
-
-class _ScrollableFill extends StatelessWidget {
-  const _ScrollableFill({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: child,
-        ),
-      ),
-    );
   }
 }

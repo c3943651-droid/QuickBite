@@ -1,3 +1,5 @@
+import 'catalog_header.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -7,8 +9,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_snackbar.dart';
-import '../../../core/widgets/notification_badge.dart';
+import '../../../core/widgets/chips.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../core/widgets/scrollable_fill.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../catalog/domain/catalog_entities.dart';
 import '../../auth/presentation/auth_providers.dart';
@@ -78,28 +81,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final sinLeer = ref.watch(notificationsNoLeidasProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(userName.isEmpty ? 'QuickBite' : 'Hola, $userName'),
-        actions: [
-          NotificationBadge(
-            count: sinLeer,
-            child: IconButton(
-              onPressed: () => context.push('/notifications'),
-              icon: const Icon(Icons.notifications_none),
-              tooltip: 'Notificaciones',
-              constraints: const BoxConstraints.tightFor(
-                width: AppSizes.minTapTarget,
-                height: AppSizes.minTapTarget,
-              ),
-            ),
-          ),
-        ],
-      ),
+      // El saludo vive en la banda superior en vez de en el AppBar: el
+      // degradado oscuro da el punto de anclaje de la pantalla y separa el
+      // encabezado del catálogo sin una línea divisoria.
       body: RefreshIndicator(
         onRefresh: () => ref.read(productsProvider.notifier).refresh(),
-        color: AppColors.quickbiteOrange,
+        color: AppColors.accent,
         child: Column(
           children: [
+            CatalogHeader(
+              nombre: userName.isEmpty ? 'QuickBite' : userName,
+              notificaciones: sinLeer,
+              onNotificaciones: () => context.push('/notifications'),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.md,
@@ -162,7 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.quickbiteOrange,
+                            color: AppColors.accent,
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
@@ -221,7 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildBody(AsyncValue<ProductPage> products) {
     return switch (products) {
-      AsyncError(:final error) => _ScrollableFill(
+      AsyncError(:final error) => ScrollableFill(
         child: ErrorStateView(
           message: error is Exception
               ? _messageFor(error)
@@ -229,7 +223,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onRetry: () => ref.read(productsProvider.notifier).refresh(),
         ),
       ),
-      AsyncData(:final value) when value.items.isEmpty => const _ScrollableFill(
+      AsyncData(:final value) when value.items.isEmpty => const ScrollableFill(
         child: EmptyStateView(message: 'No hay productos disponibles'),
       ),
       AsyncData(:final value) => GridView.builder(
@@ -244,7 +238,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           crossAxisCount: 2,
           mainAxisSpacing: AppSpacing.md,
           crossAxisSpacing: AppSpacing.md,
-          childAspectRatio: 0.72,
+          // 0.72 (el valor heredado) dejaba la foto al 85% de la tarjeta y
+          // prensaba nombre y precio contra el borde: en el Moto G15 la rejilla
+          // se leía como una columna de huecos vacíos. 0.86 mantiene la imagen
+          // como protagonista sin sacrificar el texto.
+          childAspectRatio: 0.86,
         ),
         itemCount: value.items.length + (value.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
@@ -310,55 +308,25 @@ class _CategoryChips extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(right: AppSpacing.sm),
-          child: FilterChip(
-            label: const Text('Todas'),
+          // `CategoryChip` y no un `FilterChip` suelto: el chip del design system
+          // sí sigue el tema. Con `labelStyle` fijo, la píldora inactiva quedaba
+          // ciruela sobre pizarra profunda en modo oscuro (0.2:1, ilegible).
+          child: CategoryChip(
+            label: 'Todas',
             selected: selectedId == null,
-            onSelected: (_) => onSelected(null),
-            selectedColor: AppColors.quickbiteOrange,
-            labelStyle: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: selectedId == null ? AppColors.white : AppColors.textGray,
-            ),
+            onTap: () => onSelected(null),
           ),
         ),
         for (final category in categories)
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: FilterChip(
-              label: Text(category.nombre),
+            child: CategoryChip(
+              label: category.nombre,
               selected: category.id == selectedId,
-              onSelected: (_) => onSelected(category.id),
-              selectedColor: AppColors.quickbiteOrange,
-              labelStyle: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: category.id == selectedId
-                    ? AppColors.white
-                    : AppColors.textGray,
-              ),
+              onTap: () => onSelected(category.id),
             ),
           ),
       ],
-    );
-  }
-}
-
-class _ScrollableFill extends StatelessWidget {
-  const _ScrollableFill({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: child,
-        ),
-      ),
     );
   }
 }

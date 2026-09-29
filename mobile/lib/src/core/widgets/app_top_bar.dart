@@ -67,7 +67,7 @@ class NotificationButton extends StatelessWidget {
       onPressed: onTap,
       icon: NotificationBadge(
         count: badgeCount,
-        child: Icon(icon, color: AppColors.textGray),
+        child: Icon(icon, color: AppColors.ink),
       ),
     );
   }

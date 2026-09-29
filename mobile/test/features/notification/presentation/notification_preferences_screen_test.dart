@@ -1,25 +1,31 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quickbite_mobile/src/features/notification/domain/notification_entities.dart';
-import 'package:quickbite_mobile/src/features/notification/presentation/notification_preferences_screen.dart';
-import 'package:quickbite_mobile/src/features/notification/presentation/preferencias_providers.dart';
+import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
+import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
 import 'package:quickbite_mobile/src/features/search/presentation/search_providers.dart';
 import 'package:quickbite_mobile/src/features/shell/app_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/fake_token_storage.dart';
+import '../../../support/router_harness.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Future<void> pumpPreferencias(
     WidgetTester tester, {
-    final Map<String, Object> guardadas = const {},
+    Map<String, Object> guardadas = const {},
   }) async {
+    SharedPreferences.setMockInitialValues(guardadas);
+    final prefs = await SharedPreferences.getInstance();
     final tokenStorage = InMemoryTokenStorage();
     final container = ProviderContainer(
       overrides: [
         tokenStorageProvider.overrideWithValue(tokenStorage),
+        sharedPreferencesProvider.overrideWithValue(prefs),
       ],
     );
     addTearDown(container.dispose);
@@ -45,9 +51,7 @@ void main() {
   }
 
   group('NotificationPreferencesScreen (07.1 SCR-PROF-08)', () {
-    testWidgets('muestra los cinco tipos, sonido y vibración', (
-      tester,
-    ) async {
+    testWidgets('muestra los cinco tipos, sonido y vibración', (tester) async {
       await pumpPreferencias(tester);
 
       expect(find.text('Preferencias de notificaciones'), findsOneWidget);
@@ -59,23 +63,36 @@ void main() {
         'Recordatorios',
         'Sonido',
         'Vibración',
-        'Frecuencia de actualización',
       ]) {
         expect(find.text(etiqueta), findsOneWidget, reason: 'falta $etiqueta');
       }
+      await verFrecuencia(tester);
+      expect(find.text('Frecuencia de actualización'), findsOneWidget);
     });
 
     testWidgets('los cinco tipos arrancan encendidos', (tester) async {
       await pumpPreferencias(tester);
 
-      final switches = tester.widgetList<SwitchListTile>(find.byType(SwitchListTile));
+      final switches = tester.widgetList<SwitchListTile>(
+        find.byType(SwitchListTile),
+      );
       expect(switches, hasLength(7));
       for (final tile in switches) {
-        expect(tile.value, isTrue, reason: '${tile.title} debería estar activo');
+        expect(
+          tile.value,
+          isTrue,
+          reason: '${tile.title} debería estar activo',
+        );
       }
     });
 
-    final prefs = await SharedPreferences.getInstance();
+    testWidgets('apagar recordatorios persiste la preferencia', (tester) async {
+      await pumpPreferencias(tester);
+
+      await tester.tap(find.text('Recordatorios'));
+      await tester.pumpAndSettle();
+
+      final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool('quickbite_prefs_recordatorio'), isFalse);
     });
 
@@ -159,10 +176,21 @@ void main() {
     testWidgets('la pantalla es alcanzable desde el hub de perfil', (
       tester,
     ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
       final tokenStorage = InMemoryTokenStorage();
       final container = ProviderContainer(
         overrides: [
           tokenStorageProvider.overrideWithValue(tokenStorage),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          userProfileProvider.overrideWith(
+            (ref) async => const UserProfile(
+              id: '1',
+              nombre: 'Carlos',
+              email: 'carlos@quickbite.mx',
+              rol: 'cliente',
+            ),
+          ),
         ],
       );
       addTearDown(container.dispose);

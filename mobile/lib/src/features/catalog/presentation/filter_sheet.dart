@@ -1,7 +1,10 @@
+import '../../../core/theme/app_radius.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/chips.dart';
 import '../domain/catalog_entities.dart';
 import 'catalog_providers.dart';
 
@@ -170,7 +173,7 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
                 padding: const EdgeInsets.only(top: AppSpacing.sm),
                 child: Text(
                   _rangoError!,
-                  style: TextStyle(color: AppColors.errorRed),
+                  style: TextStyle(color: AppColors.error),
                 ),
               ),
             const SizedBox(height: AppSpacing.md),
@@ -179,7 +182,7 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
               onChanged: (value) => setState(() => _disponible = value),
               title: const Text('Solo productos disponibles'),
               contentPadding: EdgeInsets.zero,
-              activeThumbColor: AppColors.quickbiteOrange,
+              activeThumbColor: AppColors.accent,
             ),
             const SizedBox(height: AppSpacing.sm),
             const _SectionLabel('Ordenar por'),
@@ -199,7 +202,7 @@ class _FilterSheetState extends ConsumerState<FilterSheet> {
             FilledButton(
               onPressed: _apply,
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.quickbiteOrange,
+                backgroundColor: AppColors.accent,
                 minimumSize: const Size(0, AppSizes.buttonHeight),
               ),
               child: const Text('Aplicar filtros'),
@@ -246,16 +249,13 @@ class _CategoryOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
+    // Mismo chip del design system que el resto de filtros: el `ChoiceChip` con
+    // `labelStyle` fijo dejaba el texto inactivo ciruela sobre pizarra en modo
+    // oscuro, y en claro compite con el fondo de la hoja.
+    return CategoryChip(
+      label: label,
       selected: selected,
-      onSelected: (_) => onSelected(),
-      selectedColor: AppColors.quickbiteOrange,
-      labelStyle: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: selected ? AppColors.white : AppColors.textGray,
-      ),
+      onTap: onSelected,
     );
   }
 }

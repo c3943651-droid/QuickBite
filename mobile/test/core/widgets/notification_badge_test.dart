@@ -45,7 +45,7 @@ void main() {
       );
 
       final badge = tester.widget<Badge>(find.byType(Badge));
-      expect(badge.backgroundColor, AppColors.appetiteRed);
+      expect(badge.backgroundColor, AppColors.accentAlt);
       expect(badge.textColor, AppColors.white);
     });
 
@@ -54,14 +54,14 @@ void main() {
         tester,
         const NotificationBadge(
           count: 2,
-          color: AppColors.infoBlue,
+          color: AppColors.info,
           child: Icon(Icons.notifications),
         ),
       );
 
       expect(
         tester.widget<Badge>(find.byType(Badge)).backgroundColor,
-        AppColors.infoBlue,
+        AppColors.info,
       );
     });
 

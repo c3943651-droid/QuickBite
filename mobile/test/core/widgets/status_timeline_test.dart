@@ -110,7 +110,7 @@ void main() {
       final iconos = tester
           .widgetList<Icon>(find.byIcon(Icons.delivery_dining_outlined))
           .toList();
-      expect(iconos.first.color, AppColors.secondaryGray);
+      expect(iconos.first.color, AppColors.inkMuted);
     });
 
     testWidgets('cada paso muestra su timestamp', (tester) async {
