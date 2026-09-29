@@ -339,10 +339,10 @@ verify_hint() {
             printf '%s\n' '- Backend: `dotnet build backend/src/QuickBite.sln -warnaserror`, `dotnet test backend/tests/QuickBite.Tests.Unit/` y `dotnet test backend/tests/QuickBite.Tests.Integration/`'
             ;;
         mobile)
-            printf '%s\n' '- Móvil: `npm run lint` y `npm test`'
+            printf '%s\n' '- Móvil: `flutter analyze` y `flutter test` (desde `mobile/`)'
             ;;
         *)
-            printf '%s\n' '- Ajustar verificación según el frente afectado (`dotnet build`/`npm run lint`)'
+            printf '%s\n' '- Ajustar verificación según el frente afectado (`dotnet build` en backend, `flutter analyze` en móvil)'
             ;;
     esac
 }
@@ -400,11 +400,13 @@ run_verification() {
             fi
             ;;
         mobile)
-            if command -v npm >/dev/null 2>&1 && [ -f "$REPO_ROOT/mobile/package.json" ]; then
-                echo "==> Verificando móvil (npm run lint)..."
-                (cd "$REPO_ROOT/mobile" && npm run lint)
+            if command -v flutter >/dev/null 2>&1 && [ -f "$REPO_ROOT/mobile/pubspec.yaml" ]; then
+                echo "==> Verificando móvil (flutter analyze)..."
+                (cd "$REPO_ROOT/mobile" && flutter analyze)
+                echo "==> Verificando móvil (flutter test)..."
+                (cd "$REPO_ROOT/mobile" && flutter test)
             else
-                echo "==> Aviso: proyecto móvil no disponible; se omite la verificación."
+                echo "==> Aviso: flutter no encontrado o mobile/pubspec.yaml ausente; se omite la verificación del móvil."
             fi
             ;;
     esac
