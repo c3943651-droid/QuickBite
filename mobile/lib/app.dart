@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'src/core/widgets/overlay_conexion.dart';
 import 'src/features/profile/domain/preferencias_apariencia.dart';
 import 'src/features/profile/presentation/apariencia_providers.dart';
 import 'src/features/profile/presentation/apariencia_theme.dart';
@@ -27,7 +28,10 @@ class QuickBiteApp extends ConsumerWidget {
       themeMode: modoTema(preferencias),
       builder: (context, child) {
         // `MediaQuery.builder` envuelve la app, así que la escala y la supresión
-        // de animaciones se aplican a todas las pantallas sin tocar ninguna.
+        // de animaciones se aplican a todas las pantallas sin tocar ninguna. El
+        // overlay va aquí dentro para que el aviso de sin conexión cubra
+        // cualquier pantalla, incluida la que se está mostrando ahora mismo
+        // (07.1 SCR-COM-01).
         final media = MediaQuery.of(context);
         return MediaQuery(
           data: media.copyWith(
@@ -37,7 +41,7 @@ class QuickBiteApp extends ConsumerWidget {
               media.disableAnimations,
             ),
           ),
-          child: child ?? const SizedBox.shrink(),
+          child: OverlayConexion(child: child ?? const SizedBox.shrink()),
         );
       },
       routerConfig: ref.watch(routerProvider),

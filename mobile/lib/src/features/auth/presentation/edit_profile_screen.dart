@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/image_picker_sheet.dart';
 import '../../../core/widgets/primary_button.dart';
 import 'auth_providers.dart';
 
@@ -118,12 +121,23 @@ class _Form extends StatefulWidget {
 class _FormState extends State<_Form> {
   late final TextEditingController _emailController;
 
+  /// Ruta de la imagen recién elegida. El backend todavía no expone carga de
+  /// avatar, así que la vista previa es local: al menos la persona usuaria ve
+  /// lo que eligió en lugar de un icono que no cambia nunca.
+  String? _avatarLocal;
+
   @override
   void initState() {
     super.initState();
     widget.nombreController.text = widget.initialNombre;
     widget.telefonoController.text = widget.initialTelefono ?? '';
     _emailController = TextEditingController(text: widget.email);
+  }
+
+  Future<void> _elegirImagen() async {
+    final ruta = await mostrarSelectorImagen(context);
+    if (ruta == null || !mounted) return;
+    setState(() => _avatarLocal = ruta);
   }
 
   @override
@@ -145,18 +159,11 @@ class _FormState extends State<_Form> {
               child: Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  const CircleAvatar(
-                    radius: 44,
-                    backgroundColor: AppColors.quickbiteOrange,
-                    child: Icon(Icons.person, color: Colors.white, size: 46),
-                  ),
+                  _Avatar(ruta: _avatarLocal),
                   IconButton.filled(
                     tooltip: 'Cambiar',
                     icon: const Icon(Icons.photo_camera_outlined, size: 18),
-                    onPressed: () => AppSnackbar.showInfo(
-                      context,
-                      'La foto de perfil estará disponible próximamente.',
-                    ),
+                    onPressed: _elegirImagen,
                   ),
                 ],
               ),
@@ -198,6 +205,25 @@ class _FormState extends State<_Form> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.ruta});
+
+  final String? ruta;
+
+  @override
+  Widget build(BuildContext context) {
+    final ruta = this.ruta;
+    return CircleAvatar(
+      radius: 44,
+      backgroundColor: AppColors.quickbiteOrange,
+      backgroundImage: ruta == null ? null : FileImage(File(ruta)),
+      child: ruta == null
+          ? const Icon(Icons.person, color: Colors.white, size: 46)
+          : null,
     );
   }
 }

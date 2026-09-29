@@ -381,6 +381,51 @@ El APK:
 - Complejidad de ficha, capturas y política de privacidad innecesaria.
 - La distribución directa es suficiente para el alcance del proyecto.
 
+### Procedimiento de firma (COM-03)
+
+Todo lo que sigue vive **fuera del repositorio**: `android/key.properties` y el
+`.jks` están en `.gitignore`. Si se pierde el `.jks`, las versiones ya
+distribuidas dejan de poder actualizarse, así que hay que guardarlo en un
+lugar seguro (bóveda de contraseñas del equipo).
+
+1. Generar la llave una sola vez:
+
+   ```bash
+   keytool -genkeypair -v \
+     -keystore ~/seguridad/quickbite-release.jks \
+     -alias quickbite -keyalg RSA -keysize 2048 -validity 10000 \
+     -dname "CN=QuickBite, OU=QuickBite, O=QuickBite, L=CDMX, S=CDMX, C=MX"
+   ```
+
+2. Crear `mobile/android/key.properties` con las contraseñas y la ruta:
+
+   ```properties
+   storePassword=<contraseña del almacén>
+   keyPassword=<contraseña de la llave>
+   keyAlias=quickbite
+   storeFile=/ruta/absoluta/al/quickbite-release.jks
+   ```
+
+3. Compilar y comprobar la firma:
+
+   ```bash
+   flutter build apk --release
+   $ANDROID_HOME/build-tools/*/apksigner verify --print-certs \
+     build/app/outputs/flutter-apk/app-release.apk
+   ```
+
+4. Subir la versión y el binario firmado como releasing.
+
+**Sin `key.properties` el build no falla:** cae a la firma de debug y avisa por
+consola, para que `flutter run --release` siga sirviendo en local. Ese APK
+*no* se puede entregar; es solo para desarrollo.
+
+`android/app/build.gradle.kts` activa además `isMinifyEnabled` e
+`isShrinkResources` con las reglas de `android/app/proguard-rules.pro`, que son
+lo que exige la ofuscación de la decisión. También genera el App Bundle
+(`flutter build appbundle --release`) por si más adelante se decide distribuir
+desde Play.
+
 ### Documentos afectados
 
 - 00 (lista canónica de "no implementar")

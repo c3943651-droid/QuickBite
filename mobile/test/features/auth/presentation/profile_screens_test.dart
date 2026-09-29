@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/error/app_exception.dart';
+import 'package:quickbite_mobile/src/core/images/seleccion_imagen.dart';
 import 'package:quickbite_mobile/src/core/session/token_storage.dart';
 import 'package:quickbite_mobile/src/core/widgets/state_views.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
@@ -124,6 +125,7 @@ void main() {
     String location, {
     AuthSession session = cliente,
     NotificationRepository? notificaciones,
+    SelectorImagen? selectorImagen,
   }) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
@@ -136,6 +138,8 @@ void main() {
         catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
         if (notificaciones != null)
           notificationRepositoryProvider.overrideWithValue(notificaciones),
+        if (selectorImagen != null)
+          selectorImagenProvider.overrideWithValue(selectorImagen),
       ],
     );
     addTearDown(container.dispose);
@@ -295,6 +299,40 @@ void main() {
       );
     });
 
+    testWidgets('elegir imagen abre el selector y previsualiza el archivo', (
+      tester,
+    ) async {
+      final selector = FakeSelectorImagen('/tmp/avatar.jpg');
+      await pumpAt(tester, '/profile/edit', selectorImagen: selector);
+
+      await tester.tap(find.byIcon(Icons.photo_camera_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Cámara'), findsOneWidget);
+      await tester.tap(find.text('Galería'));
+      await tester.pumpAndSettle();
+
+      expect(selector.origenes, [OrigenImagen.galeria]);
+      final avatar = tester.widget<CircleAvatar>(find.byType(CircleAvatar));
+      expect(avatar.backgroundImage, isNotNull);
+    });
+
+    testWidgets('cancelar el selector deja el avatar como estaba', (
+      tester,
+    ) async {
+      final selector = FakeSelectorImagen(null);
+      await pumpAt(tester, '/profile/edit', selectorImagen: selector);
+
+      await tester.tap(find.byIcon(Icons.photo_camera_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+
+      final avatar = tester.widget<CircleAvatar>(find.byType(CircleAvatar));
+      expect(avatar.backgroundImage, isNull);
+      expect(avatar.child, isA<Icon>());
+    });
+
     testWidgets('exige un nombre válido antes de enviar', (tester) async {
       await pumpAt(tester, '/profile/edit');
 
@@ -352,4 +390,17 @@ void main() {
       expect(find.text('Mis direcciones'), findsNothing);
     });
   });
+}
+
+class FakeSelectorImagen implements SelectorImagen {
+  FakeSelectorImagen(this.ruta);
+
+  final String? ruta;
+  final List<OrigenImagen> origenes = [];
+
+  @override
+  Future<String?> seleccionar(OrigenImagen origen) async {
+    origenes.add(origen);
+    return ruta;
+  }
 }

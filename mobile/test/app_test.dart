@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/app.dart';
+import 'package:quickbite_mobile/src/core/connectivity/conectividad.dart';
+import 'package:quickbite_mobile/src/core/widgets/overlay_conexion.dart';
 import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
 import 'package:quickbite_mobile/src/features/search/presentation/search_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'support/fake_conectividad.dart';
 import 'support/fake_token_storage.dart';
 
 void main() {
@@ -15,6 +18,7 @@ void main() {
     WidgetTester tester, {
     required Map<String, Object> guardadas,
     Brightness brillo = Brightness.light,
+    Conectividad? conectividad,
   }) async {
     SharedPreferences.setMockInitialValues(guardadas);
     final prefs = await SharedPreferences.getInstance();
@@ -26,6 +30,8 @@ void main() {
       overrides: [
         tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
         sharedPreferencesProvider.overrideWithValue(prefs),
+        if (conectividad != null)
+          conectividadProvider.overrideWithValue(conectividad),
       ],
     );
     addTearDown(container.dispose);
@@ -105,6 +111,25 @@ void main() {
 
       final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
       expect(app.theme!.textTheme.bodyLarge?.color, Colors.black);
+    });
+  });
+
+  group('QuickBiteApp muestra el aviso de sin conexion (07.1 SCR-COM-01)', () {
+    testWidgets('aparece sobre cualquier pantalla y desaparece al volver la red', (
+      tester,
+    ) async {
+      final fake = FakeConectividad();
+      await pumpApp(tester, guardadas: const {}, conectividad: fake);
+      expect(find.byType(OverlayConexion), findsOneWidget);
+      expect(find.text(AvisoRed.sinConexion), findsNothing);
+
+      fake.emitir(false);
+      await tester.pumpAndSettle();
+      expect(find.text(AvisoRed.sinConexion), findsOneWidget);
+
+      fake.emitir(true);
+      await tester.pumpAndSettle();
+      expect(find.text(AvisoRed.sinConexion), findsNothing);
     });
   });
 }
