@@ -26,6 +26,9 @@ class _SearchCatalogRepository implements CatalogRepository {
   Future<List<Category>> getCategories() async => const [quickbiteTacos];
 
   @override
+  Future<List<PromotionBanner>> getPromotions() async => const [];
+
+  @override
   Future<Product> getProduct(String id) => throw UnimplementedError();
 
   @override

@@ -25,6 +25,7 @@ class FakeProfileRepository implements AuthRepository {
 
   UserProfile? profile;
   Object? fetchError;
+  Duration logoutDelay = Duration.zero;
 
   /// Veces que se pidió el perfil: sirve para comprobar que "Reintentar" vuelve
   /// a consultar en vez de solo repintar.
@@ -94,7 +95,11 @@ class FakeProfileRepository implements AuthRepository {
       const AuthTokens(accessToken: 'a', refreshToken: 'r', expiresIn: 3600);
 
   @override
-  Future<void> logout({required String refreshToken}) async {}
+  Future<void> logout({required String refreshToken}) async {
+    if (logoutDelay > Duration.zero) {
+      await Future.delayed(logoutDelay);
+    }
+  }
 
   @override
   Future<StoredSession?> restoreSession() async => null;
@@ -549,6 +554,112 @@ void main() {
 
       expect(find.text('Guardar cambios'), findsOneWidget);
       expect(find.text('Mis direcciones'), findsNothing);
+    });
+  });
+
+  group('ProfileScreen logout con confirmación', () {
+    testWidgets('el diálogo tiene padding interno y colores contrastantes', (
+      tester,
+    ) async {
+      await pumpAt(tester, '/profile');
+
+      await tester.tap(find.text('Cerrar sesión'));
+      await tester.pumpAndSettle();
+
+      final dialog = tester.widget<AlertDialog>(find.byType(AlertDialog));
+      expect(dialog.contentPadding, const EdgeInsets.all(24));
+
+      final title = tester.widget<Text>(find.text('¿Cerrar sesión?'));
+      expect(title.style?.color, isNotNull);
+
+      final content = tester.widget<Text>(
+        find.text('¿Estás seguro de que deseas salir de tu cuenta?'),
+      );
+      expect(content.style?.color, isNotNull);
+
+      final confirmButton = tester.widget<ElevatedButton>(
+        find.ancestor(
+          of: find.text('Cerrar sesión'),
+          matching: find.byType(ElevatedButton),
+        ),
+      );
+      final style = confirmButton.style!;
+      final shape = style.shape!.resolve({});
+      expect(shape, isA<RoundedRectangleBorder>());
+      final border = shape as RoundedRectangleBorder;
+      expect(border.borderRadius, BorderRadius.circular(12));
+    });
+
+
+    testWidgets('al pulsar Cerrar sesión se muestra el diálogo de confirmación', (
+      tester,
+    ) async {
+      await pumpAt(tester, '/profile');
+
+      await tester.tap(find.text('Cerrar sesión'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('¿Cerrar sesión?'), findsOneWidget);
+      expect(
+        find.text('¿Estás seguro de que deseas salir de tu cuenta?'),
+        findsOneWidget,
+      );
+      expect(find.text('Cancelar'), findsOneWidget);
+    });
+
+    testWidgets('cancelar el diálogo no ejecuta logout', (tester) async {
+      await pumpAt(tester, '/profile');
+
+      await tester.tap(find.text('Cerrar sesión'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('¿Cerrar sesión?'), findsNothing);
+      expect(find.text('Carlos Pérez'), findsOneWidget);
+    });
+
+    testWidgets('confirmar el diálogo ejecutar logout y navega a login', (
+      tester,
+    ) async {
+      await pumpAt(tester, '/profile');
+
+      await tester.tap(find.text('Cerrar sesión'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.widgetWithText(ElevatedButton, 'Cerrar sesión'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('¿Cerrar sesión?'), findsNothing);
+      expect(find.text('Carlos Pérez'), findsNothing);
+    });
+
+    testWidgets('durante el logout el botón muestra indicador de carga', (
+      tester,
+    ) async {
+      final lentoAuth = FakeProfileRepository();
+      lentoAuth.logoutDelay = const Duration(milliseconds: 500);
+
+      await pumpAt(tester, '/profile');
+
+      await tester.tap(find.text('Cerrar sesión'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.widgetWithText(ElevatedButton, 'Cerrar sesión'),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byType(CircularProgressIndicator), findsWidgets);
+      await tester.pumpAndSettle();
     });
   });
 }

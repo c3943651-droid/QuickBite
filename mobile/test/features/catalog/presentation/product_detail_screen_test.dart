@@ -19,6 +19,9 @@ class _DetalleRepository implements CatalogRepository {
   int optionCalls = 0;
 
   @override
+  Future<List<PromotionBanner>> getPromotions() async => const [];
+
+  @override
   Future<Product> getProduct(String id) async {
     productCalls++;
     if (error != null) {

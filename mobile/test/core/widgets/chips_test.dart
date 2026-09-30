@@ -2,7 +2,6 @@ import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quickbite_mobile/src/core/theme/app_radius.dart';
 import 'package:quickbite_mobile/src/core/theme/app_theme.dart';
 import 'package:quickbite_mobile/src/core/widgets/chips.dart';
 
@@ -73,7 +72,7 @@ void main() {
 
       final decoracion = chipDecoration(tester);
       expect(decoracion.gradient, isNull);
-      expect(decoracion.borderRadius, BorderRadius.circular(AppRadius.chip));
+      expect(decoracion.borderRadius, BorderRadius.circular(20));
     });
 
     testWidgets('activo: degradado de marca y sin borde visible', (

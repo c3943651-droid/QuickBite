@@ -15,6 +15,11 @@ class CatalogRepositoryImpl implements CatalogRepository {
   }
 
   @override
+  Future<List<PromotionBanner>> getPromotions() async {
+    return _remote.getPromotions();
+  }
+
+  @override
   Future<ProductPage> getProducts(ProductFilter filter) async {
     final page = await _remote.getProducts(filter);
     return ProductPage(

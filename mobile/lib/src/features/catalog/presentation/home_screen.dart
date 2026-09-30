@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/chips.dart';
 import '../../../core/widgets/product_card.dart';
@@ -81,9 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final sinLeer = ref.watch(notificationsNoLeidasProvider);
 
     return Scaffold(
-      // El saludo vive en la banda superior en vez de en el AppBar: el
-      // degradado oscuro da el punto de anclaje de la pantalla y separa el
-      // encabezado del catálogo sin una línea divisoria.
+      backgroundColor: const Color(0xFFF8F9FA),
       body: RefreshIndicator(
         onRefresh: () => ref.read(productsProvider.notifier).refresh(),
         color: AppColors.accent,
@@ -108,8 +107,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 decoration: InputDecoration(
                   hintText: 'Buscar en el menú',
                   prefixIcon: const Icon(Icons.search, size: 20),
-                  // 07.1 SCR-CAT-02: la búsqueda rápida filtra el catálogo; este
-                  // acceso abre la pantalla dedicada con historial.
                   suffixIcon: IconButton(
                     onPressed: () => context.go('/search'),
                     icon: const Icon(Icons.travel_explore, size: 20),
@@ -118,68 +115,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
+            _PromoCarousel(),
             SizedBox(
-              height: 48,
+              height: 40,
               child: categories.when(
                 loading: () => const Center(
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
                 error: (error, _) => const SizedBox.shrink(),
-                data: (items) => _CategoryChips(
-                  categories: items,
-                  selectedId: selectedCategory,
-                  onSelected: (id) => ref
-                      .read(productFilterProvider.notifier)
-                      .selectCategory(id),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: OutlinedButton.icon(
-                  onPressed: () => _openFilters(context, categories),
-                  icon: const Icon(Icons.tune, size: 18),
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('Filtros'),
-                      if (activeFilters > 0) ...[
-                        const SizedBox(width: AppSpacing.sm),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            '$activeFilters',
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
+                data: (items) => Row(
+                  children: [
+                    SizedBox(
+                      width: 38,
+                      height: 38,
+                      child: IconButton(
+                        onPressed: () => _openFilters(context, categories),
+                        icon: Icon(
+                          Icons.tune,
+                          size: 18,
+                          color: activeFilters > 0
+                              ? AppColors.accent
+                              : AppColors.inkMuted,
                         ),
-                      ],
-                    ],
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 40),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
+                        tooltip: 'Filtros',
+                        padding: EdgeInsets.zero,
+                        style: IconButton.styleFrom(
+                          backgroundColor: activeFilters > 0
+                              ? AppColors.accent.withValues(alpha: 0.1)
+                              : AppColors.surfaceMuted,
+                          shape: const CircleBorder(),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _CategoryChips(
+                        categories: items,
+                        selectedId: selectedCategory,
+                        onSelected: (id) => ref
+                            .read(productFilterProvider.notifier)
+                            .selectCategory(id),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
+
             Expanded(child: _buildBody(products)),
           ],
         ),
@@ -232,7 +214,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           AppSpacing.md,
           0,
           AppSpacing.md,
-          AppSpacing.xl,
+          140,
         ),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -286,6 +268,136 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return error.userMessage;
     }
     return 'No pudimos cargar el catálogo. Inténtalo de nuevo.';
+  }
+}
+
+class _PromoCarousel extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final promosAsync = ref.watch(promotionsProvider);
+
+    return promosAsync.when(
+      loading: () => const SizedBox(height: 110),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (promos) {
+        if (promos.isEmpty) return const SizedBox.shrink();
+
+        final pageController = PageController(viewportFraction: 0.84);
+        final currentPage = ValueNotifier<int>(0);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: Text(
+                'Promociones',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: SizedBox(
+                height: 110,
+                child: PageView.builder(
+                  controller: pageController,
+                  padEnds: false,
+                  onPageChanged: (index) => currentPage.value = index,
+                  itemCount: promos.length,
+                  itemBuilder: (context, index) {
+                    final promo = promos[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: _PromoCard(
+                        titulo: promo.titulo,
+                        subtito: promo.subtitulo,
+                        color: promo.color,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ValueListenableBuilder<int>(
+              valueListenable: currentPage,
+              builder: (context, page, _) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(promos.length, (index) {
+                    final active = index == page;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: active ? 20 : 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: active
+                            ? AppColors.accent
+                            : AppColors.inkSoft.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    );
+                  }),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _PromoCard extends StatelessWidget {
+  const _PromoCard({
+    required this.titulo,
+    required this.subtito,
+    required this.color,
+  });
+
+  final String titulo;
+  final String subtito;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color, color.withValues(alpha: 0.7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            titulo,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            subtito,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.white.withValues(alpha: 0.9),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

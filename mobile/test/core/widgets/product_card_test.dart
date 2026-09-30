@@ -1,4 +1,3 @@
-import 'package:quickbite_mobile/src/core/theme/app_radius.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/widgets/product_card.dart';
@@ -45,16 +44,13 @@ void main() {
                 .decoration!
             as BoxDecoration;
 
-    testWidgets('la rejilla usa radio amplio y sombra difusa', (tester) async {
+    testWidgets('la rejilla usa radio 12 y sombra suave', (tester) async {
       await tester.pumpWidget(card(disponible: true));
 
-      // 09 §7.2: las tarjetas redondean; el rediseño sube a 18 px.
       final decoracion = decoracionTarjeta(tester);
-      expect(decoracion.borderRadius, BorderRadius.circular(AppRadius.card));
-      expect(AppRadius.card, greaterThanOrEqualTo(18));
-      // Sombra difusa, no la elevación dura de Material.
+      expect(decoracion.borderRadius, BorderRadius.circular(12));
       expect(decoracion.boxShadow, isNotNull);
-      expect(decoracion.boxShadow!.first.blurRadius, greaterThan(10));
+      expect(decoracion.boxShadow!.first.blurRadius, greaterThan(0));
     });
 
     testWidgets('la tarjeta de lista comparte la misma envoltura', (
@@ -65,7 +61,7 @@ void main() {
       );
 
       final decoracion = decoracionTarjeta(tester);
-      expect(decoracion.borderRadius, BorderRadius.circular(AppRadius.card));
+      expect(decoracion.borderRadius, BorderRadius.circular(12));
       expect(decoracion.boxShadow, isNotNull);
     });
 

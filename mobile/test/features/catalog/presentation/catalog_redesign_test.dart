@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/theme/app_colors.dart';
-import 'package:quickbite_mobile/src/core/theme/app_radius.dart';
+import 'package:quickbite_mobile/src/core/widgets/chips.dart';
 import 'package:quickbite_mobile/src/core/widgets/product_card.dart';
 import 'package:quickbite_mobile/src/features/catalog/domain/catalog_entities.dart';
 import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_header.dart';
@@ -51,6 +51,37 @@ void main() {
         const Scaffold(body: CatalogHeader(nombre: 'Carlos', hora: 21)),
       );
       expect(find.textContaining('Buenas noches'), findsOneWidget);
+    });
+
+    testWidgets('la campana está centrada en su contenedor circular', (
+      tester,
+    ) async {
+      await pumpApp(
+        tester,
+        const Scaffold(body: CatalogHeader(nombre: 'Carlos')),
+      );
+
+      final container = tester.widget<Container>(
+        find
+            .descendant(
+              of: find.byType(GestureDetector),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      expect(container.alignment, Alignment.center);
+
+      final campanaRect = tester.getRect(find.byIcon(Icons.notifications_none));
+      final containerRect = tester.getRect(
+        find
+            .descendant(
+              of: find.byType(GestureDetector),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      expect(campanaRect.center.dx, closeTo(containerRect.center.dx, 1.0));
+      expect(campanaRect.center.dy, closeTo(containerRect.center.dy, 1.0));
     });
 
     testWidgets('pide iconos claros en la barra de estado', (tester) async {
@@ -144,6 +175,66 @@ void main() {
     });
   });
 
+  group('CategoryChip', () {
+    testWidgets('tiene bordes redondeados y padding adecuado', (tester) async {
+      await pumpApp(
+        tester,
+        Scaffold(
+          body: CategoryChip(label: 'Tacos', selected: false, onTap: () {}),
+        ),
+      );
+
+      final container = tester.widget<AnimatedContainer>(
+        find.descendant(
+          of: find.byType(CategoryChip),
+          matching: find.byType(AnimatedContainer),
+        ),
+      );
+      final decor = container.decoration! as BoxDecoration;
+      expect(decor.borderRadius, BorderRadius.circular(20));
+    });
+
+    testWidgets('el chip activo tiene sombra sutil', (tester) async {
+      await pumpApp(
+        tester,
+        Scaffold(
+          body: CategoryChip(label: 'Tacos', selected: true, onTap: () {}),
+        ),
+      );
+
+      final container = tester.widget<AnimatedContainer>(
+        find.byType(AnimatedContainer),
+      );
+      final decor = container.decoration! as BoxDecoration;
+      expect(decor.boxShadow, isNotNull);
+      expect(decor.boxShadow!.first.blurRadius, greaterThan(0));
+    });
+
+    testWidgets('el chip activo tiene texto blanco y el inactivo contrastante', (
+      tester,
+    ) async {
+      await pumpApp(
+        tester,
+        Scaffold(
+          body: Row(
+            children: [
+              CategoryChip(label: 'Tacos', selected: true, onTap: () {}),
+              const SizedBox(width: 8),
+              CategoryChip(label: 'Bebidas', selected: false, onTap: () {}),
+            ],
+          ),
+        ),
+      );
+
+      final activo = tester.widget<Text>(find.text('Tacos'));
+      expect(activo.style?.color, AppColors.white);
+
+      final inactivo = tester.widget<Text>(find.text('Bebidas'));
+      expect(inactivo.style?.color, isNotNull);
+      expect(inactivo.style?.color, isNot(AppColors.white));
+    });
+  });
+
   group('tarjeta de catálogo', () {
     testWidgets('radio de 18 px y sombra difusa', (tester) async {
       await pumpApp(
@@ -162,10 +253,10 @@ void main() {
                   .widget<DecoratedBox>(find.byType(DecoratedBox).first)
                   .decoration
               as BoxDecoration;
-      expect(decoracion.borderRadius, BorderRadius.circular(AppRadius.card));
+      expect(decoracion.borderRadius, BorderRadius.circular(12));
       expect(decoracion.boxShadow, isNotNull);
-      expect(decoracion.boxShadow!.first.blurRadius, greaterThan(10));
-      expect(decoracion.boxShadow!.first.spreadRadius, lessThan(0));
+      expect(decoracion.boxShadow!.first.blurRadius, greaterThan(0));
+      expect(decoracion.boxShadow!.first.offset, const Offset(0, 2));
     });
 
     testWidgets('la imagen ocupa la misma altura con nombre largo o corto', (

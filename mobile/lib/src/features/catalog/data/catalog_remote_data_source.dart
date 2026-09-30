@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 import '../../../core/network/dio_client.dart';
 import '../domain/catalog_entities.dart';
 import 'dtos/catalog_dtos.dart';
@@ -12,6 +14,21 @@ class CatalogRemoteDataSource {
     final data = response.data as List<dynamic>;
     return data
         .map((item) => CategoryDto.fromJson(item as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<List<PromotionBanner>> getPromotions() async {
+    final response = await _client.get('/promotions');
+    final data = response.data as List<dynamic>;
+    return data
+        .map((item) => PromotionBanner(
+          id: item['id'] as String,
+          titulo: item['titulo'] as String,
+          subtitulo: item['subtitulo'] as String,
+          color: Color(int.parse(
+            (item['colorHex'] as String).replaceFirst('#', '0xFF'),
+          )),
+        ))
         .toList(growable: false);
   }
 
