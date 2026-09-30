@@ -32,14 +32,31 @@ public sealed class CartService : ICartService
         var product = await _uow.Products.GetByIdAsync(req.ProductoId, ct) ?? throw new NotFoundException("Producto", req.ProductoId);
         if (!product.Disponible) throw new BusinessRuleException("Producto no disponible");
         if (product.Inventario != null && product.Inventario.Stock < req.Cantidad) throw new BusinessRuleException("Stock insuficiente");
-        var cart = await GetOrCreateAsync(userId, ct);
-        var item = new CartItem { CarritoId = cart.Id, ProductoId = req.ProductoId, Cantidad = req.Cantidad, Observaciones = req.Observaciones };
+        var opcionesIds = new List<Guid>();
         foreach (var optId in req.OpcionesIds)
         {
             var opt = product.Opciones.FirstOrDefault(o => o.Id == optId && o.Activo) ?? throw new NotFoundException("Opcion", optId);
-            item.Opciones.Add(new CartItemOption { OpcionId = optId });
+            opcionesIds.Add(opt.Id);
         }
-        await _uow.Carts.AddItemAsync(cart.Id, item, ct);
+        var cart = await GetOrCreateAsync(userId, ct);
+        var existente = cart.Items.FirstOrDefault(i =>
+            i.ProductoId == req.ProductoId
+            && string.Equals(i.Observaciones ?? string.Empty, req.Observaciones ?? string.Empty, StringComparison.Ordinal)
+            && i.Opciones.Select(o => o.OpcionId).Order().SequenceEqual(opcionesIds.Order()));
+        if (existente != null)
+        {
+            existente.Cantidad = (short)Math.Min(existente.Cantidad + req.Cantidad, short.MaxValue);
+            await _uow.Carts.UpdateItemAsync(existente, ct);
+        }
+        else
+        {
+            var item = new CartItem { CarritoId = cart.Id, ProductoId = req.ProductoId, Cantidad = req.Cantidad, Observaciones = req.Observaciones };
+            foreach (var optId in opcionesIds)
+            {
+                item.Opciones.Add(new CartItemOption { OpcionId = optId });
+            }
+            await _uow.Carts.AddItemAsync(cart.Id, item, ct);
+        }
         await _uow.SaveChangesAsync(ct);
         var updated = await _uow.Carts.GetActiveByUserIdAsync(userId, ct);
         return ToResponse(updated ?? cart);

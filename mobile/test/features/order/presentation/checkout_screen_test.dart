@@ -280,5 +280,159 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Confirmación real o1'), findsOneWidget);
     });
+
+    group('formulario de tarjeta simulado (D-08)', () {
+      const numero = Key('tarjeta-numero');
+      const expiracion = Key('tarjeta-expiracion');
+      const cvv = Key('tarjeta-cvv');
+      const nombre = Key('tarjeta-nombre');
+
+      final botonConfirmar = find.widgetWithText(
+        FilledButton,
+        r'Confirmar pedido - $171.00',
+      );
+
+      Future<void> rellenarTarjeta(WidgetTester tester) async {
+        final anio = (DateTime.now().year + 3) % 100;
+        await tester.enterText(find.byKey(numero), '4242424242424242');
+        await tester.enterText(
+          find.byKey(expiracion),
+          '12${anio.toString().padLeft(2, '0')}',
+        );
+        await tester.enterText(find.byKey(cvv), '123');
+        await tester.enterText(find.byKey(nombre), 'Carlos López');
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('el formulario solo se despliega al elegir Tarjeta', (
+        tester,
+      ) async {
+        await pumpCheckout(tester, cart: carritoLleno());
+
+        expect(find.byKey(numero), findsNothing);
+
+        await tester.tap(find.text('Tarjeta (simulado)'));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(numero), findsOneWidget);
+        expect(find.byKey(expiracion), findsOneWidget);
+        expect(find.byKey(cvv), findsOneWidget);
+        expect(find.byKey(nombre), findsOneWidget);
+        expect(find.text('Número de tarjeta'), findsOneWidget);
+      });
+
+      testWidgets('el número se formatea en grupos de cuatro dígitos', (
+        tester,
+      ) async {
+        await pumpCheckout(tester, cart: carritoLleno());
+        await tester.tap(find.text('Tarjeta (simulado)'));
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byKey(numero), '4242424242424242');
+        await tester.pumpAndSettle();
+
+        expect(find.text('4242 4242 4242 4242'), findsOneWidget);
+      });
+
+      testWidgets('al volver a Efectivo el formulario se oculta', (
+        tester,
+      ) async {
+        await pumpCheckout(tester, cart: carritoLleno());
+        await tester.tap(find.text('Tarjeta (simulado)'));
+        await tester.pumpAndSettle();
+        expect(find.byKey(numero), findsOneWidget);
+
+        await tester.tap(find.text('Efectivo contra entrega'));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(numero), findsNothing);
+        expect(
+          tester.widget<FilledButton>(botonConfirmar).onPressed,
+          isNotNull,
+        );
+      });
+
+      testWidgets('el botón de confirmar espera los cuatro campos válidos', (
+        tester,
+      ) async {
+        await pumpCheckout(tester, cart: carritoLleno());
+        await tester.tap(find.text('Tarjeta (simulado)'));
+        await tester.pumpAndSettle();
+
+        expect(tester.widget<FilledButton>(botonConfirmar).onPressed, isNull);
+
+        final anio = (DateTime.now().year + 3) % 100;
+        await tester.enterText(
+          find.byKey(expiracion),
+          '12${anio.toString().padLeft(2, '0')}',
+        );
+        await tester.enterText(find.byKey(cvv), '123');
+        await tester.enterText(find.byKey(nombre), 'Carlos López');
+        await tester.enterText(find.byKey(numero), '424242424242424');
+        await tester.pumpAndSettle();
+
+        expect(
+          tester.widget<FilledButton>(botonConfirmar).onPressed,
+          isNull,
+          reason: 'el número sigue incompleto',
+        );
+
+        await tester.enterText(find.byKey(numero), '4242424242424242');
+        await tester.pumpAndSettle();
+
+        expect(
+          tester.widget<FilledButton>(botonConfirmar).onPressed,
+          isNotNull,
+        );
+      });
+
+      testWidgets('un número que no pasa Luhn mantiene el botón apagado', (
+        tester,
+      ) async {
+        await pumpCheckout(tester, cart: carritoLleno());
+        await tester.tap(find.text('Tarjeta (simulado)'));
+        await tester.pumpAndSettle();
+
+        final anio = (DateTime.now().year + 3) % 100;
+        await tester.enterText(
+          find.byKey(expiracion),
+          '12${anio.toString().padLeft(2, '0')}',
+        );
+        await tester.enterText(find.byKey(cvv), '123');
+        await tester.enterText(find.byKey(nombre), 'Carlos López');
+        await tester.enterText(find.byKey(numero), '4242424242424243');
+        await tester.pumpAndSettle();
+
+        expect(tester.widget<FilledButton>(botonConfirmar).onPressed, isNull);
+      });
+
+      testWidgets(
+        'confirma con tarjeta sin llevar datos al estado ni al pedido',
+        (tester) async {
+          await pumpCheckout(tester, cart: carritoLleno());
+          await tester.tap(find.text('Tarjeta (simulado)'));
+          await tester.pumpAndSettle();
+          await rellenarTarjeta(tester);
+
+          expect(
+            tester.widget<FilledButton>(botonConfirmar).onPressed,
+            isNotNull,
+          );
+
+          await tester.tap(find.text(r'Confirmar pedido - $171.00'));
+          await tester.pumpAndSettle();
+
+          expect(orderRepository.creados, hasLength(1));
+          final creado = orderRepository.creados.single;
+          expect(creado.metodoPago, MetodoPago.tarjeta);
+          expect(creado.toString(), isNot(contains('4242')));
+          expect(
+            container.read(checkoutProvider).props.toString(),
+            isNot(contains('4242')),
+          );
+          expect(find.text('Confirmación real o1'), findsOneWidget);
+        },
+      );
+    });
   });
 }
