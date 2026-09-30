@@ -11,7 +11,9 @@ import '../data/delivery_repository_impl.dart';
 import '../domain/delivery_repository.dart';
 import '../domain/disponibilidad.dart';
 import '../domain/estadisticas_repartidor.dart';
+import '../domain/models/location_permission_status.dart';
 import '../domain/pedido_entrega.dart';
+import '../data/location_permission_service.dart';
 
 final deliveryRepositoryProvider = Provider<DeliveryRepository>(
   (ref) => DeliveryRepositoryImpl(
@@ -396,4 +398,37 @@ class CambiarDisponibilidadNotifier
   }
 
   void limpiarError() => state = state.copyWith(limpiarError: true);
+}
+
+// ---------------------------------------------------------------------------
+// Ubicación GPS (07.4)
+// ---------------------------------------------------------------------------
+
+/// Instancia del servicio de permisos de ubicación.
+final locationPermissionServiceProvider = Provider<LocationPermissionService>(
+  (ref) => LocationPermissionService(),
+);
+
+/// Estado reactivo del permiso de ubicación.
+/// Se usa para saber si dibujar el mapa, pedir permisos o mostrar un error.
+final locationPermissionProvider = AsyncNotifierProvider<
+  LocationPermissionNotifier,
+  LocationPermissionStatus
+>(LocationPermissionNotifier.new);
+
+class LocationPermissionNotifier
+    extends AsyncNotifier<LocationPermissionStatus> {
+  LocationPermissionService get _service =>
+      ref.read(locationPermissionServiceProvider);
+
+  @override
+  Future<LocationPermissionStatus> build() async {
+    return _service.checkStatus();
+  }
+
+  /// Solicita el permiso y actualiza el estado.
+  Future<void> requestPermission() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => _service.requestPermission());
+  }
 }
