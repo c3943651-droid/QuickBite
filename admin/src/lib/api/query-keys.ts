@@ -34,6 +34,10 @@ export const queryKeys = {
   audit: {
     all: ["admin", "audit"] as const,
   },
+  users: {
+    all: ["admin", "users"] as const,
+    detail: (id: string) => ["admin", "users", "detail", id] as const,
+  },
   notifications: {
     all: ["notifications"] as const,
   },

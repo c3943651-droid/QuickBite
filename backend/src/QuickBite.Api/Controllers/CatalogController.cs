@@ -21,6 +21,11 @@ public class CatalogController : ControllerBase
     public async Task<IActionResult> GetCategories(CancellationToken cancellationToken)
         => Ok(await _catalogService.GetCategoriesAsync(cancellationToken));
 
+    [HttpGet("promotions")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPromotions(CancellationToken cancellationToken)
+        => Ok(await _catalogService.GetPromotionsAsync(cancellationToken));
+
     [HttpGet("products")]
     [AllowAnonymous]
     public async Task<IActionResult> GetProducts(

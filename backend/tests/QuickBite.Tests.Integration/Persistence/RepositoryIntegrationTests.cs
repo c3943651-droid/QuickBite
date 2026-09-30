@@ -261,7 +261,7 @@ public class RepositoryIntegrationTests : PersistenceTestBase
         await using var dbContext = Db.CreateContext();
         var repository = new ConfigRepository(dbContext);
 
-        await repository.UpdateAsync("costo_envio_default", "3.50");
+        await repository.UpsertAsync("costo_envio_default", "3.50");
         await dbContext.SaveChangesAsync();
 
         await using var reader = Db.CreateContext();
@@ -271,7 +271,41 @@ public class RepositoryIntegrationTests : PersistenceTestBase
         config.Should().NotBeNull();
         config!.Valor.Should().Be("3.50");
 
-        (await readerRepository.GetAllAsync()).Should().HaveCount(5);
+        (await readerRepository.GetAllAsync()).Should().HaveCount(10);
+    }
+
+    [Fact]
+    public async Task ConfigRepository_UpsertCreaClaveInexistente()
+    {
+        if (!CanRun())
+        {
+            return;
+        }
+
+        const string claveNueva = "test_upsert_clave_nueva";
+
+        await using (var dbContext = Db.CreateContext())
+        {
+            var repository = new ConfigRepository(dbContext);
+
+            await repository.UpsertAsync(claveNueva, "v1");
+            await dbContext.SaveChangesAsync();
+        }
+
+        await using (var reader = Db.CreateContext())
+        {
+            var config = await reader.ConfiguracionSistema
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Clave == claveNueva);
+            config.Should().NotBeNull();
+            config!.Valor.Should().Be("v1");
+            config.Editable.Should().BeTrue();
+        }
+
+        await using var cleaner = Db.CreateContext();
+        await cleaner.ConfiguracionSistema
+            .Where(c => c.Clave == claveNueva)
+            .ExecuteDeleteAsync();
     }
 
     [Fact]

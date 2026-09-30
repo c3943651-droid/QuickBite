@@ -43,6 +43,27 @@ public sealed class DeliveryService : IDeliveryService
         var hist = orders.Where(o => o.Estado == OrderStatus.Entregado || o.Estado == OrderStatus.Cancelado).Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn)).ToList();
         return hist;
     }
+    public async Task<DeliveryAvailabilityDto> SetAvailabilityAsync(Guid repartidorId, DeliveryPersonStatus estado, CancellationToken ct = default)
+    {
+        if (!Enum.IsDefined(estado)) throw new BusinessRuleException($"Estado de disponibilidad inválido: {estado}");
+        var repartidor = await _uow.DeliveryPeople.GetByIdAsync(repartidorId, ct)
+            ?? throw new NotFoundException("Repartidor", repartidorId);
+
+        var activos = await _uow.Orders.GetOrdersAsync(null, repartidorId, OrderStatus.EnCamino, ct);
+        var tieneEntregaActiva = activos.Count > 0;
+
+        if (repartidor.EstadoDisponibilidad == estado)
+            return DeliveryAvailabilityDto.From(tieneEntregaActiva, repartidor.EstadoDisponibilidad);
+
+        if (estado == DeliveryPersonStatus.Disponible && tieneEntregaActiva)
+            throw new BusinessRuleException("No puedes marcarte disponible con una entrega en camino");
+
+        repartidor.EstadoDisponibilidad = estado;
+        _uow.DeliveryPeople.Update(repartidor);
+        await _uow.SaveChangesAsync(ct);
+
+        return DeliveryAvailabilityDto.From(tieneEntregaActiva, repartidor.EstadoDisponibilidad);
+    }
     public async Task<DeliveryPersonStatsDto> StatsAsync(Guid repartidorId, CancellationToken ct = default)
     {
         var stats = await _uow.DeliveryPeople.GetStatsAsync(repartidorId, ct);

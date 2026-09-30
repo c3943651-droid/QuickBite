@@ -1,0 +1,196 @@
+# ─────────────────────────────────────────────
+#  QuickBite — Root .gitignore
+#  .NET backend + React Native mobile monorepo
+# ─────────────────────────────────────────────
+
+# ──────────────── .NET / C# ────────────────
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.nupkg
+*.snupkg
+*.nuspec
+*.pdb
+*.dll
+*.exe
+*.publish
+*.iTrace
+.vs/
+.vscode/
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+.vsconfig
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+*.cache
+FodyWeavers.xsd
+Directory.Build.user.props
+Directory.Build.rsp
+.gitattributes
+# Rider / ReSharper
+.idea/
+*.DotSettings
+*.DotSettings.user
+_ReSharper*/
+# NuGet
+packages/
+*.nuget.props
+*.nuget.targets
+# NBench / BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+# NCrunch
+_NCrunch_*/
+# Publish
+publish/
+artifacts/
+
+# ──────────────── Node / React Native ────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+mobile/android/app/build/
+mobile/android/build/
+mobile/ios/Pods/
+mobile/ios/*.xcworkspace/xcuserdata/
+mobile/ios/Runner.xcodeproj/xcuserdata/
+
+# ──────────────── Android ────────────────
+*.apk
+*.aab
+*.keystore
+*.jks
+mobile/android/gradle/wrapper/gradle-wrapper.jar
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/captures/
+mobile/android/key.properties
+mobile/android/app/release/
+mobile/android/app/keystore.properties
+mobile/android/app/.cxx/
+
+# ──────────────── iOS / macOS ────────────────
+*.ipa
+*.dSYM.zip
+*.dSYM
+mobile/ios/Flutter/App.framework/
+mobile/ios/Flutter/ephemeral/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/flutter_export_environment.sh
+mobile/macos/Pods/
+mobile/macos/.symlinks/
+
+# ──────────────── Environment / Secrets ────────────────
+.env
+.env.*
+!.env.example
+appsettings*.local.json
+connectionstrings*.json
+*.secrets.json
+*.secret
+secrets/
+credentials/
+*.pfx
+*.pem
+*.crt
+*.key
+
+# ──────────────── Database / Migrations ────────────────
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.ldb
+*.ldb-journal
+
+# ──────────────── IDE / Editors ────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.tmp
+*.bak
+.ionide/
+
+# ──────────────── OS ────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+Thumbs.db:encryptable
+
+# ──────────────── Logs / Reports ────────────────
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.pid
+*.seed
+*.pid.lock
+
+# ──────────────── Coverage ────────────────
+coverage/
+lcov.info
+*.lcov
+htmlcov/
+.nyc_output/
+.pytest_cache/
+
+# ──────────────── Misc ────────────────
+.tool-versions
+.terraform/
+*.tgz
+*.tar.gz
+*.zip
+*.7z
+
+# ──────────────── Docs & Agents (no-track) ────────────────
+
+!/README.md
+.opencode/
+opencode.json
+.kilo/
+skills-lock.json
+.agents/
+
+# ──────────────── Flutter / Dart ────────────────
+# Esta app es Flutter, así que la sección de Dart también hace falta aquí: sin
+# ella `build/`, `.dart_tool/` y los `*.iml` del IDE entran al repositorio.
+**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+*.iml
+*.ipr
+*.iws
+app.*.symbols
+app.*.map.json
+.widget_preview/

@@ -4,8 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { z } from "zod"
 import { cn } from "cn"
-import { AlarmClock, RefreshCw, Store, TriangleAlert } from "lucide-react"
+import { AlarmClock, RefreshCw, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { CurrencyInput } from "@/components/ui/currency-input"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -41,7 +42,7 @@ const NUMERIC_KEYS: Record<string, { step: string; suffix?: string }> = {
   tiempo_entrega_estimado: { step: "1", suffix: "min" },
   carrito_expiracion_horas: { step: "1", suffix: "h" },
   max_intentos_login: { step: "1" },
-  costo_envio_default: { step: "0.01", suffix: "MXN" },
+  costo_envio_default: { step: "0.01" },
 }
 
 const configFormSchema = z.object({
@@ -60,7 +61,7 @@ type ConfigFormValues = z.infer<typeof configFormSchema>
 function buildDefaults(config: SystemConfigItem[]): ConfigFormValues {
   return {
     abierto: configValue(config, "restaurante_abierto") !== "false",
-    horarioApertura: configValue(config, "horario_apertura") ?? "09:00",
+    horarioApertura: configValue(config, "horario_apertura") ?? "08:00",
     horarioCierre: configValue(config, "horario_cierre") ?? "22:00",
     parametros: Object.fromEntries(
       config
@@ -77,7 +78,7 @@ export default function ConfigPage() {
 
   const form = useForm<ConfigFormValues>({
     resolver: zodResolver(configFormSchema),
-    defaultValues: { abierto: true, horarioApertura: "09:00", horarioCierre: "22:00", parametros: {} },
+    defaultValues: { abierto: true, horarioApertura: "08:00", horarioCierre: "22:00", parametros: {} },
   })
 
   useEffect(() => {
@@ -90,11 +91,6 @@ export default function ConfigPage() {
       if (item.editable) params.set(item.clave, item.valor)
     }
     return params
-  }, [data])
-
-  const missingStateKeys = useMemo(() => {
-    const present = new Set((data ?? []).map((item) => item.clave))
-    return STATE_KEYS.filter((key) => !present.has(key))
   }, [data])
 
   const paramItems = useMemo(
@@ -110,7 +106,7 @@ export default function ConfigPage() {
     const originalAbierto = (original.get("restaurante_abierto") ?? "true") !== "false"
     if (values.abierto !== originalAbierto)
       entries.push({ key: "restaurante_abierto", value: String(values.abierto) })
-    if (values.horarioApertura !== (original.get("horario_apertura") ?? "09:00"))
+    if (values.horarioApertura !== (original.get("horario_apertura") ?? "08:00"))
       entries.push({ key: "horario_apertura", value: values.horarioApertura })
     if (values.horarioCierre !== (original.get("horario_cierre") ?? "22:00"))
       entries.push({ key: "horario_cierre", value: values.horarioCierre })
@@ -177,15 +173,6 @@ export default function ConfigPage() {
             <Skeleton className="h-64 rounded-lg" />
           </Card>
         </div>
-      ) : missingStateKeys.length > 0 ? (
-        <div className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300">
-          <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-          <p>
-            El backend no tiene configuradas las claves {missingStateKeys.join(", ")}. Los
-            valores de estado y horario se guardarán al añadirlas a la tabla
-            configuracion_sistema.
-          </p>
-        </div>
       ) : null}
 
       <Form {...form}>
@@ -210,7 +197,7 @@ export default function ConfigPage() {
                   name="abierto"
                   render={({ field }) => (
                     <FormItem className="flex items-center justify-between gap-4">
-                      <div className="space-y-0.5">
+                      <div className="min-w-0 flex-1 space-y-0.5">
                         <FormLabel>Restaurante abierto</FormLabel>
                         <FormDescription>
                           {field.value ? "Recibiendo pedidos" : "Pedidos suspendidos"}
@@ -297,20 +284,31 @@ export default function ConfigPage() {
                             <FormLabel>{label}</FormLabel>
                             <FormControl>
                               <div className="flex items-center gap-2">
-                                <Input
-                                  type={numConfig ? "number" : "text"}
-                                  step={numConfig?.step}
-                                  inputMode={numConfig ? "numeric" : undefined}
-                                  {...field}
-                                  onChange={(event) => field.onChange(event.target.value)}
-                                  disabled={isBusy}
-                                  className="max-w-xs"
-                                />
-                                {numConfig?.suffix ? (
-                                  <span className="text-sm text-muted-foreground">
-                                    {numConfig.suffix}
-                                  </span>
-                                ) : null}
+                                {item.clave === "costo_envio_default" ? (
+                                  <CurrencyInput
+                                    value={field.value}
+                                    onValueChange={(value) => field.onChange(String(value))}
+                                    disabled={isBusy}
+                                    className="max-w-xs"
+                                  />
+                                ) : (
+                                  <>
+                                    <Input
+                                      type={numConfig ? "number" : "text"}
+                                      step={numConfig?.step}
+                                      inputMode={numConfig ? "numeric" : undefined}
+                                      {...field}
+                                      onChange={(event) => field.onChange(event.target.value)}
+                                      disabled={isBusy}
+                                      className="max-w-xs"
+                                    />
+                                    {numConfig?.suffix ? (
+                                      <span className="text-sm text-muted-foreground">
+                                        {numConfig.suffix}
+                                      </span>
+                                    ) : null}
+                                  </>
+                                )}
                               </div>
                             </FormControl>
                             <FormMessage />

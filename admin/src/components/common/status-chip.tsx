@@ -10,6 +10,7 @@ const STATUS_STYLES: Record<string, string> = {
   Cancelado: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300",
   Disponible: "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300",
   Ocupado: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+  Activo: "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300",
   Inactivo: "bg-muted text-muted-foreground",
 }
 

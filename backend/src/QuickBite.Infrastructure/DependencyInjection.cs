@@ -11,6 +11,7 @@ using QuickBite.Infrastructure.Authentication;
 using QuickBite.Infrastructure.Email;
 using QuickBite.Infrastructure.Persistence;
 using QuickBite.Infrastructure.Persistence.Repositories;
+using QuickBite.Infrastructure.Seeding;
 using Resend;
 using QuickBite.Application.Catalog;
 using QuickBite.Infrastructure.Images;
@@ -75,6 +76,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IConfigRepository, ConfigRepository>();
         services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddScoped<IInitialAdminSeeder, InitialAdminSeeder>();
 
         return services;
     }

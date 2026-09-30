@@ -1,5 +1,5 @@
 import { cn } from "cn"
-import { History, Loader2, MoreHorizontal, Pencil, Power, Trash2, Utensils } from "lucide-react"
+import { Eye, History, Loader2, MoreHorizontal, Pencil, Power, Trash2, Utensils, ZoomIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import {
@@ -16,6 +16,7 @@ import type { ProductListItem } from "@/lib/api/admin/products"
 
 export interface ProductActionsMenuProps {
   product: ProductListItem
+  onDetail: (product: ProductListItem) => void
   onEdit: (product: ProductListItem) => void
   onToggle: (product: ProductListItem) => void
   onHistory: (product: ProductListItem) => void
@@ -26,6 +27,7 @@ export interface ProductActionsMenuProps {
 
 export function ProductActionsMenu({
   product,
+  onDetail,
   onEdit,
   onToggle,
   onHistory,
@@ -47,6 +49,11 @@ export function ProductActionsMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => onDetail(product)}>
+          <Eye className="size-4 text-zinc-500" />
+          Ver detalle
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => onEdit(product)}>
           <Pencil className="size-4 text-zinc-500" />
           Editar
@@ -81,19 +88,23 @@ function productStatusBadge(product: ProductListItem) {
 
 export interface ProductGridProps {
   products: ProductListItem[]
+  onDetail: (product: ProductListItem) => void
   onEdit: (product: ProductListItem) => void
   onToggle: (product: ProductListItem) => void
   onHistory: (product: ProductListItem) => void
   onDelete: (product: ProductListItem) => void
+  onPreview: (product: ProductListItem) => void
   pendingId: string | null
 }
 
 export function ProductGrid({
   products,
+  onDetail,
   onEdit,
   onToggle,
   onHistory,
   onDelete,
+  onPreview,
   pendingId,
 }: ProductGridProps) {
   return (
@@ -105,11 +116,21 @@ export function ProductGrid({
           <Card key={product.id} size="sm" className="relative flex flex-col gap-0 pt-0">
             <div className="relative aspect-video w-full">
               {product.imagenUrl ? (
-                <img
-                  src={product.imagenUrl}
-                  alt={`Foto de ${product.nombre}`}
-                  className="size-full object-cover"
-                />
+                <button
+                  type="button"
+                  aria-label={`Ver imagen de ${product.nombre}`}
+                  className="group relative block size-full cursor-pointer"
+                  onClick={() => onPreview(product)}
+                >
+                  <img
+                    src={product.imagenUrl}
+                    alt={`Foto de ${product.nombre}`}
+                    className="size-full object-cover transition duration-200 group-hover:opacity-80"
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 backdrop-blur-[2px] transition duration-200 group-hover:opacity-100">
+                    <ZoomIn className="size-8 text-white drop-shadow-md" />
+                  </span>
+                </button>
               ) : (
                 <div className="flex size-full items-center justify-center bg-zinc-100">
                   <Utensils className="size-8 text-zinc-300" />
@@ -121,6 +142,7 @@ export function ProductGrid({
               <div className="absolute top-2 right-2">
                 <ProductActionsMenu
                   product={product}
+                  onDetail={onDetail}
                   onEdit={onEdit}
                   onToggle={onToggle}
                   onHistory={onHistory}

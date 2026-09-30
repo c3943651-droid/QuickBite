@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using QuickBite.Infrastructure.Persistence;
 
@@ -42,15 +43,19 @@ public class PostgresDatabaseFixture : IAsyncLifetime
         }
     }
 
-    public QuickBiteDbContext CreateContext(string? connectionString = null)
+    public QuickBiteDbContext CreateContext(string? connectionString = null, Action<string>? log = null)
     {
         _dataSource ??= NpgsqlDataSourceFactory.Create(connectionString ?? ConnectionString!);
-        var options = new DbContextOptionsBuilder<QuickBiteDbContext>()
+        var optionsBuilder = new DbContextOptionsBuilder<QuickBiteDbContext>()
             .UseNpgsql(_dataSource, npgsql => npgsql.EnableRetryOnFailure())
-            .UseSnakeCaseNamingConvention()
-            .Options;
+            .UseSnakeCaseNamingConvention();
 
-        return new QuickBiteDbContext(options);
+        if (log is not null)
+        {
+            optionsBuilder.LogTo(log, LogLevel.Debug);
+        }
+
+        return new QuickBiteDbContext(optionsBuilder.Options);
     }
 
     public Task DisposeAsync() => Task.CompletedTask;

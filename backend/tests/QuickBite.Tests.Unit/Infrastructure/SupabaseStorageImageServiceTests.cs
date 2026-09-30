@@ -84,6 +84,25 @@ public sealed class SupabaseStorageImageServiceTests
     }
 
     [Fact]
+    public async Task UploadAsync_ServiceRoleKeyPlaceholder_LanzaInvalidOperationException()
+    {
+        var options = Options.Create(new SupabaseStorageOptions
+        {
+            ProjectUrl = "https://proyecto.supabase.co",
+            ServiceRoleKey = "OVERRIDE_VIA_ENVIRONMENT_VARIABLE",
+            Bucket = "catalog-images"
+        });
+        var service = new SupabaseStorageImageService(new FakeHttpClientFactory(new FakeHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK))), options);
+
+        using var stream = new MemoryStream([1, 2, 3]);
+        var act = async () => await service.UploadAsync(stream, "foto.jpg");
+
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.Which.Message.Should().Contain("Supabase__ServiceRoleKey");
+    }
+
+    [Fact]
     public async Task UploadAsync_RespuestaDeError_LanzaInvalidOperationException()
     {
         var service = BuildService(new FakeHandler(_ =>

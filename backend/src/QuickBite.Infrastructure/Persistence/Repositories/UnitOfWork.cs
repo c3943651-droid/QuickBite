@@ -17,6 +17,7 @@ public class UnitOfWork : IUnitOfWork
         DeliveryPeople = new DeliveryPersonRepository(db);
         Products = new ProductRepository(db);
         Categories = new CategoryRepository(db);
+        Promotions = new PromotionRepository(db);
         Carts = new CartRepository(db);
         Orders = new OrderRepository(db);
         Notifications = new NotificationRepository(db);
@@ -29,6 +30,7 @@ public class UnitOfWork : IUnitOfWork
     public IDeliveryPersonRepository DeliveryPeople { get; }
     public IProductRepository Products { get; }
     public ICategoryRepository Categories { get; }
+    public IPromotionRepository Promotions { get; }
     public ICartRepository Carts { get; }
     public IOrderRepository Orders { get; }
     public INotificationRepository Notifications { get; }
