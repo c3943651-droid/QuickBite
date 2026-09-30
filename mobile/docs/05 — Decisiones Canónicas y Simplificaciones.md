@@ -453,6 +453,8 @@ Los pagos son **simulados**. Se ofrecen dos métodos:
 
 No se almacenan datos de tarjeta en ninguna capa. No se integra ninguna pasarela de pago real.
 
+> **Aclaración — formulario simulado a nivel UI (SCR-CART-02).** Para que el flujo se vea completo, el método *Tarjeta* despliega un formulario con cuatro campos (número, vigencia `MM/AA`, CVC y nombre del titular). Es **solo interfaz**: los valores viven únicamente en los `TextEditingController` locales del widget `CardPaymentForm`, se validan en cliente (Luhn, vigencia no vencida, CVC de 3-4 dígitos y nombre con letra) para habilitar el botón *Confirmar pedido*, y **no se transmiten**. `POST /orders` sigue aceptando únicamente `metodo_pago`, dirección y observaciones; el estado de checkout no guarda nada de la tarjeta y nada se persiste. Desactivar el método vuelve a ocultar el formulario y limpia su validez.
+
 ### Justificación
 
 - Evita complejidad legal (PCI DSS, cumplimiento).

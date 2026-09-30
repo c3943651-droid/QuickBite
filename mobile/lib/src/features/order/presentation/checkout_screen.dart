@@ -16,14 +16,40 @@ import '../../cart/domain/cart_entities.dart';
 import '../../cart/presentation/cart_providers.dart';
 import '../domain/order_entities.dart';
 import 'checkout_providers.dart';
+import 'widgets/card_payment_form.dart';
 
 /// 07.1 SCR-CART-02 — Confirmar el pedido con dirección y método de pago.
-class CheckoutScreen extends ConsumerWidget {
+class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
+}
+
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
+  /// Validez del formulario de tarjeta simulado (05#D-08). Vive fuera de
+  /// Riverpod: el formulario solo es UI y nunca persiste lo que escribe el
+  /// usuario, este notificador guarda únicamente un booleano derivado.
+  final ValueNotifier<bool> _tarjetaValida = ValueNotifier<bool>(false);
+
+  @override
+  void dispose() {
+    _tarjetaValida.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
+
+    ref.listen(checkoutProvider.select((state) => state.metodoPago), (
+      _,
+      metodo,
+    ) {
+      if (metodo != MetodoPago.tarjeta) {
+        _tarjetaValida.value = false;
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -48,12 +74,18 @@ class CheckoutScreen extends ConsumerWidget {
             actionLabel: 'Volver al carrito',
             onAction: () => context.go('/cart'),
           ),
-          AsyncData(:final value) => _CheckoutBody(cart: value),
+          AsyncData(:final value) => _CheckoutBody(
+            cart: value,
+            tarjetaValida: _tarjetaValida,
+          ),
           _ => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
         },
       ),
       bottomNavigationBar: switch (cart) {
-        AsyncData(:final value) when !value.isEmpty => _ConfirmBar(cart: value),
+        AsyncData(:final value) when !value.isEmpty => _ConfirmBar(
+          cart: value,
+          tarjetaValida: _tarjetaValida,
+        ),
         _ => null,
       },
     );
@@ -61,9 +93,10 @@ class CheckoutScreen extends ConsumerWidget {
 }
 
 class _CheckoutBody extends ConsumerWidget {
-  const _CheckoutBody({required this.cart});
+  const _CheckoutBody({required this.cart, required this.tarjetaValida});
 
   final Cart cart;
+  final ValueNotifier<bool> tarjetaValida;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -126,6 +159,17 @@ class _CheckoutBody extends ConsumerWidget {
             ],
           ),
         ),
+        const SizedBox(height: AppSpacing.sm),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          alignment: Alignment.topCenter,
+          child: checkout.metodoPago == MetodoPago.tarjeta
+              ? CardPaymentForm(
+                  onValidityChanged: (valida) => tarjetaValida.value = valida,
+                )
+              : const SizedBox(width: double.infinity),
+        ),
         const SizedBox(height: AppSpacing.lg),
         _SectionTitle('Observaciones generales'),
         const SizedBox(height: AppSpacing.sm),
@@ -163,23 +207,38 @@ class _CheckoutBody extends ConsumerWidget {
 }
 
 class _ConfirmBar extends ConsumerWidget {
-  const _ConfirmBar({required this.cart});
+  const _ConfirmBar({required this.cart, required this.tarjetaValida});
 
   final Cart cart;
+
+  /// Validez del formulario de tarjeta simulado (05#D-08).
+  final ValueNotifier<bool> tarjetaValida;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final enviando = ref.watch(
       checkoutProvider.select((state) => state.enviando),
     );
+    final metodoPago = ref.watch(
+      checkoutProvider.select((state) => state.metodoPago),
+    );
 
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
-        child: PrimaryButton(
-          label: 'Confirmar pedido - ${CurrencyFormatter.format(cart.total)}',
-          isLoading: enviando,
-          onPressed: enviando ? null : () => _confirmar(context, ref),
+        child: ValueListenableBuilder<bool>(
+          valueListenable: tarjetaValida,
+          builder: (context, valida, _) {
+            final bloqueado = metodoPago == MetodoPago.tarjeta && !valida;
+            return PrimaryButton(
+              label:
+                  'Confirmar pedido - ${CurrencyFormatter.format(cart.total)}',
+              isLoading: enviando,
+              onPressed: enviando || bloqueado
+                  ? null
+                  : () => _confirmar(context, ref),
+            );
+          },
         ),
       ),
     );
