@@ -112,6 +112,20 @@ void main() {
       expect(container.read(checkoutDireccionProvider)?.id, 'a1');
     });
 
+    testWidgets('la AppBar lleva título y botón de regreso al carrito', (
+      tester,
+    ) async {
+      await pumpCheckout(tester, cart: carritoLleno());
+
+      expect(find.text('Confirmar pedido'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Carrito real'), findsOneWidget);
+    });
+
     testWidgets('permite elegir otra dirección de la lista', (tester) async {
       await pumpCheckout(tester, cart: carritoLleno());
 

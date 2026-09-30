@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -62,38 +60,12 @@ class DeliveryMap extends StatefulWidget {
 }
 
 class _DeliveryMapState extends State<DeliveryMap> {
-  final Completer<GoogleMapController> _controllerCompleter = Completer();
-
-  // -------------------------------------------------------------------------
-  // Cycle
-  // -------------------------------------------------------------------------
-
-  @override
-  void didUpdateWidget(DeliveryMap oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Reaplica el estilo si cambia el modo oscuro
-    if (oldWidget.isDarkMode != widget.isDarkMode) {
-      _applyMapStyle();
-    }
-  }
-
   // -------------------------------------------------------------------------
   // Callbacks
   // -------------------------------------------------------------------------
 
-  Future<void> _onMapCreated(GoogleMapController controller) async {
-    if (!_controllerCompleter.isCompleted) {
-      _controllerCompleter.complete(controller);
-    }
-    await _applyMapStyle();
+  void _onMapCreated(GoogleMapController controller) {
     widget.onMapCreated?.call(controller);
-  }
-
-  Future<void> _applyMapStyle() async {
-    final controller = await _controllerCompleter.future;
-    final isDark = widget.isDarkMode ??
-        (Theme.of(context).brightness == Brightness.dark);
-    await controller.setMapStyle(isDark ? MapStyles.dark : MapStyles.light);
   }
 
   // -------------------------------------------------------------------------
@@ -152,11 +124,14 @@ class _DeliveryMapState extends State<DeliveryMap> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = widget.isDarkMode ??
+        (Theme.of(context).brightness == Brightness.dark);
     return GoogleMap(
       onMapCreated: _onMapCreated,
       initialCameraPosition: _initialCamera(),
       markers: _buildMarkers(),
       polylines: _buildPolylines(),
+      style: isDark ? MapStyles.dark : MapStyles.light,
       myLocationEnabled: false,
       myLocationButtonEnabled: false,
       zoomControlsEnabled: false,

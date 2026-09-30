@@ -155,7 +155,7 @@ void main() {
         expect(tester.takeException(), isNull);
         // capturedController puede ser null en headless (sin plataforma nativa)
         // — este test garantiza que el parámetro se acepta sin errores.
-        _ = capturedController;
+        expect(capturedController, anyOf(isNull, isA<GoogleMapController>()));
       },
     );
   });
