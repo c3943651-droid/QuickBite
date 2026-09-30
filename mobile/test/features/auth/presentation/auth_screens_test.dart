@@ -131,6 +131,9 @@ class FakeCatalogRepository implements CatalogRepository {
   ];
 
   @override
+  Future<List<PromotionBanner>> getPromotions() async => const [];
+
+  @override
   Future<Product> getProduct(String id) => throw UnimplementedError();
 
   @override

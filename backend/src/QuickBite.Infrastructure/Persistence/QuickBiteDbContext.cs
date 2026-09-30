@@ -30,6 +30,7 @@ public class QuickBiteDbContext : DbContext
     public DbSet<PasswordResetToken> TokensRecuperacionPassword => Set<PasswordResetToken>();
     public DbSet<Category> Categorias => Set<Category>();
     public DbSet<Product> Productos => Set<Product>();
+    public DbSet<Promotion> Promociones => Set<Promotion>();
     public DbSet<ProductPriceHistory> ProductosPreciosHistoricos => Set<ProductPriceHistory>();
     public DbSet<Inventory> Inventario => Set<Inventory>();
     public DbSet<PaymentMethod> MetodosPago => Set<PaymentMethod>();

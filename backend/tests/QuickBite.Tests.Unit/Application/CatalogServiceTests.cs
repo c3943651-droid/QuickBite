@@ -12,6 +12,7 @@ public class CatalogServiceTests
 {
     private readonly Mock<IProductRepository> _products = new();
     private readonly Mock<ICategoryRepository> _categories = new();
+    private readonly Mock<IPromotionRepository> _promotions = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IImageService> _imageService = new();
 
@@ -19,6 +20,7 @@ public class CatalogServiceTests
     {
         _unitOfWork.SetupGet(u => u.Products).Returns(_products.Object);
         _unitOfWork.SetupGet(u => u.Categories).Returns(_categories.Object);
+        _unitOfWork.SetupGet(u => u.Promotions).Returns(_promotions.Object);
         _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
         _products.Setup(p => p.ExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
     }
@@ -203,5 +205,95 @@ public class CatalogServiceTests
 
         _categories.Verify(c => c.Delete(category), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreatePromotionAsync_GuardaYDevuelveLaPromocion()
+    {
+        var result = await CreateService().CreatePromotionAsync(new CreatePromotionRequest
+        {
+            Titulo = "2x1 en Tacos",
+            Subtitulo = "Solo hoy",
+            ColorHex = "#0D9488",
+            Orden = 1
+        });
+
+        result.Titulo.Should().Be("2x1 en Tacos");
+        result.Subtitulo.Should().Be("Solo hoy");
+        result.ColorHex.Should().Be("#0D9488");
+        _promotions.Verify(p => p.AddAsync(It.Is<Promotion>(pr => pr.Titulo == "2x1 en Tacos"), It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdatePromotionAsync_ActualizaYDevuelveLaPromocion()
+    {
+        var promoId = Guid.NewGuid();
+        var promo = new Promotion { Id = promoId, Titulo = "Viejo", Subtitulo = "Sub", ColorHex = "#000000" };
+        _promotions.Setup(p => p.GetByIdAsync(promoId, It.IsAny<CancellationToken>())).ReturnsAsync(promo);
+
+        var result = await CreateService().UpdatePromotionAsync(promoId, new UpdatePromotionRequest
+        {
+            Titulo = "Nuevo",
+            Subtitulo = "Sub nuevo",
+            ColorHex = "#FFFFFF"
+        });
+
+        promo.Titulo.Should().Be("Nuevo");
+        promo.Subtitulo.Should().Be("Sub nuevo");
+        promo.ColorHex.Should().Be("#FFFFFF");
+        result.Titulo.Should().Be("Nuevo");
+        _promotions.Verify(p => p.Update(promo), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdatePromotionAsync_NoExiste_LanzaNotFound()
+    {
+        _promotions.Setup(p => p.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((Promotion?)null);
+
+        var act = () => CreateService().UpdatePromotionAsync(Guid.NewGuid(), new UpdatePromotionRequest { Titulo = "X" });
+
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task DeletePromotionAsync_EliminaFisicamente()
+    {
+        var promoId = Guid.NewGuid();
+        var promo = new Promotion { Id = promoId, Titulo = "A eliminar" };
+        _promotions.Setup(p => p.GetByIdAsync(promoId, It.IsAny<CancellationToken>())).ReturnsAsync(promo);
+
+        await CreateService().DeletePromotionAsync(promoId);
+
+        _promotions.Verify(p => p.Delete(promo), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeletePromotionAsync_NoExiste_LanzaNotFound()
+    {
+        _promotions.Setup(p => p.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((Promotion?)null);
+
+        var act = () => CreateService().DeletePromotionAsync(Guid.NewGuid());
+
+        await act.Should().ThrowAsync<NotFoundException>();
+        _promotions.Verify(p => p.Delete(It.IsAny<Promotion>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetPromotionsAsync_DevuelveSoloActivas()
+    {
+        _promotions.Setup(p => p.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(
+        [
+            new Promotion { Id = Guid.NewGuid(), Titulo = "Promo 1", Subtitulo = "Sub 1", ColorHex = "#0D9488", Activa = true },
+            new Promotion { Id = Guid.NewGuid(), Titulo = "Promo 2", Subtitulo = "Sub 2", ColorHex = "#2563EB", Activa = true }
+        ]);
+
+        var promos = await CreateService().GetPromotionsAsync();
+
+        promos.Should().HaveCount(2);
+        promos[0].Titulo.Should().Be("Promo 1");
+        promos[1].Titulo.Should().Be("Promo 2");
     }
 }

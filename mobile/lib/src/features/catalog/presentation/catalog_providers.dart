@@ -18,6 +18,11 @@ final categoriesProvider = FutureProvider<List<Category>>(
   retry: noAutoRetry,
 );
 
+final promotionsProvider = FutureProvider<List<PromotionBanner>>(
+  (ref) => ref.watch(catalogRepositoryProvider).getPromotions(),
+  retry: noAutoRetry,
+);
+
 /// 07.1 SCR-CAT-04 — la ficha se pide sola por su id; producto y opciones van
 /// por separado porque el backend los expone en dos endpoints.
 final productProvider = FutureProvider.family<Product, String>(

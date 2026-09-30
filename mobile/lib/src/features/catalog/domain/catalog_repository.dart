@@ -5,6 +5,8 @@ import 'catalog_entities.dart';
 abstract interface class CatalogRepository {
   Future<List<Category>> getCategories();
 
+  Future<List<PromotionBanner>> getPromotions();
+
   Future<ProductPage> getProducts(ProductFilter filter);
 
   Future<Product> getProduct(String id);

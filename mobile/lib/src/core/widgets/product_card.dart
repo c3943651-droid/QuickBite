@@ -45,6 +45,7 @@ class ProductCard extends StatelessWidget {
                     nombre: product.nombre,
                     hero: heroProducto(product.id),
                   ),
+                  if (product.esPopular) const _PopularBadge(),
                   if (!product.disponible) const _AgotadoBadge(),
                 ],
               ),
@@ -66,13 +67,55 @@ class ProductCard extends StatelessWidget {
                             product.nombre,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF111827),
+                            ),
                           ),
                         ),
+                        if (product.calificacion != null ||
+                            product.tiempoEstimado != null) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              if (product.calificacion != null) ...[
+                                const Icon(
+                                  Icons.star,
+                                  size: 12,
+                                  color: Color(0xFFF59E0B),
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '${product.calificacion}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ),
+                              ],
+                              if (product.calificacion != null &&
+                                  product.tiempoEstimado != null)
+                                const SizedBox(width: 8),
+                              if (product.tiempoEstimado != null)
+                                Text(
+                                  product.tiempoEstimado!,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: AppSpacing.xs),
                         Text(
                           CurrencyFormatter.format(product.precio),
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0D9488),
+                          ),
                         ),
                       ],
                     ),
@@ -114,6 +157,32 @@ double _altoNombre(TextStyle? estilo) {
   return altoLinea * 2;
 }
 
+class _PopularBadge extends StatelessWidget {
+  const _PopularBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 8,
+      left: 8,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.accent,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          'Popular',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: AppColors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 07.1 SCR-CAT-01: un producto sin stock se anuncia como "Agotado" en lugar
 /// de desaparecer del catálogo.
 class _AgotadoBadge extends StatelessWidget {
@@ -153,27 +222,22 @@ class _TarjetaCatalogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tema = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: tema.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(
-          color: tema.brightness == Brightness.dark
-              ? AppColors.nightBorder
-              : AppColors.border,
-        ),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0F0F172A),
-            blurRadius: 24,
-            spreadRadius: -4,
-            offset: Offset(0, 8),
+            color: Color(0x0D000000),
+            blurRadius: 8,
+            spreadRadius: 0,
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadius.card),
+        borderRadius: BorderRadius.circular(12),
         child: child,
       ),
     );

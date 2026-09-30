@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../haptics.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_radius.dart';
 import 'soft_card.dart';
 
 /// Tono semántico de un chip de estado (09 §8.4). Cada estado del negocio se
@@ -107,10 +106,20 @@ class CategoryChip extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: selected ? AppGradiente.acento : null,
           color: selected ? null : inactivoFondo,
-          borderRadius: BorderRadius.circular(AppRadius.chip),
+            borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected ? Colors.transparent : inactivoBorde,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: AppColors.accent.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    spreadRadius: -2,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Material(
           color: Colors.transparent,
@@ -119,7 +128,7 @@ class CategoryChip extends StatelessWidget {
               AppHaptics.selection();
               onTap();
             },
-            borderRadius: BorderRadius.circular(AppRadius.chip),
+          borderRadius: BorderRadius.circular(20),
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,

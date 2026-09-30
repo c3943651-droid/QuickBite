@@ -3,6 +3,10 @@ namespace QuickBite.Application.Catalog;
 public interface ICatalogService
 {
     Task<IReadOnlyList<CategoryResponse>> GetCategoriesAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<PromotionResponse>> GetPromotionsAsync(CancellationToken ct = default);
+    Task<PromotionResponse> CreatePromotionAsync(CreatePromotionRequest req, CancellationToken ct = default);
+    Task<PromotionResponse> UpdatePromotionAsync(Guid id, UpdatePromotionRequest req, CancellationToken ct = default);
+    Task DeletePromotionAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<CategoryResponse>> GetAdminCategoriesAsync(CancellationToken ct = default);
     Task<CategoryResponse> CreateCategoryAsync(CreateCategoryRequest req, CancellationToken ct = default);
     Task<CategoryResponse> UpdateCategoryAsync(Guid id, UpdateCategoryRequest req, CancellationToken ct = default);

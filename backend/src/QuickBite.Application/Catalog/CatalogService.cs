@@ -29,6 +29,40 @@ public sealed class CatalogService : ICatalogService
         return cats.Select(ToCat).ToList();
     }
 
+    public async Task<IReadOnlyList<PromotionResponse>> GetPromotionsAsync(CancellationToken ct = default)
+    {
+        var promos = await _uow.Promotions.GetActiveAsync(ct);
+        return promos.Select(p => new PromotionResponse(p.Id, p.Titulo, p.Subtitulo, p.ColorHex)).ToList();
+    }
+
+    public async Task<PromotionResponse> CreatePromotionAsync(CreatePromotionRequest req, CancellationToken ct = default)
+    {
+        var promo = new Promotion { Titulo = req.Titulo.Trim(), Subtitulo = req.Subtitulo.Trim(), ColorHex = req.ColorHex, Orden = req.Orden };
+        await _uow.Promotions.AddAsync(promo, ct);
+        await _uow.SaveChangesAsync(ct);
+        return new PromotionResponse(promo.Id, promo.Titulo, promo.Subtitulo, promo.ColorHex);
+    }
+
+    public async Task<PromotionResponse> UpdatePromotionAsync(Guid id, UpdatePromotionRequest req, CancellationToken ct = default)
+    {
+        var promo = await _uow.Promotions.GetByIdAsync(id, ct) ?? throw new NotFoundException("Promocion", id);
+        if (req.Titulo != null) promo.Titulo = req.Titulo.Trim();
+        if (req.Subtitulo != null) promo.Subtitulo = req.Subtitulo.Trim();
+        if (req.ColorHex != null) promo.ColorHex = req.ColorHex;
+        if (req.Orden != null) promo.Orden = req.Orden.Value;
+        if (req.Activa != null) promo.Activa = req.Activa.Value;
+        _uow.Promotions.Update(promo);
+        await _uow.SaveChangesAsync(ct);
+        return new PromotionResponse(promo.Id, promo.Titulo, promo.Subtitulo, promo.ColorHex);
+    }
+
+    public async Task DeletePromotionAsync(Guid id, CancellationToken ct = default)
+    {
+        var promo = await _uow.Promotions.GetByIdAsync(id, ct) ?? throw new NotFoundException("Promocion", id);
+        _uow.Promotions.Delete(promo);
+        await _uow.SaveChangesAsync(ct);
+    }
+
     public async Task<IReadOnlyList<CategoryResponse>> GetAdminCategoriesAsync(CancellationToken ct = default)
     {
         var cats = await _uow.Categories.GetAllAsync(ct);

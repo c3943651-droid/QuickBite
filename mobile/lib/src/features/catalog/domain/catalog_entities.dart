@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 import 'package:equatable/equatable.dart';
 
 class Category extends Equatable {
@@ -32,6 +34,9 @@ class Product extends Equatable {
     this.categoria,
     this.stock,
     this.stockMinimo,
+    this.esPopular = false,
+    this.calificacion,
+    this.tiempoEstimado,
   });
 
   final String id;
@@ -43,6 +48,9 @@ class Product extends Equatable {
   final Category? categoria;
   final int? stock;
   final int? stockMinimo;
+  final bool esPopular;
+  final double? calificacion;
+  final String? tiempoEstimado;
 
   @override
   List<Object?> get props => [
@@ -55,7 +63,27 @@ class Product extends Equatable {
     categoria,
     stock,
     stockMinimo,
+    esPopular,
+    calificacion,
+    tiempoEstimado,
   ];
+}
+
+class PromotionBanner extends Equatable {
+  const PromotionBanner({
+    required this.id,
+    required this.titulo,
+    required this.subtitulo,
+    required this.color,
+  });
+
+  final String id;
+  final String titulo;
+  final String subtitulo;
+  final Color color;
+
+  @override
+  List<Object?> get props => [id, titulo, subtitulo, color];
 }
 
 class ProductPage extends Equatable {

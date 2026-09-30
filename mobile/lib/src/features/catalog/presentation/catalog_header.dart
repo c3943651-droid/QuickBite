@@ -116,6 +116,7 @@ class _Campana extends StatelessWidget {
         child: Container(
           width: AppSizes.avatar - 28,
           height: AppSizes.avatar - 28,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: AppColors.white.withValues(alpha: 0.12),
             shape: BoxShape.circle,

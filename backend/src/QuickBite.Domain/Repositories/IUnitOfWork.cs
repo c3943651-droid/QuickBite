@@ -7,6 +7,7 @@ public interface IUnitOfWork
     IDeliveryPersonRepository DeliveryPeople { get; }
     IProductRepository Products { get; }
     ICategoryRepository Categories { get; }
+    IPromotionRepository Promotions { get; }
     ICartRepository Carts { get; }
     IOrderRepository Orders { get; }
     INotificationRepository Notifications { get; }

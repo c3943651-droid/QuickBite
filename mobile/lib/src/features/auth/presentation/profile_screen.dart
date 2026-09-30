@@ -37,13 +37,62 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-class _ProfileBody extends ConsumerWidget {
+class _ProfileBody extends ConsumerStatefulWidget {
   const _ProfileBody({required this.profile});
 
   final UserProfile profile;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ProfileBody> createState() => _ProfileBodyState();
+}
+
+class _ProfileBodyState extends ConsumerState<_ProfileBody> {
+  bool _loggingOut = false;
+
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        contentPadding: const EdgeInsets.all(24),
+        title: Text(
+          '¿Cerrar sesión?',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        content: Text(
+          '¿Estás seguro de que deseas salir de tu cuenta?',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmado != true || !context.mounted) return;
+
+    setState(() => _loggingOut = true);
+    await ref.read(sessionProvider.notifier).logout();
+    if (!context.mounted) return;
+    context.go('/login');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = widget.profile;
     // Si el perfil llega sin rol, se usa el de la sesión: es la misma fuente que
     // aplica el guard del router, así que el hub nunca muestra un conjunto de
     // secciones que contradiga las rutas a las que la persona puede llegar.
@@ -171,7 +220,10 @@ class _ProfileBody extends ConsumerWidget {
           child: PrimaryButton(
             label: 'Cerrar sesión',
             icon: Icons.logout,
-            onPressed: () => ref.read(sessionProvider.notifier).logout(),
+            isLoading: _loggingOut,
+            onPressed: _loggingOut
+                ? null
+                : () => _confirmLogout(context, ref),
           ),
         ),
       ],

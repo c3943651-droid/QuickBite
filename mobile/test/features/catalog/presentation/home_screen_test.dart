@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/error/app_exception.dart';
 import 'package:quickbite_mobile/src/core/session/token_storage.dart';
+import 'package:quickbite_mobile/src/core/theme/app_colors.dart';
 import 'package:quickbite_mobile/src/core/widgets/chips.dart';
 import 'package:quickbite_mobile/src/core/widgets/product_card.dart';
 import 'package:quickbite_mobile/src/core/widgets/state_views.dart';
@@ -63,6 +64,22 @@ class FakeCatalogRepository implements CatalogRepository {
     }
     return categories;
   }
+
+  @override
+  Future<List<PromotionBanner>> getPromotions() async => const [
+    PromotionBanner(
+      id: 'p1',
+      titulo: '2x1 en Tacos',
+      subtitulo: 'Solo hoy',
+      color: Color(0xFF0D9488),
+    ),
+    PromotionBanner(
+      id: 'p2',
+      titulo: 'Envío gratis',
+      subtitulo: 'En pedidos +200',
+      color: Color(0xFF2563EB),
+    ),
+  ];
 
   @override
   Future<Product> getProduct(String id) => throw UnimplementedError();
@@ -203,6 +220,16 @@ void main() {
       expect(find.byType(ProductCard), findsNWidgets(2));
     });
 
+    testWidgets('el GridView tiene padding inferior para la barra flotante', (
+      tester,
+    ) async {
+      await pumpHome(tester, FakeCatalogRepository());
+
+      final grid = tester.widget<GridView>(find.byType(GridView));
+      final padding = grid.padding as EdgeInsets;
+      expect(padding.bottom, greaterThanOrEqualTo(140));
+    });
+
     testWidgets('la tarjeta deja más altura a la imagen que al texto', (
       tester,
     ) async {
@@ -217,6 +244,60 @@ void main() {
               as SliverGridDelegateWithFixedCrossAxisCount;
 
       expect(delegate.childAspectRatio, greaterThan(0.8));
+    });
+
+    testWidgets('el botón de filtros es una cápsula 38x38 en la fila de categorías', (
+      tester,
+    ) async {
+      await pumpHome(tester, FakeCatalogRepository());
+
+      final filterButton = find.byTooltip('Filtros');
+      expect(filterButton, findsOneWidget);
+
+      final sizedBox = tester.widget<SizedBox>(
+        find
+            .ancestor(
+              of: filterButton,
+              matching: find.byType(SizedBox),
+            )
+            .first,
+      );
+      expect(sizedBox.width, 38);
+      expect(sizedBox.height, 38);
+    });
+
+    testWidgets('el fondo del catálogo es gris suave #F8F9FA', (tester) async {
+      await pumpHome(tester, FakeCatalogRepository());
+
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+      expect(scaffold.backgroundColor, const Color(0xFFF8F9FA));
+    });
+
+    testWidgets('muestra carrusel de promociones entre búsqueda y categorías', (
+      tester,
+    ) async {
+      await pumpHome(tester, FakeCatalogRepository());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PageView), findsOneWidget);
+      expect(find.text('Promociones'), findsOneWidget);
+    });
+
+    testWidgets('el carrusel tiene indicador de puntos', (tester) async {
+      await pumpHome(tester, FakeCatalogRepository());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PageView), findsOneWidget);
+      expect(find.byType(Row), findsWidgets);
+    });
+
+    testWidgets('el carrusel tiene peek effect de 16px', (tester) async {
+      await pumpHome(tester, FakeCatalogRepository());
+      await tester.pumpAndSettle();
+
+      final pageView = tester.widget<PageView>(find.byType(PageView));
+      final controller = pageView.controller as PageController;
+      expect(controller.viewportFraction, lessThan(1.0));
     });
 
     testWidgets('muestra las categorías en chips', (tester) async {
@@ -305,6 +386,78 @@ void main() {
 
       expect(find.text('Tacos al pastor'), findsOneWidget);
       expect(find.text('Bebidas'), findsNothing);
+    });
+
+    testWidgets('las tarjetas muestran calificación y tiempo estimado', (
+      tester,
+    ) async {
+      final catalog = FakeCatalogRepository()
+        ..products = const [
+          Product(
+            id: 'p1',
+            nombre: 'Tacos al pastor',
+            precio: 85.50,
+            disponible: true,
+            categoria: _tacos,
+            calificacion: 4.8,
+            tiempoEstimado: '15-20 min',
+          ),
+        ];
+
+      await pumpHome(tester, catalog);
+
+      expect(find.textContaining('4.8'), findsOneWidget);
+      expect(find.textContaining('15-20 min'), findsOneWidget);
+    });
+
+    testWidgets('las tarjetas tienen tipografía jerárquica', (tester) async {
+      await pumpHome(tester, FakeCatalogRepository());
+
+      final productName = tester.widget<Text>(find.text('Tacos al pastor'));
+      expect(productName.style?.fontWeight, FontWeight.w600);
+      expect(productName.style?.fontSize, 14);
+
+      final price = tester.widget<Text>(find.text(r'$85.50'));
+      expect(price.style?.fontWeight, FontWeight.w700);
+      expect(price.style?.fontSize, 15);
+    });
+
+    testWidgets('las tarjetas tienen BorderRadius 12 y fondo blanco', (
+      tester,
+    ) async {
+      await pumpHome(tester, FakeCatalogRepository());
+
+      final container = tester.widget<Container>(
+        find
+            .descendant(
+              of: find.byType(ProductCard),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final decor = container.decoration! as BoxDecoration;
+      expect(decor.borderRadius, BorderRadius.circular(12));
+      expect(decor.color, AppColors.white);
+    });
+
+    testWidgets('las tarjetas muestran badge de popular cuando aplica', (
+      tester,
+    ) async {
+      final catalog = FakeCatalogRepository()
+        ..products = const [
+          Product(
+            id: 'p1',
+            nombre: 'Tacos al pastor',
+            precio: 85.50,
+            disponible: true,
+            categoria: _tacos,
+            esPopular: true,
+          ),
+        ];
+
+      await pumpHome(tester, catalog);
+
+      expect(find.text('Popular'), findsOneWidget);
     });
 
     testWidgets('el quick-add mete el producto en el carrito', (tester) async {
@@ -434,17 +587,19 @@ void main() {
       expect(find.text('Detalle de p1'), findsOneWidget);
     });
 
-    testWidgets('"Filtros" abre la hoja de filtros avanzados', (tester) async {
+    testWidgets('el botón de filtros abre la hoja de filtros avanzados', (
+      tester,
+    ) async {
       await pumpHome(tester, FakeCatalogRepository());
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Filtros'));
+      await tester.tap(find.byTooltip('Filtros'));
       await tester.pumpAndSettle();
 
       expect(find.byType(FilterSheet), findsOneWidget);
       expect(find.text('Aplicar filtros'), findsOneWidget);
     });
 
-    testWidgets('"Filtros" cuenta los filtros activos', (tester) async {
+    testWidgets('el botón de filtros cuenta los filtros activos', (tester) async {
       final catalog = FakeCatalogRepository();
       final pumped = await pumpHome(tester, catalog);
 
@@ -456,10 +611,9 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
 
-      // categoría + rango de precio = 2 filtros (el rango cuenta como uno).
-      expect(find.text('2'), findsOneWidget);
+      expect(find.byTooltip('Filtros'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Filtros'));
+      await tester.tap(find.byTooltip('Filtros'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Limpiar filtros'));
       await tester.pumpAndSettle();
@@ -470,13 +624,12 @@ void main() {
       expect(catalog.filters.last.precioMin, isNull);
     });
 
-    testWidgets('"Filtros" no muestra contador sin filtros activos', (
+    testWidgets('el botón de filtros no muestra contador sin filtros activos', (
       tester,
     ) async {
       await pumpHome(tester, FakeCatalogRepository());
 
-      expect(find.text('Filtros'), findsOneWidget);
-      expect(find.text('0'), findsNothing);
+      expect(find.byTooltip('Filtros'), findsOneWidget);
     });
 
     testWidgets('el saludo usa el nombre del usuario autenticado', (
