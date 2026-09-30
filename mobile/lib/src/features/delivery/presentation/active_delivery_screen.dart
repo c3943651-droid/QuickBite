@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
@@ -8,8 +9,10 @@ import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/confirm_dialog.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/state_views.dart';
+import '../domain/models/location_permission_status.dart';
 import '../domain/pedido_entrega.dart';
 import 'delivery_providers.dart';
+import 'widgets/delivery_map.dart';
 
 /// Entrega en curso (07.1 SCR-DEL-03).
 ///
@@ -105,12 +108,68 @@ class _ContenidoState extends ConsumerState<_Contenido> {
   @override
   Widget build(BuildContext context) {
     final acciones = ref.watch(entregaAccionesProvider);
+    final permisos = ref.watch(locationPermissionProvider);
     final tema = Theme.of(context);
     final minutos = widget.pedido.minutosDesdeCreacion(DateTime.now());
 
     return Column(
       children: [
+        // Mitad superior: Mapa
         Expanded(
+          flex: 4,
+          child: permisos.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text(mensaje(e))),
+            data: (status) {
+              if (status == LocationPermissionStatus.whenInUse ||
+                  status == LocationPermissionStatus.always) {
+                // TODO: Usar coordenadas reales de la API cuando GET /delivery las exponga (04 §11.1)
+                return const DeliveryMap(
+                  origin: LatLng(13.6929, -89.2182), // QuickBite Centro
+                  destination: LatLng(13.7000, -89.2100), // Cliente
+                  routePolyline: [
+                    LatLng(13.6929, -89.2182),
+                    LatLng(13.6950, -89.2150),
+                    LatLng(13.7000, -89.2100),
+                  ],
+                  originTitle: 'QuickBite',
+                  destinationTitle: 'Cliente',
+                );
+              }
+
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.location_off,
+                          size: 48, color: AppColors.neutral500),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Necesitamos tu ubicación para mostrar la ruta.',
+                        textAlign: TextAlign.center,
+                        style: tema.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      PrimaryButton(
+                        label: 'Dar permiso',
+                        onPressed: () {
+                          ref
+                              .read(locationPermissionProvider.notifier)
+                              .requestPermission();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        // Mitad inferior: Detalles
+        Expanded(
+          flex: 3,
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
@@ -131,9 +190,6 @@ class _ContenidoState extends ConsumerState<_Contenido> {
                   ],
                 ),
               ],
-              // La dirección, los productos y el teléfono del cliente no se
-              // muestran porque `GET /delivery/active` no los devuelve (04 §11.1).
-              // Aparecerán sin tocar esta pantalla cuando el endpoint los exponga.
               const SizedBox(height: AppSpacing.lg),
               _Dato(
                 icon: Icons.payments_outlined,
