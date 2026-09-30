@@ -34,12 +34,12 @@ android {
         applicationId = "com.quickbite.quickbite_mobile"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
-        // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
-        // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
-        // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Google Maps API Key leída desde variable de entorno MAPS_API_KEY.
+        // En CI: setear la variable. En local: crear un archivo local.properties
+        // con "mapsApiKey=AIza..." y referenciarlo desde aquí, o usar --dart-define.
+        manifestPlaceholders["MAPS_API_KEY"] = System.getenv("MAPS_API_KEY") ?: ""
     }
 
     signingConfigs {
