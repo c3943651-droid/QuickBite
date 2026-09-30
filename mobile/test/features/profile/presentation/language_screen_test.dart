@@ -136,7 +136,7 @@ void main() {
     ) async {
       await pumpIdioma(tester);
 
-      expect(find.textContaining('MXN'), findsOneWidget);
+      expect(find.textContaining('USD'), findsOneWidget);
       expect(find.textContaining('fija'), findsOneWidget);
     });
   });
