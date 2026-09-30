@@ -88,7 +88,7 @@ class _Body extends ConsumerWidget {
         const SectionHeader('Moneda'),
         const SettingsTile(
           icon: Icons.payments_outlined,
-          label: 'Peso mexicano (MXN)',
+          label: 'Dólar estadounidense (USD)',
           subtitle: 'La moneda es fija: no se puede cambiar en la v1.0.',
         ),
       ],
