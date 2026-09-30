@@ -14,23 +14,30 @@ public sealed class OrderService : IOrderService
         var cart = await _uow.Carts.GetActiveByUserIdAsync(userId, ct) ?? throw new BusinessRuleException("Carrito vacio");
         if (!cart.Items.Any()) throw new BusinessRuleException("Carrito vacio");
         var order = new Order { ClienteId = userId, DireccionId = req.DireccionId, DireccionEntregaSnapshot = req.DireccionSnapshot ?? "", MetodoPago = ParseMetodoPago(req.MetodoPago), NumeroPedido = $"QB-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}", Estado = OrderStatus.Pendiente };
-        foreach (var ci in cart.Items)
+        foreach (var grupo in cart.Items.GroupBy(ci => ci.ProductoId))
         {
-            var unitPrice = ci.Producto?.Precio ?? 0m;
+            var unitPrice = grupo.First().Producto?.Precio ?? 0m;
+            var cantidadTotal = (short)Math.Min(grupo.Sum(x => (int)x.Cantidad), short.MaxValue);
+            var opciones = grupo
+                .SelectMany(x => x.Opciones)
+                .Where(o => o.Opcion is not null)
+                .GroupBy(o => o.OpcionId)
+                .Select(g => g.First().Opcion!)
+                .ToList();
             var item = new OrderItem
             {
-                ProductoId = ci.ProductoId,
-                NombreProducto = ci.Producto?.Nombre ?? string.Empty,
-                Cantidad = ci.Cantidad,
+                ProductoId = grupo.Key,
+                NombreProducto = grupo.First().Producto?.Nombre ?? string.Empty,
+                Cantidad = cantidadTotal,
                 PrecioUnitario = unitPrice,
-                Subtotal = OrderCalculationRules.CalculateOrderItemSubtotal(unitPrice, ci.Cantidad, ci.Opciones.Select(o => o.Opcion?.PrecioAdicional ?? 0m))
+                Subtotal = OrderCalculationRules.CalculateOrderItemSubtotal(unitPrice, cantidadTotal, opciones.Select(o => o.PrecioAdicional))
             };
-            foreach (var opcion in ci.Opciones.Where(o => o.Opcion is not null))
+            foreach (var opcion in opciones)
             {
                 item.Opciones.Add(new OrderItemOption
                 {
-                    NombreOpcion = opcion.Opcion!.Nombre,
-                    PrecioAdicional = opcion.Opcion.PrecioAdicional
+                    NombreOpcion = opcion.Nombre,
+                    PrecioAdicional = opcion.PrecioAdicional
                 });
             }
             order.Items.Add(item);
