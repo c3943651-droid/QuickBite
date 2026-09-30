@@ -15,6 +15,9 @@ export const queryKeys = {
   categories: {
     all: ["admin", "categories"] as const,
   },
+  promotions: {
+    all: ["admin", "promotions"] as const,
+  },
   inventory: ["admin", "inventory"] as const,
   deliveryPersons: {
     all: ["admin", "delivery-persons"] as const,
