@@ -12,7 +12,9 @@ import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/polling_indicator.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../core/widgets/status_timeline.dart';
+import '../../delivery/presentation/widgets/delivery_map.dart';
 import '../domain/order_entities.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'estado_pedido_ui.dart';
 import 'order_tracking_providers.dart';
 
@@ -137,6 +139,30 @@ class _Body extends ConsumerWidget {
           _Aviso(texto: tracking.error!, clave: 'aviso-inline'),
           const SizedBox(height: AppSpacing.md),
         ],
+        
+        // Mapa solo si va en camino
+        if (tracking.estado == EstadoPedido.enCamino) ...[
+          SizedBox(
+            height: 200,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.md),
+              // TODO: Usar coordenadas reales de la API cuando el endpoint las exponga
+              child: const DeliveryMap(
+                origin: LatLng(13.6929, -89.2182), // QuickBite Centro
+                destination: LatLng(13.7000, -89.2100), // Cliente
+                routePolyline: [
+                  LatLng(13.6929, -89.2182),
+                  LatLng(13.6950, -89.2150),
+                  LatLng(13.7000, -89.2100),
+                ],
+                originTitle: 'QuickBite',
+                destinationTitle: 'Tu ubicación',
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
+
         _Encabezado(pedido: pedido, estado: tracking.estado),
         const SizedBox(height: AppSpacing.lg),
         _Seccion(
