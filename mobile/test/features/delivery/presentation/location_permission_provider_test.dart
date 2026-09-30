@@ -33,7 +33,7 @@ void main() {
 
       final sub = container.listen(
         locationPermissionProvider,
-        (_, __) {},
+        (_, _) {},
         fireImmediately: true,
       );
 

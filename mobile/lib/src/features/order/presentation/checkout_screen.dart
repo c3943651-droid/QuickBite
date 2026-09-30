@@ -26,7 +26,14 @@ class CheckoutScreen extends ConsumerWidget {
     final cart = ref.watch(cartProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Confirmar pedido')),
+      appBar: AppBar(
+        title: const Text('Confirmar pedido'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Volver al carrito',
+          onPressed: () => context.go('/cart'),
+        ),
+      ),
       body: SafeArea(
         child: switch (cart) {
           AsyncError(:final error) => ErrorStateView(

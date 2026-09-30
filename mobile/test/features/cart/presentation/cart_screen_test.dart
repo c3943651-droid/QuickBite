@@ -18,6 +18,7 @@ CartItem _item({
   int cantidad = 2,
   List<String> opciones = const ['Extra queso'],
   String? observaciones,
+  String? imagenUrl,
 }) {
   return CartItem(
     id: id,
@@ -27,6 +28,7 @@ CartItem _item({
     cantidad: cantidad,
     opciones: opciones,
     observaciones: observaciones,
+    imagenUrl: imagenUrl,
   );
 }
 
@@ -91,6 +93,68 @@ void main() {
       expect(find.text('Tacos al pastor'), findsOneWidget);
       expect(find.text('Extra queso'), findsOneWidget);
       expect(find.text(r'$171.00'), findsWidgets);
+    });
+
+    testWidgets('la tarjeta del item muestra precio unitario y subtotal', (
+      tester,
+    ) async {
+      await pumpCart(
+        tester,
+        cart: Cart(id: 'cart-1', items: [_item()], total: 171),
+      );
+
+      expect(find.text(r'$85.50'), findsOneWidget);
+      expect(find.text(r'$171.00'), findsWidgets);
+    });
+
+    testWidgets('el nombre del item se muestra en negrita de 14 px', (
+      tester,
+    ) async {
+      await pumpCart(
+        tester,
+        cart: Cart(id: 'cart-1', items: [_item()], total: 171),
+      );
+
+      final nombre = tester.widget<Text>(find.text('Tacos al pastor'));
+      expect(nombre.style?.fontSize, 14);
+      expect(nombre.style?.fontWeight, FontWeight.w700);
+    });
+
+    testWidgets('la tarjeta del item pinta la imagen real del producto', (
+      tester,
+    ) async {
+      await pumpCart(
+        tester,
+        cart: Cart(
+          id: 'cart-1',
+          items: [_item(imagenUrl: 'https://cdn.quickbite.test/tacos.jpg')],
+          total: 171,
+        ),
+      );
+
+      expect(find.byType(Image), findsOneWidget);
+    });
+
+    testWidgets('la tarjeta ordena imagen, texto y controles de cantidad', (
+      tester,
+    ) async {
+      await pumpCart(
+        tester,
+        cart: Cart(
+          id: 'cart-1',
+          items: [_item(imagenUrl: 'https://cdn.quickbite.test/tacos.jpg')],
+          total: 171,
+        ),
+      );
+
+      final imagen = tester.getCenter(find.byType(Image).first);
+      final nombre = tester.getCenter(find.text('Tacos al pastor'));
+      final mas = tester.getCenter(find.byIcon(Icons.add));
+      final eliminar = tester.getCenter(find.byTooltip('Eliminar del carrito'));
+
+      expect(imagen.dx < nombre.dx, isTrue, reason: 'imagen a la izquierda');
+      expect(nombre.dx < mas.dx, isTrue, reason: 'controles a la derecha');
+      expect(eliminar.dx > nombre.dx, isTrue, reason: 'eliminar a la derecha');
     });
 
     testWidgets('el resumen muestra subtotal, envío y total', (tester) async {

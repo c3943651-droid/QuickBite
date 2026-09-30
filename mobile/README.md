@@ -45,3 +45,5 @@ repository impl), `domain/` (entidades + interfaz de repositorio) y
 - `docs/07 — App Móvil Flutter Arquitectura.md`
 - `docs/07.1 — Especificación de Pantallas Móviles.md`
 - `docs/07.2 — Base Flutter: Estructura, Autenticación y Catálogo.md`
+
+scrcpy

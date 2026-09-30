@@ -144,7 +144,7 @@ class _ContenidoState extends ConsumerState<_Contenido> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.location_off,
-                          size: 48, color: AppColors.neutral500),
+                          size: 48, color: AppColors.inkSoft),
                       const SizedBox(height: AppSpacing.md),
                       Text(
                         'Necesitamos tu ubicación para mostrar la ruta.',
