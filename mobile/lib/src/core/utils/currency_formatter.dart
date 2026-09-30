@@ -2,7 +2,7 @@ import 'package:intl/intl.dart';
 
 abstract final class CurrencyFormatter {
   static final NumberFormat _format = NumberFormat.currency(
-    locale: 'es_MX',
+    locale: 'en_US',
     symbol: r'$',
     decimalDigits: 2,
   );
@@ -11,7 +11,7 @@ abstract final class CurrencyFormatter {
 
   static String compact(num value) {
     final amount = NumberFormat.currency(
-      locale: 'es_MX',
+      locale: 'en_US',
       symbol: r'$',
       decimalDigits: value.truncateToDouble() == value ? 0 : 2,
     );
