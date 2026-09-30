@@ -10,8 +10,21 @@ import 'package:quickbite_mobile/src/features/delivery/domain/delivery_repositor
 import 'package:quickbite_mobile/src/features/delivery/presentation/delivery_providers.dart';
 import 'package:quickbite_mobile/src/features/shell/app_router.dart';
 
+import 'package:quickbite_mobile/src/features/delivery/data/location_permission_service.dart';
+import 'package:quickbite_mobile/src/features/delivery/domain/models/location_permission_status.dart';
+
 import 'cart_fakes.dart';
 import 'delivery_fakes.dart';
+
+class FakeLocationPermissionService implements LocationPermissionService {
+  @override
+  Future<LocationPermissionStatus> checkStatus() async =>
+      LocationPermissionStatus.notDetermined;
+
+  @override
+  Future<LocationPermissionStatus> requestPermission() async =>
+      LocationPermissionStatus.notDetermined;
+}
 
 const testConfig = AppConfig(
   apiBaseUrl: 'https://api.test',
@@ -74,6 +87,8 @@ Future<GoRouter> pumpRouter(
         appConfigProvider.overrideWithValue(testConfig),
         sessionProvider.overrideWith(() => _FixedSessionNotifier(session)),
         cartRepositoryProvider.overrideWithValue(FakeCartRepository()),
+        locationPermissionServiceProvider
+            .overrideWithValue(FakeLocationPermissionService()),
         if (delivery != null)
           deliveryRepositoryProvider.overrideWithValue(delivery),
       ],
