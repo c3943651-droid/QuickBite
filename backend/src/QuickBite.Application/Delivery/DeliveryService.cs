@@ -21,6 +21,9 @@ public sealed class DeliveryService : IDeliveryService
         if (o.Estado != OrderStatus.Listo) throw new BusinessRuleException("Solo pedidos Listo pueden ser aceptados");
         if (o.RepartidorId != null) throw new ConflictException("Pedido ya asignado");
         await _uow.Orders.AssignDeliveryPersonAsync(orderId, repartidorId, AssignmentOrigin.Auto, ct);
+        // Se guarda antes del cambio de estado por trg_validar_asignacion_repartidor,
+        // que solo admite cambiar repartidor_id con el pedido en 'listo'.
+        await _uow.SaveChangesAsync(ct);
         await _uow.Orders.UpdateStatusAsync(orderId, OrderStatus.EnCamino, null, repartidorId, ct);
         await _uow.SaveChangesAsync(ct);
     }

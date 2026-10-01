@@ -199,6 +199,8 @@ public class OrderRepository : IOrderRepository
             UsuarioId = userId,
             Comentario = comment
         });
+
+        await LiberarRepartidorSiNoTienePedidosActivosAsync(order, cancellationToken);
     }
 
     public async Task AssignDeliveryPersonAsync(Guid orderId, Guid deliveryPersonId, AssignmentOrigin origin, CancellationToken cancellationToken = default)
@@ -241,6 +243,52 @@ public class OrderRepository : IOrderRepository
             UsuarioId = userId,
             Comentario = reason
         });
+
+        await LiberarRepartidorSiNoTienePedidosActivosAsync(order, cancellationToken);
+    }
+
+    /// <summary>
+    /// Al cerrarse el pedido (entregado o cancelado) el repartidor debe volver a
+    /// quedar disponible para que la modal de asignación del panel admin pueda
+    /// ofrecerlo. Solo se libera si no le queda ningún pedido pendiente: un
+    /// repartidor con otra entrega en camino sigue ocupado. Los repartidores
+    /// inactivos no se reactivan solos, porque <c>Inactivo</c> es una baja
+    /// administrada a mano, no el fin de un reparto.
+    /// </summary>
+    private async Task LiberarRepartidorSiNoTienePedidosActivosAsync(Order order, CancellationToken cancellationToken)
+    {
+        if (order.Estado != OrderStatus.Entregado && order.Estado != OrderStatus.Cancelado)
+        {
+            return;
+        }
+
+        if (order.RepartidorId is not Guid repartidorId)
+        {
+            return;
+        }
+
+        var repartidor = await _db.Repartidores
+            .FirstOrDefaultAsync(r => r.UsuarioId == repartidorId, cancellationToken);
+
+        if (repartidor is null || repartidor.EstadoDisponibilidad == DeliveryPersonStatus.Inactivo)
+        {
+            return;
+        }
+
+        // Se excluye el pedido que se acaba de cerrar: el cambio de estado aún no
+        // está en la base de datos, así que seguiría contando como activo.
+        var tienePedidosPendientes = await _db.Pedidos
+            .AsNoTracking()
+            .AnyAsync(p => p.Id != order.Id &&
+                p.RepartidorId == repartidorId &&
+                p.Estado != OrderStatus.Entregado &&
+                p.Estado != OrderStatus.Cancelado,
+                cancellationToken);
+
+        if (!tienePedidosPendientes)
+        {
+            repartidor.EstadoDisponibilidad = DeliveryPersonStatus.Disponible;
+        }
     }
 
     private static void AplicarMarcaTemporal(Order order, OrderStatus status)

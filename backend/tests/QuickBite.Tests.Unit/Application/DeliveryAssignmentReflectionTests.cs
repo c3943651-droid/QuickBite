@@ -54,7 +54,13 @@ public class DeliveryAssignmentReflectionTests
         _orders.Verify(
             r => r.UpdateStatusAsync(pedido.Id, OrderStatus.EnCamino, It.IsAny<string?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()),
             Times.Once);
-        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        // Dos guardados, no uno: la asignación se persiste antes de mover el
+        // estado porque el trigger trg_validar_asignacion_repartidor solo admite
+        // cambiar repartidor_id con el pedido en 'listo'. En un único
+        // SaveChanges ambas columnas viajan en el mismo UPDATE y el trigger lo
+        // rechaza con "Solo se pueden asignar repartidores a pedidos en estado
+        // 'listo'".
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]

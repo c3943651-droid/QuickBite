@@ -165,11 +165,7 @@ export function useUpdateOrderStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
-      id,
-      estado,
-      comentario,
-    }: {
+    mutationFn: ({ id, estado, comentario }: {
       id: string
       estado: OrderStatusValue
       comentario?: string | null
@@ -177,6 +173,9 @@ export function useUpdateOrderStatus() {
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
       void queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(variables.id) })
+      // Entregar o cancelar libera al repartidor, así que el listado que
+      // consume la modal de asignación también queda desactualizado.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.deliveryPersons.all })
       void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard })
     },
   })

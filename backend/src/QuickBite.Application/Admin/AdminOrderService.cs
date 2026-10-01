@@ -110,6 +110,11 @@ public sealed class AdminOrderService : IAdminOrderService
         }
 
         await _uow.Orders.AssignDeliveryPersonAsync(orderId, repartidorId, origin, ct);
+        // La asignación se persiste antes de mover el estado: el trigger
+        // trg_validar_asignacion_repartidor exige que repartidor_id cambie
+        // estando el pedido en 'listo'. En un solo SaveChanges ambas columnas
+        // viajan en el mismo UPDATE y el trigger lo rechaza.
+        await _uow.SaveChangesAsync(ct);
         await _uow.Orders.UpdateStatusAsync(orderId, OrderStatus.EnCamino, null, repartidorId, ct);
         await _uow.SaveChangesAsync(ct);
     }
