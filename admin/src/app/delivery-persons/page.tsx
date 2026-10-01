@@ -24,17 +24,8 @@ import {
   type DeliveryPersonStatusValue,
 } from "@/lib/api/admin/delivery-persons"
 import { getApiErrorMessage } from "@/lib/api/error"
+import { initials } from "@/lib/format"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
-
-function initials(nombre: string): string {
-  return nombre
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-}
 
 export default function DeliveryPersonsPage() {
   const [search, setSearch] = useState("")
@@ -59,7 +50,7 @@ export default function DeliveryPersonsPage() {
     const q = debouncedSearch.trim().toLowerCase()
     if (!q) return items
     return items.filter((item) =>
-      [item.nombre, item.email, item.telefono ?? ""].some((value) =>
+      [item.nombre ?? "", item.email ?? "", item.telefono ?? ""].some((value) =>
         value.toLowerCase().includes(q),
       ),
     )
