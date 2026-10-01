@@ -32,7 +32,7 @@ public class DeliveryOrderCoordsTests
         var repartidorId = Guid.NewGuid();
         var pedido = Pedido(13.7000m, -89.2100m, OrderStatus.EnCamino);
         _orders
-            .Setup(o => o.GetOrdersAsync(null, repartidorId, OrderStatus.EnCamino, It.IsAny<CancellationToken>()))
+            .Setup(o => o.GetDeliveryOrdersAsync(repartidorId, OrderStatus.EnCamino, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Order> { pedido });
 
         var service = new DeliveryService(_uow.Object);
@@ -49,7 +49,7 @@ public class DeliveryOrderCoordsTests
         var repartidorId = Guid.NewGuid();
         var pedido = Pedido(13.6929m, -89.2182m, OrderStatus.Listo);
         _orders
-            .Setup(o => o.GetOrdersAsync(null, null, OrderStatus.Listo, It.IsAny<CancellationToken>()))
+            .Setup(o => o.GetDeliveryOrdersAsync(null, OrderStatus.Listo, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Order> { pedido });
 
         var service = new DeliveryService(_uow.Object);
@@ -66,7 +66,7 @@ public class DeliveryOrderCoordsTests
         var repartidorId = Guid.NewGuid();
         var pedido = Pedido(null, null, OrderStatus.Entregado);
         _orders
-            .Setup(o => o.GetOrdersAsync(null, repartidorId, null, It.IsAny<CancellationToken>()))
+            .Setup(o => o.GetDeliveryOrdersAsync(repartidorId, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Order> { pedido });
 
         var service = new DeliveryService(_uow.Object);

@@ -422,7 +422,12 @@ class _SelectorCantidad extends StatelessWidget {
             child: Text(
               '$cantidad',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleSmall,
+              // Color explícito: la cantidad elegida es el dato que el usuario
+              // viene a confirmar y no puede depender del estilo heredado.
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           IconButton(
@@ -518,8 +523,11 @@ class _ImagenProducto extends StatelessWidget {
     return Stack(
       children: [
         if (tag == null) imagen else Hero(tag: tag, child: imagen),
+        // La imagen ocupa toda la pantalla a propósito, pero la flecha tiene
+        // que respetar la franja de la barra de estado: sin este desplazamiento
+        // `Positioned(top: 8)` la dejaba debajo y sólo se veía a medias.
         Positioned(
-          top: AppSpacing.sm,
+          top: MediaQuery.paddingOf(context).top + AppSpacing.sm,
           left: AppSpacing.sm,
           child: Material(
             color: AppColors.white.withValues(alpha: 0.9),

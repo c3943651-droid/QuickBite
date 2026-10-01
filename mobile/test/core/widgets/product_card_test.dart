@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/widgets/product_card.dart';
 import 'package:quickbite_mobile/src/features/catalog/domain/catalog_entities.dart';
@@ -13,24 +15,28 @@ void main() {
   Widget card({
     required bool disponible,
     ProductCardLayout layout = ProductCardLayout.grid,
-  }) => MaterialApp(
-    home: Scaffold(
-      body: SizedBox(
-        // Anchos reales: la tarjeta de rejilla ocupa media pantalla y la
-        // de lista el ancho completo.
-        height: layout == ProductCardLayout.grid ? 260 : 100,
-        width: layout == ProductCardLayout.grid ? 180 : 360,
-        child: ProductCard(
-          product: Product(
-            id: quickbitePastor.id,
-            nombre: quickbitePastor.nombre,
-            precio: quickbitePastor.precio,
-            categoria: quickbitePastor.categoria,
-            disponible: disponible,
+    String? imagenUrl,
+  }) => ProviderScope(
+    child: MaterialApp(
+      home: Scaffold(
+        body: SizedBox(
+          // Anchos reales: la tarjeta de rejilla ocupa media pantalla y la
+          // de lista el ancho completo.
+          height: layout == ProductCardLayout.grid ? 260 : 100,
+          width: layout == ProductCardLayout.grid ? 180 : 360,
+          child: ProductCard(
+            product: Product(
+              id: quickbitePastor.id,
+              nombre: quickbitePastor.nombre,
+              precio: quickbitePastor.precio,
+              categoria: quickbitePastor.categoria,
+              disponible: disponible,
+              imagenUrl: imagenUrl,
+            ),
+            onTap: () {},
+            onQuickAdd: () => quickAdds++,
+            layout: layout,
           ),
-          onTap: () {},
-          onQuickAdd: () => quickAdds++,
-          layout: layout,
         ),
       ),
     ),
@@ -116,6 +122,22 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Agotado'), findsOneWidget);
+    });
+
+    testWidgets('una imagen relativa se resuelve contra el origen del API', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        card(disponible: true, imagenUrl: '/uploads/productos/pastor.jpg'),
+      );
+
+      final imagen = tester.widget<CachedNetworkImage>(
+        find.byType(CachedNetworkImage),
+      );
+      expect(
+        imagen.imageUrl,
+        'https://quickbite-n1bk.onrender.com/uploads/productos/pastor.jpg',
+      );
     });
   });
 }

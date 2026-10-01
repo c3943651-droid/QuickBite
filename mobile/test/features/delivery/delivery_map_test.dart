@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:quickbite_mobile/src/features/delivery/presentation/widgets/delivery_map.dart';
 
 // ---------------------------------------------------------------------------
@@ -9,11 +10,7 @@ import 'package:quickbite_mobile/src/features/delivery/presentation/widgets/deli
 
 const _origin = LatLng(13.6929, -89.2182);
 const _destination = LatLng(13.7050, -89.2060);
-final _polyline = [
-  _origin,
-  const LatLng(13.6970, -89.2140),
-  _destination,
-];
+final _polyline = [_origin, const LatLng(13.6970, -89.2140), _destination];
 
 // ---------------------------------------------------------------------------
 // Helper: envuelve el widget en un MaterialApp para que pueda usar Theme
@@ -25,7 +22,6 @@ Widget _buildSubject({
   List<LatLng>? routePolyline,
   String? originTitle,
   String? destinationTitle,
-  bool? isDarkMode,
   Brightness brightness = Brightness.light,
 }) {
   return MaterialApp(
@@ -37,7 +33,6 @@ Widget _buildSubject({
         routePolyline: routePolyline ?? _polyline,
         originTitle: originTitle,
         destinationTitle: destinationTitle,
-        isDarkMode: isDarkMode,
       ),
     ),
   );
@@ -48,115 +43,73 @@ Widget _buildSubject({
 // ---------------------------------------------------------------------------
 
 void main() {
-  // google_maps_flutter necesita este stub para tests de widgets
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('DeliveryMap widget', () {
-    testWidgets(
-      'renderiza un GoogleMap con parámetros de origen y destino',
-      (tester) async {
-        await tester.pumpWidget(
-          _buildSubject(
-            originTitle: 'Restaurante',
-            destinationTitle: 'Cliente',
-          ),
-        );
+    testWidgets('renderiza un FlutterMap con parámetros de origen y destino', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildSubject(originTitle: 'Restaurante', destinationTitle: 'Cliente'),
+      );
 
-        // El widget GoogleMap debe estar presente en el árbol
-        expect(find.byType(GoogleMap), findsOneWidget);
-      },
-    );
+      expect(find.byType(FlutterMap), findsOneWidget);
+      expect(find.byType(MarkerLayer), findsOneWidget);
+    });
 
     testWidgets(
       'acepta una lista vacía de routePolyline sin lanzar excepción',
       (tester) async {
-        await tester.pumpWidget(
-          _buildSubject(routePolyline: []),
-        );
+        await tester.pumpWidget(_buildSubject(routePolyline: []));
 
-        expect(find.byType(GoogleMap), findsOneWidget);
+        expect(find.byType(FlutterMap), findsOneWidget);
+        expect(find.byType(PolylineLayer), findsNothing);
         expect(tester.takeException(), isNull);
       },
     );
 
-    testWidgets(
-      'acepta isDarkMode: true sin lanzar excepción',
-      (tester) async {
-        await tester.pumpWidget(
-          _buildSubject(isDarkMode: true),
-        );
+    testWidgets('se renderiza en un tema oscuro sin lanzar excepción', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildSubject(brightness: Brightness.dark));
 
-        expect(find.byType(GoogleMap), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(find.byType(FlutterMap), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
 
-    testWidgets(
-      'acepta isDarkMode: false sin lanzar excepción',
-      (tester) async {
-        await tester.pumpWidget(
-          _buildSubject(isDarkMode: false),
-        );
+    testWidgets('permite originTitle y destinationTitle opcionales (null)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildSubject(originTitle: null, destinationTitle: null),
+      );
 
-        expect(find.byType(GoogleMap), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(find.byType(FlutterMap), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
 
-    testWidgets(
-      'auto-detecta modo oscuro desde el tema del contexto (Brightness.dark)',
-      (tester) async {
-        await tester.pumpWidget(
-          _buildSubject(brightness: Brightness.dark),
-        );
+    testWidgets('expone el callback onMapCreated con un MapController ligado', (
+      tester,
+    ) async {
+      MapController? capturedController;
 
-        // No hay excepción: el widget delega en Theme.of(context).brightness
-        expect(find.byType(GoogleMap), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
-
-    testWidgets(
-      'permite originTitle y destinationTitle opcionales (null)',
-      (tester) async {
-        await tester.pumpWidget(
-          _buildSubject(
-            originTitle: null,
-            destinationTitle: null,
-          ),
-        );
-
-        expect(find.byType(GoogleMap), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
-
-    testWidgets(
-      'expone el callback onMapCreated',
-      (tester) async {
-        GoogleMapController? capturedController;
-
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: DeliveryMap(
-                origin: _origin,
-                destination: _destination,
-                routePolyline: _polyline,
-                onMapCreated: (c) => capturedController = c,
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DeliveryMap(
+              origin: _origin,
+              destination: _destination,
+              routePolyline: _polyline,
+              onMapCreated: (c) => capturedController = c,
             ),
           ),
-        );
+        ),
+      );
+      await tester.pump();
 
-        // GoogleMap puede no completar el callback en el entorno de test headless,
-        // pero el widget no debe fallar al recibirlo
-        expect(find.byType(GoogleMap), findsOneWidget);
-        expect(tester.takeException(), isNull);
-        // capturedController puede ser null en headless (sin plataforma nativa)
-        // — este test garantiza que el parámetro se acepta sin errores.
-        expect(capturedController, anyOf(isNull, isA<GoogleMapController>()));
-      },
-    );
+      expect(find.byType(FlutterMap), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      expect(capturedController, isA<MapController>());
+    });
   });
 }

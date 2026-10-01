@@ -1,14 +1,13 @@
 using QuickBite.Application.Delivery.Dtos;
-using QuickBite.Application.Orders.Dtos;
 using QuickBite.Domain.Enums;
 namespace QuickBite.Application.Delivery;
 public interface IDeliveryService
 {
-    Task<IReadOnlyList<OrderResponse>> AvailableAsync(Guid repartidorId, CancellationToken ct = default);
+    Task<IReadOnlyList<DeliveryOrderResponse>> AvailableAsync(Guid repartidorId, CancellationToken ct = default);
     Task AcceptAsync(Guid repartidorId, Guid orderId, CancellationToken ct = default);
-    Task<IReadOnlyList<OrderResponse>> ActiveAsync(Guid repartidorId, CancellationToken ct = default);
+    Task<IReadOnlyList<DeliveryOrderResponse>> ActiveAsync(Guid repartidorId, CancellationToken ct = default);
     Task CompleteAsync(Guid repartidorId, Guid orderId, CancellationToken ct = default);
-    Task<IReadOnlyList<OrderResponse>> HistoryAsync(Guid repartidorId, CancellationToken ct = default);
+    Task<IReadOnlyList<DeliveryOrderResponse>> HistoryAsync(Guid repartidorId, CancellationToken ct = default);
     Task<DeliveryPersonStatsDto> StatsAsync(Guid repartidorId, CancellationToken ct = default);
 
     /// Cambia el estado de disponibilidad del repartidor autenticado y devuelve

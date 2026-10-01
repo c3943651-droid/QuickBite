@@ -82,8 +82,14 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
     numeroPedido: dto.numeroPedido,
     estado: dto.estado,
     total: dto.total,
+    subtotal: dto.subtotal,
+    costoEnvio: dto.costoEnvio,
+    items: dto.items,
     creadoEn: dto.creadoEn,
     latitud: dto.latitud,
+    cliente: dto.cliente,
+    direccion: dto.direccion,
+    telefono: dto.telefono,
     longitud: dto.longitud,
   );
 }

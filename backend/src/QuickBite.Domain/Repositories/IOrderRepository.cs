@@ -9,6 +9,10 @@ public interface IOrderRepository
     Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Order>> GetOrdersAsync(Guid? clientId = null, Guid? deliveryPersonId = null, OrderStatus? status = null, CancellationToken cancellationToken = default);
+    /// Pedidos para las pantallas del repartidor: trae cliente, dirección e
+    /// ítems, que `GetOrdersAsync` no carga porque el listado del cliente no los
+    /// necesita.
+    Task<IReadOnlyList<Order>> GetDeliveryOrdersAsync(Guid? deliveryPersonId = null, OrderStatus? status = null, CancellationToken cancellationToken = default);
     Task<(IReadOnlyList<Order> Items, int TotalCount)> GetOrdersForAdminAsync(string? search = null, Guid? repartidorId = null, OrderStatus? status = null, DateTime? fechaDesde = null, DateTime? fechaHasta = null, int page = 1, int limit = 10, CancellationToken cancellationToken = default);
     Task<(IReadOnlyList<Order> Items, int TotalCount)> GetDeliveredByDeliveryPersonPagedAsync(Guid deliveryPersonId, int page, int pageSize, CancellationToken cancellationToken = default);
     Task<bool> HasActiveOrdersAsync(Guid deliveryPersonId, CancellationToken cancellationToken = default);

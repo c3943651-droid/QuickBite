@@ -36,10 +36,6 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        // Google Maps API Key leída desde variable de entorno MAPS_API_KEY.
-        // En CI: setear la variable. En local: crear un archivo local.properties
-        // con "mapsApiKey=AIza..." y referenciarlo desde aquí, o usar --dart-define.
-        manifestPlaceholders["MAPS_API_KEY"] = System.getenv("MAPS_API_KEY") ?: ""
     }
 
     signingConfigs {

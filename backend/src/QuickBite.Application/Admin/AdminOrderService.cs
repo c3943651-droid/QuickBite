@@ -95,7 +95,24 @@ public sealed class AdminOrderService : IAdminOrderService
         await _uow.Orders.CancelOrderAsync(orderId, motivo, null, ct);
         await _uow.SaveChangesAsync(ct);
     }
-    public async Task AssignAsync(Guid orderId, Guid repartidorId, AssignmentOrigin origin, CancellationToken ct = default) { await _uow.Orders.AssignDeliveryPersonAsync(orderId, repartidorId, origin, ct); await _uow.SaveChangesAsync(ct); }
+    public async Task AssignAsync(Guid orderId, Guid repartidorId, AssignmentOrigin origin, CancellationToken ct = default)
+    {
+        var pedido = await _uow.Orders.GetByIdAsync(orderId, ct)
+            ?? throw new NotFoundException("Pedido", orderId);
+
+        // Asignar repartidor sin mover el estado dejaba el pedido en 'listo'
+        // con repartidor: invisible en /delivery/active (que filtra 'en camino')
+        // y fuera de /available. La asignación ES el inicio del camino.
+        Domain.Rules.DeliveryAssignmentRules.ValidateAssignment(pedido);
+        if (pedido.RepartidorId != null)
+        {
+            throw new ConflictException("Pedido ya asignado");
+        }
+
+        await _uow.Orders.AssignDeliveryPersonAsync(orderId, repartidorId, origin, ct);
+        await _uow.Orders.UpdateStatusAsync(orderId, OrderStatus.EnCamino, null, repartidorId, ct);
+        await _uow.SaveChangesAsync(ct);
+    }
     public async Task<DashboardDataDto> DashboardAsync(CancellationToken ct = default)
     {
         var orders = await _uow.Orders.GetOrdersAsync(null, null, null, ct);

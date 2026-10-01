@@ -9,7 +9,7 @@ public sealed class CartService : ICartService
     public CartService(IUnitOfWork uow) { _uow = uow; }
     private static CartResponse ToResponse(Domain.Entities.Cart c)
     {
-        var items = c.Items.Select(i => new CartItemResponse(i.Id, i.ProductoId, i.Producto?.Nombre ?? "", i.Producto?.Precio ?? 0, i.Cantidad, i.Opciones.Select(o => o.Opcion?.Nombre ?? "").ToList(), (i.Producto?.Precio ?? 0) * i.Cantidad)).ToList();
+        var items = c.Items.Select(i => new CartItemResponse(i.Id, i.ProductoId, i.Producto?.Nombre ?? "", i.Producto?.Precio ?? 0, i.Cantidad, i.Opciones.Select(o => o.Opcion?.Nombre ?? "").ToList(), (i.Producto?.Precio ?? 0) * i.Cantidad, i.Producto?.ImagenUrl)).ToList();
         return new CartResponse(c.Id, items, items.Sum(x => x.Subtotal));
     }
     private async Task<Domain.Entities.Cart> GetOrCreateAsync(Guid userId, CancellationToken ct)

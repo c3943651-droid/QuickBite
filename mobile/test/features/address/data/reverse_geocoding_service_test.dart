@@ -37,6 +37,25 @@ void main() {
       expect(sugerencia!.ciudad, 'San Salvador');
     });
 
+    test('mapea subThoroughfare a numero', () {
+      const placemark = Placemark(
+        thoroughfare: 'Av. Principal',
+        subThoroughfare: '56',
+        locality: 'San Salvador',
+      );
+
+      final sugerencia = sugerirDesde(placemark);
+
+      expect(sugerencia!.numero, '56');
+      expect(sugerencia.calle, 'Av. Principal');
+    });
+
+    test('deja numero en null cuando el placemark no lo trae', () {
+      const placemark = Placemark(thoroughfare: 'Av. Principal');
+
+      expect(sugerirDesde(placemark)!.numero, isNull);
+    });
+
     test('devuelve null cuando no hay ningún dato aprovechable', () {
       expect(sugerirDesde(const Placemark()), isNull);
       expect(sugerirDesde(const Placemark(name: '   ')), isNull);

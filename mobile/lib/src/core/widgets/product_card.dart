@@ -2,9 +2,12 @@ import '../theme/app_radius.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../../core/utils/image_url.dart';
 import '../../features/catalog/domain/catalog_entities.dart';
 
 /// `grid` para el catálogo de dos columnas (07.1 SCR-CAT-01) y `list` para
@@ -173,10 +176,8 @@ class _PopularBadge extends StatelessWidget {
         ),
         child: Text(
           'Popular',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: AppColors.white,
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(context).textTheme.labelSmall
+              ?.copyWith(color: AppColors.white, fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -236,10 +237,7 @@ class _TarjetaCatalogo extends StatelessWidget {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: child,
-      ),
+      child: ClipRRect(borderRadius: BorderRadius.circular(12), child: child),
     );
   }
 }
@@ -312,9 +310,11 @@ class _ListCard extends StatelessWidget {
 /// dos lados, la animación deja de reconocerse y se ve un salto.
 String heroProducto(String id) => 'producto-$id';
 
-class _Image extends StatelessWidget {
+class _Image extends ConsumerWidget {
   const _Image({required this.url, required this.nombre, this.hero});
 
+  /// URL tal como la devuelve la API: puede ser absoluta o relativa al
+  /// servidor. Se resuelve contra el origen del API antes de pedir la imagen.
   final String? url;
   final String nombre;
 
@@ -324,11 +324,15 @@ class _Image extends StatelessWidget {
   final Object? hero;
 
   @override
-  Widget build(BuildContext context) {
-    final imagen = url == null || url!.isEmpty
+  Widget build(BuildContext context, WidgetRef ref) {
+    final resuelta = resolverUrlImagen(
+      url,
+      apiBaseUrl: ref.watch(appConfigProvider).apiBaseUrl,
+    );
+    final imagen = resuelta == null
         ? _placeholder(context)
         : CachedNetworkImage(
-            imageUrl: url!,
+            imageUrl: resuelta,
             fit: BoxFit.cover,
             fadeInDuration: const Duration(milliseconds: 200),
             placeholder: (context, _) => _placeholder(context),
