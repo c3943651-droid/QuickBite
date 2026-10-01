@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:quickbite_mobile/src/features/address/data/reverse_geocoding_service.dart';
 import 'package:quickbite_mobile/src/features/address/presentation/address_providers.dart';
 import 'package:quickbite_mobile/src/features/address/presentation/select_location_map_screen.dart';
@@ -37,6 +38,15 @@ class _GeocoderLento implements ReverseGeocodingService {
   }
 }
 
+/// Geocoder que incumple el contrato y lanza (fallo de proveedor nativo).
+class _GeocoderFalla implements ReverseGeocodingService {
+  @override
+  Future<SugerenciaDireccion?> desdeCoordenadas(
+    double latitud,
+    double longitud,
+  ) async => throw Exception('sin red');
+}
+
 class _FakePermisos implements LocationPermissionService {
   _FakePermisos(this.respuesta);
 
@@ -56,23 +66,29 @@ void main() {
   late _FakePermisos permisos;
   LatLng? posicionGps;
 
-  ProviderContainer crearContainer(ReverseGeocodingService geocoding) {
-    final creado = ProviderContainer(
-      overrides: [
+  ProviderContainer crearContainer(
+    ReverseGeocodingService geocoding, {
+    bool mapaReal = false,
+  }) {
+    final overrides = [
+      reverseGeocodingServiceProvider.overrideWithValue(geocoding),
+      locationPermissionServiceProvider.overrideWithValue(permisos),
+      currentPositionLoaderProvider.overrideWithValue(() async {
+        final posicion = posicionGps;
+        if (posicion == null) {
+          throw Exception('sin posicion de prueba');
+        }
+        return posicion;
+      }),
+    ];
+    if (!mapaReal) {
+      overrides.add(
         mapViewBuilderProvider.overrideWithValue(
           (state, controller) => const SizedBox(key: Key('mapa-falso')),
         ),
-        reverseGeocodingServiceProvider.overrideWithValue(geocoding),
-        locationPermissionServiceProvider.overrideWithValue(permisos),
-        currentPositionLoaderProvider.overrideWithValue(() async {
-          final posicion = posicionGps;
-          if (posicion == null) {
-            throw Exception('sin posicion de prueba');
-          }
-          return posicion;
-        }),
-      ],
-    );
+      );
+    }
+    final creado = ProviderContainer(overrides: overrides);
     addTearDown(creado.dispose);
     return creado;
   }
@@ -201,6 +217,132 @@ void main() {
     await tester.pump();
     expect(leerEstado().sugerencia?.calle, 'Calle Nueva');
   });
+
+  testWidgets('un movimiento de cámara no deja el indicador de carga colgado', (
+    tester,
+  ) async {
+    final lento = _GeocoderLento();
+    container = crearContainer(lento);
+    await abrirSelector(tester);
+
+    final controlador = container.read(
+      locationMapControllerProvider(null).notifier,
+    );
+    final enVuelo = controlador.resolverSugerencia();
+    await tester.pump();
+    expect(leerEstado().cargandoSugerencia, isTrue);
+
+    controlador.moverCamara(const LatLng(13.9, -89.3));
+    await tester.pump();
+    expect(leerEstado().cargandoSugerencia, isFalse);
+
+    controlador.resolverSugerencia();
+    await tester.pump();
+    expect(leerEstado().cargandoSugerencia, isTrue);
+    controlador.moverCamara(leerEstado().centro);
+    await tester.pump();
+    expect(leerEstado().cargandoSugerencia, isFalse);
+
+    for (final espera in lento.esperas) {
+      if (!espera.isCompleted) {
+        espera.complete(const SugerenciaDireccion(calle: 'Obsoleta'));
+      }
+    }
+    await enVuelo;
+    await tester.pump();
+    expect(leerEstado().cargandoSugerencia, isFalse);
+    expect(leerEstado().sugerencia, isNull);
+  });
+
+  testWidgets('si el geocoder lanza, el indicador de carga se apaga', (
+    tester,
+  ) async {
+    container = crearContainer(_GeocoderFalla());
+    await abrirSelector(tester);
+
+    await container
+        .read(locationMapControllerProvider(null).notifier)
+        .resolverSugerencia();
+    await tester.pump();
+
+    expect(leerEstado().cargandoSugerencia, isFalse);
+    expect(leerEstado().error, isNull);
+  });
+
+  testWidgets(
+    'arrastrar el mapa real actualiza el centro y geocodifica tras el debounce',
+    (tester) async {
+      final lento = _GeocoderLento();
+      container = crearContainer(lento, mapaReal: true);
+      await abrirSelector(tester);
+
+      expect(find.byType(FlutterMap), findsOneWidget);
+
+      await tester.drag(find.byType(FlutterMap), const Offset(-160, 0));
+      await tester.pump();
+
+      expect(leerEstado().centro, isNot(ubicacionQuickBite));
+
+      // El debounce (400 ms) dispara la geocodificación tras el último
+      // movimiento (arrastra + fling). Se avanza el reloj hasta que ocurra.
+      var intentos = 0;
+      while (lento.esperas.isEmpty && intentos < 60) {
+        await tester.pump(const Duration(milliseconds: 100));
+        intentos++;
+      }
+      expect(lento.esperas, isNotEmpty);
+
+      for (final espera in lento.esperas) {
+        if (!espera.isCompleted) {
+          espera.complete(const SugerenciaDireccion(calle: 'Calle Arrastrada'));
+        }
+      }
+      await tester.pump();
+
+      expect(leerEstado().cargandoSugerencia, isFalse);
+      expect(leerEstado().sugerencia?.calle, 'Calle Arrastrada');
+    },
+  );
+
+  testWidgets(
+    'tocar el mapa mueve el pin a ese punto y geocodifica tras el debounce',
+    (tester) async {
+      final lento = _GeocoderLento();
+      container = crearContainer(lento, mapaReal: true);
+      await abrirSelector(tester);
+
+      final centro = tester.getCenter(find.byType(FlutterMap));
+      // Toque al oeste del centro: el pin debe saltar a ese punto, así que el
+      // centro del mapa pasa a quedar más al oeste.
+      await tester.tapAt(Offset(centro.dx - 150, centro.dy));
+      // flutter_map confirma el toque simple tras su ventana de doble toque
+      // (250 ms), para poder distinguir un zoom por doble toque.
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(
+        leerEstado().centro.longitude,
+        lessThan(ubicacionQuickBite.longitude),
+      );
+
+      // Mismo flujo que el arrastre: debounce y luego geocodificación.
+      var intentos = 0;
+      while (lento.esperas.isEmpty && intentos < 60) {
+        await tester.pump(const Duration(milliseconds: 100));
+        intentos++;
+      }
+      expect(lento.esperas, isNotEmpty);
+
+      for (final espera in lento.esperas) {
+        if (!espera.isCompleted) {
+          espera.complete(const SugerenciaDireccion(calle: 'Calle Tocada'));
+        }
+      }
+      await tester.pump();
+
+      expect(leerEstado().cargandoSugerencia, isFalse);
+      expect(leerEstado().sugerencia?.calle, 'Calle Tocada');
+    },
+  );
 
   testWidgets('el botón GPS centra el mapa en la posición del dispositivo', (
     tester,

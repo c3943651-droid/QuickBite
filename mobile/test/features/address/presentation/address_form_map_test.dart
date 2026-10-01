@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:quickbite_mobile/src/features/address/data/reverse_geocoding_service.dart';
 import 'package:quickbite_mobile/src/features/address/presentation/address_form_screen.dart';
 import 'package:quickbite_mobile/src/features/address/presentation/address_providers.dart';
@@ -141,6 +141,46 @@ void main() {
     expect(valorDe(tester, 'Ciudad'), 'San Salvador');
     expect(valorDe(tester, 'Número'), '123');
     expect(valorDe(tester, 'Referencia'), 'Portón azul');
+  });
+
+  testWidgets('el mapa autocompleta calle, número y ciudad', (tester) async {
+    geocoder.sugerencia = const SugerenciaDireccion(
+      calle: 'Av. Principal',
+      numero: '56',
+      ciudad: 'San Salvador',
+    );
+    await abrirFormulario(tester);
+
+    await tester.tap(find.text('Ubicar en el mapa'));
+    await tester.pumpAndSettle();
+    await confirmarEnElMapa(tester, const LatLng(13.8, -89.1));
+
+    expect(valorDe(tester, 'Calle'), 'Av. Principal');
+    expect(valorDe(tester, 'Número'), '56');
+    expect(valorDe(tester, 'Ciudad'), 'San Salvador');
+    expect(valorDe(tester, 'Latitud'), '13.8');
+    expect(valorDe(tester, 'Longitud'), '-89.1');
+  });
+
+  testWidgets('el autocompletado no toca alias ni referencia', (tester) async {
+    geocoder.sugerencia = const SugerenciaDireccion(
+      calle: 'Av. Principal',
+      numero: '56',
+      ciudad: 'San Salvador',
+    );
+    await abrirFormulario(tester);
+
+    await llenar(tester, 'Alias', 'Casa');
+    await llenar(tester, 'Referencia', 'Portón azul');
+
+    await tester.tap(find.text('Ubicar en el mapa'));
+    await tester.pumpAndSettle();
+    await confirmarEnElMapa(tester, const LatLng(13.8, -89.1));
+
+    expect(valorDe(tester, 'Alias'), 'Casa');
+    expect(valorDe(tester, 'Referencia'), 'Portón azul');
+    expect(valorDe(tester, 'Calle'), 'Av. Principal');
+    expect(valorDe(tester, 'Número'), '56');
   });
 
   testWidgets('sin sugerencia se conservan calle y ciudad escritas', (

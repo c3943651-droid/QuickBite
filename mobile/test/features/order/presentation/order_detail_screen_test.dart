@@ -12,7 +12,7 @@ import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.d
 import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_providers.dart';
 import 'package:quickbite_mobile/src/features/delivery/presentation/widgets/delivery_map.dart';
 import 'package:quickbite_mobile/src/features/order/domain/order_entities.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:quickbite_mobile/src/features/order/presentation/checkout_providers.dart';
 import 'package:quickbite_mobile/src/features/order/presentation/order_tracking_providers.dart';
 import 'package:quickbite_mobile/src/features/shell/app_router.dart';

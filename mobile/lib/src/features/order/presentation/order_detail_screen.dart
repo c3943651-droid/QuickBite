@@ -17,7 +17,7 @@ import '../../../core/widgets/status_timeline.dart';
 import '../../delivery/presentation/widgets/delivery_map.dart';
 import '../domain/order_entities.dart';
 
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 
 import 'estado_pedido_ui.dart';
 import 'order_tracking_providers.dart';

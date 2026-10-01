@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 import 'package:quickbite_mobile/src/core/theme/app_colors.dart';
-import 'package:quickbite_mobile/src/features/delivery/presentation/widgets/map_styles.dart';
 
-/// Widget reutilizable que muestra un Google Map con:
-/// - Marcadores de [origin] y [destination].
+/// Widget reutilizable que muestra un mapa OpenStreetMap con:
+/// - Marcadores de [origin] y [destination] (con rótulo opcional).
 /// - Polilínea de ruta en color teal (`AppColors.accent`).
-/// - Estilo de mapa adaptado automáticamente al modo claro/oscuro del sistema
-///   (o forzado por [isDarkMode]).
 ///
 /// ## Ejemplo de uso
 /// ```dart
@@ -29,7 +27,6 @@ class DeliveryMap extends StatefulWidget {
     this.originTitle,
     this.destinationTitle,
     this.onMapCreated,
-    this.isDarkMode,
   });
 
   /// Coordenadas de origen (ej. posición actual del repartidor / restaurante).
@@ -42,101 +39,100 @@ class DeliveryMap extends StatefulWidget {
   /// Si está vacía, no se dibuja ninguna polilínea.
   final List<LatLng> routePolyline;
 
-  /// Título del marcador de origen. Si es null no muestra InfoWindow.
+  /// Rótulo opcional del marcador de origen.
   final String? originTitle;
 
-  /// Título del marcador de destino. Si es null no muestra InfoWindow.
+  /// Rótulo opcional del marcador de destino.
   final String? destinationTitle;
 
-  /// Callback invocado cuando el mapa termina de inicializarse.
-  final void Function(GoogleMapController)? onMapCreated;
-
-  /// Fuerza un tema concreto. Si es `null`, se detecta automáticamente
-  /// desde `Theme.of(context).brightness`.
-  final bool? isDarkMode;
+  /// Callback invocado tras el primer frame, cuando el [MapController] ya
+  /// está ligado al mapa.
+  final void Function(MapController)? onMapCreated;
 
   @override
   State<DeliveryMap> createState() => _DeliveryMapState();
 }
 
 class _DeliveryMapState extends State<DeliveryMap> {
-  // -------------------------------------------------------------------------
-  // Callbacks
-  // -------------------------------------------------------------------------
+  late final MapController _mapa;
 
-  void _onMapCreated(GoogleMapController controller) {
-    widget.onMapCreated?.call(controller);
+  @override
+  void initState() {
+    super.initState();
+    _mapa = MapController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        widget.onMapCreated?.call(_mapa);
+      }
+    });
   }
 
-  // -------------------------------------------------------------------------
-  // Builders
-  // -------------------------------------------------------------------------
+  List<Marker> _marcadores() => [
+    _marcador(widget.origin, widget.originTitle, const Color(0xFF03A9F4)),
+    _marcador(
+      widget.destination,
+      widget.destinationTitle,
+      const Color(0xFF00BCD4),
+    ),
+  ];
 
-  Set<Marker> _buildMarkers() {
-    return {
-      Marker(
-        markerId: const MarkerId('origin'),
-        position: widget.origin,
-        infoWindow: widget.originTitle != null
-            ? InfoWindow(title: widget.originTitle)
-            : InfoWindow.noText,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-      ),
-      Marker(
-        markerId: const MarkerId('destination'),
-        position: widget.destination,
-        infoWindow: widget.destinationTitle != null
-            ? InfoWindow(title: widget.destinationTitle)
-            : InfoWindow.noText,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),
-      ),
-    };
-  }
+  Marker _marcador(LatLng punto, String? titulo, Color color) => Marker(
+    point: punto,
+    width: 110,
+    height: 64,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.location_pin, size: 40, color: color),
+        if (titulo != null)
+          Text(
+            titulo,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Colors.black,
+              backgroundColor: Colors.white70,
+            ),
+          ),
+      ],
+    ),
+  );
 
-  Set<Polyline> _buildPolylines() {
-    if (widget.routePolyline.isEmpty) return {};
-    return {
-      Polyline(
-        polylineId: const PolylineId('route'),
-        points: widget.routePolyline,
-        color: AppColors.accent,
-        width: 4,
-        startCap: Cap.roundCap,
-        endCap: Cap.roundCap,
-        jointType: JointType.round,
-      ),
-    };
-  }
-
-  CameraPosition _initialCamera() {
-    // Centra entre origen y destino
-    final centerLat = (widget.origin.latitude + widget.destination.latitude) / 2;
-    final centerLng = (widget.origin.longitude + widget.destination.longitude) / 2;
-    return CameraPosition(
-      target: LatLng(centerLat, centerLng),
-      zoom: 13,
-    );
-  }
-
-  // -------------------------------------------------------------------------
-  // Build
-  // -------------------------------------------------------------------------
+  Polyline? _ruta() => widget.routePolyline.isEmpty
+      ? null
+      : Polyline(
+          points: widget.routePolyline,
+          strokeWidth: 4,
+          color: AppColors.accent,
+        );
 
   @override
   Widget build(BuildContext context) {
-    final isDark = widget.isDarkMode ??
-        (Theme.of(context).brightness == Brightness.dark);
-    return GoogleMap(
-      onMapCreated: _onMapCreated,
-      initialCameraPosition: _initialCamera(),
-      markers: _buildMarkers(),
-      polylines: _buildPolylines(),
-      style: isDark ? MapStyles.dark : MapStyles.light,
-      myLocationEnabled: false,
-      myLocationButtonEnabled: false,
-      zoomControlsEnabled: false,
-      mapToolbarEnabled: false,
-      compassEnabled: false,
+    // Centra entre origen y destino.
+    final centro = LatLng(
+      (widget.origin.latitude + widget.destination.latitude) / 2,
+      (widget.origin.longitude + widget.destination.longitude) / 2,
+    );
+    final ruta = _ruta();
+    return FlutterMap(
+      mapController: _mapa,
+      options: MapOptions(initialCenter: centro, initialZoom: 13),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.quickbite.quickbite_mobile',
+          maxNativeZoom: 19,
+        ),
+        if (ruta != null) PolylineLayer(polylines: [ruta]),
+        MarkerLayer(markers: _marcadores()),
+        const RichAttributionWidget(
+          attributions: [
+            TextSourceAttribution('Colaboradores de OpenStreetMap'),
+          ],
+        ),
+      ],
     );
   }
 }

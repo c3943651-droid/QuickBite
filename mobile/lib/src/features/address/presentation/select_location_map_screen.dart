@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/primary_button.dart';
@@ -82,12 +86,19 @@ class LocationMapController extends Notifier<LocationMapState> {
 
   /// La cámara se ha movido (arrastre del usuario o vuelo del GPS).
   void moverCamara(LatLng nueva) {
+    // Invalida cualquier geocodificación en vuelo: su respuesta ya no aplica
+    // a la nueva posición y, si nadie la recoge, el indicador se quedaría
+    // animando para siempre (bucle de repaint).
     _peticion++;
     if (nueva == state.centro) {
+      if (state.cargandoSugerencia) {
+        state = state.copyWith(cargandoSugerencia: false);
+      }
       return;
     }
     state = state.copyWith(
       centro: nueva,
+      cargandoSugerencia: false,
       limpiarSugerencia: true,
       limpiarError: true,
     );
@@ -99,17 +110,24 @@ class LocationMapController extends Notifier<LocationMapState> {
     final peticion = ++_peticion;
     final centro = state.centro;
     state = state.copyWith(cargandoSugerencia: true);
-    final sugerencia = await ref
-        .read(reverseGeocodingServiceProvider)
-        .desdeCoordenadas(centro.latitude, centro.longitude);
-    if (peticion != _peticion) {
-      return;
+    SugerenciaDireccion? sugerencia;
+    try {
+      sugerencia = await ref
+          .read(reverseGeocodingServiceProvider)
+          .desdeCoordenadas(centro.latitude, centro.longitude);
+    } catch (_) {
+      sugerencia = null;
+    } finally {
+      // Solo la última petición apaga su propio indicador: si quedó
+      // obsoleta, la que la sustituyó ya gestiona el suyo.
+      if (peticion == _peticion) {
+        state = state.copyWith(
+          cargandoSugerencia: false,
+          limpiarSugerencia: true,
+          sugerencia: sugerencia,
+        );
+      }
     }
-    state = state.copyWith(
-      cargandoSugerencia: false,
-      limpiarSugerencia: true,
-      sugerencia: sugerencia,
-    );
   }
 
   /// Centra el mapa en la posición GPS tras pedir permiso.
@@ -155,12 +173,12 @@ typedef MapaSeleccionBuilder = Widget Function(
   LocationMapController controller,
 );
 
-/// Seam del mapa: en producción construye un `GoogleMap` real; los tests lo
-/// sustituyen por un widget simple porque GoogleMap no es testeable en
-/// flutter_test (platform view) (07.5 §7).
+/// Seam del mapa: en producción construye un `FlutterMap` (OpenStreetMap);
+/// los tests lo sustituyen por un widget simple para no depender de la red
+/// (07.5 §7).
 final mapViewBuilderProvider = Provider<MapaSeleccionBuilder>((ref) {
   return (state, controller) =>
-      _GoogleMapView(state: state, controller: controller);
+      _FlutterMapView(state: state, controller: controller);
 });
 
 class SelectLocationMapScreen extends ConsumerWidget {
@@ -272,33 +290,29 @@ class SelectLocationMapScreen extends ConsumerWidget {
   }
 }
 
-/// GoogleMap real: gestiona el vuelo hasta [LocationMapState.centro] cuando el
-/// cambio viene de fuera (GPS); los arrastres actualizan el estado sin
-/// realimentar la cámara.
-class _GoogleMapView extends StatefulWidget {
-  const _GoogleMapView({required this.state, required this.controller});
+/// FlutterMap real (OpenStreetMap): gestiona el vuelo hasta
+/// [LocationMapState.centro] cuando el cambio viene de fuera (GPS); los
+/// arrastres actualizan el estado y, tras un debounce, disparan la
+/// geocodificación inversa (sustituye al `onCameraIdle` de Google Maps).
+class _FlutterMapView extends StatefulWidget {
+  const _FlutterMapView({required this.state, required this.controller});
 
   final LocationMapState state;
   final LocationMapController controller;
 
   @override
-  State<_GoogleMapView> createState() => _GoogleMapViewState();
+  State<_FlutterMapView> createState() => _FlutterMapViewState();
 }
 
-class _GoogleMapViewState extends State<_GoogleMapView> {
-  GoogleMapController? _mapa;
+class _FlutterMapViewState extends State<_FlutterMapView> {
+  /// Espera tras el último movimiento de la cámara antes de geocodificar.
+  static const _retardoGeocoding = Duration(milliseconds: 400);
 
-  void _volar() {
-    final mapa = _mapa;
-    if (mapa == null) {
-      return;
-    }
-    mapa.animateCamera(CameraUpdate.newLatLng(widget.state.centro));
-    widget.controller.consumirVuelo();
-  }
+  final MapController _mapa = MapController();
+  Timer? _debounce;
 
   @override
-  void didUpdateWidget(covariant _GoogleMapView viejo) {
+  void didUpdateWidget(covariant _FlutterMapView viejo) {
     super.didUpdateWidget(viejo);
     if (widget.state.vueloPendiente &&
         viejo.state.centro != widget.state.centro) {
@@ -307,26 +321,69 @@ class _GoogleMapViewState extends State<_GoogleMapView> {
   }
 
   @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _volar() {
+    _mapa.move(widget.state.centro, _mapa.camera.zoom);
+    widget.controller.consumirVuelo();
+  }
+
+  void _programarGeocoding() {
+    _debounce?.cancel();
+    _debounce = Timer(_retardoGeocoding, widget.controller.resolverSugerencia);
+  }
+
+  void _alMover(MapCamera camera, bool hasGesture) {
+    // Solo los gestos del usuario mueven el estado: los vuelos programados
+    // (GPS, toque) ya actualizan `centro` por su cuenta y no deben realimentar.
+    if (!hasGesture) {
+      return;
+    }
+    widget.controller.moverCamara(camera.center);
+    _programarGeocoding();
+  }
+
+  /// Toque en el mapa: el pin, fijo en el centro de la pantalla, salta al
+  /// punto tocado y la cámara se centra ahí. Comparte el debounce del arrastre
+  /// para que ambas formas de mover el pin geocodifiquen igual.
+  void _alTocar(TapPosition tapPosition, LatLng punto) {
+    widget.controller.moverCamara(punto);
+    _mapa.move(punto, _mapa.camera.zoom);
+    _programarGeocoding();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GoogleMap(
+    return FlutterMap(
       key: const ValueKey('mapa-seleccion'),
-      initialCameraPosition: CameraPosition(
-        target: widget.state.centro,
-        zoom: 16,
+      mapController: _mapa,
+      options: MapOptions(
+        initialCenter: widget.state.centro,
+        initialZoom: 16,
+        onPositionChanged: _alMover,
+        onTap: _alTocar,
       ),
-      onCameraMove: (position) =>
-          widget.controller.moverCamara(position.target),
-      onCameraIdle: () => widget.controller.resolverSugerencia(),
-      onMapCreated: (mapa) {
-        _mapa = mapa;
-        if (widget.state.vueloPendiente) {
-          _volar();
-        }
-      },
-      myLocationEnabled: true,
-      myLocationButtonEnabled: false,
-      zoomControlsEnabled: false,
-      compassEnabled: false,
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.quickbite.quickbite_mobile',
+          maxNativeZoom: 19,
+        ),
+        RichAttributionWidget(
+          attributions: [
+            TextSourceAttribution(
+              'Colaboradores de OpenStreetMap',
+              onTap: () => launchUrl(
+                Uri.parse('https://www.openstreetmap.org/copyright'),
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

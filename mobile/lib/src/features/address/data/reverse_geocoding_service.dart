@@ -1,12 +1,17 @@
 import 'package:geocoding/geocoding.dart';
 
 /// Sugerencia de dirección obtenida por geocodificación inversa (07.5 §3.7).
-/// Rellena calle y ciudad del formulario; número y referencia siguen siendo
-/// edición manual del usuario.
+/// Autocompleta calle, número y ciudad del formulario; alias y referencia
+/// siguen siendo edición manual del usuario.
 class SugerenciaDireccion {
-  const SugerenciaDireccion({this.calle, this.ciudad});
+  const SugerenciaDireccion({this.calle, this.numero, this.ciudad});
 
   final String? calle;
+
+  /// Número de la puerta cuando el geocoder lo conoce. `null` si la vía no
+  /// tiene número asociado o el geocoder no lo devuelve.
+  final String? numero;
+
   final String? ciudad;
 }
 
@@ -22,14 +27,15 @@ SugerenciaDireccion? sugerirDesde(Placemark placemark) {
       _noVacio(placemark.thoroughfare) ??
       _noVacio(placemark.street) ??
       _noVacio(placemark.name);
+  final numero = _noVacio(placemark.subThoroughfare);
   final ciudad =
       _noVacio(placemark.locality) ??
       _noVacio(placemark.subAdministrativeArea) ??
       _noVacio(placemark.administrativeArea);
-  if (calle == null && ciudad == null) {
+  if (calle == null && numero == null && ciudad == null) {
     return null;
   }
-  return SugerenciaDireccion(calle: calle, ciudad: ciudad);
+  return SugerenciaDireccion(calle: calle, numero: numero, ciudad: ciudad);
 }
 
 String? _noVacio(String? valor) {
