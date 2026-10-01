@@ -12,11 +12,13 @@ public class OrderServiceCreateTests
     private readonly Mock<IUnitOfWork> _uow = new();
     private readonly Mock<IOrderRepository> _orders = new();
     private readonly Mock<ICartRepository> _carts = new();
+    private readonly Mock<IAddressRepository> _addresses = new();
 
     public OrderServiceCreateTests()
     {
         _uow.SetupGet(u => u.Orders).Returns(_orders.Object);
         _uow.SetupGet(u => u.Carts).Returns(_carts.Object);
+        _uow.SetupGet(u => u.Addresses).Returns(_addresses.Object);
         _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
     }
 
@@ -102,5 +104,76 @@ public class OrderServiceCreateTests
         _pedidoGuardado.Should().NotBeNull();
         _pedidoGuardado!.Items.Should().HaveCount(2);
         respuesta.Total.Should().Be(14.50m);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ConDireccionConCoordenadas_CopiaLatitudYLongitudAlPedido()
+    {
+        var userId = Guid.NewGuid();
+        var direccionId = Guid.NewGuid();
+        var carrito = new Cart { Id = Guid.NewGuid(), UsuarioId = userId };
+        carrito.Items.Add(LineaDeCarrito(ProductoDobleCarne(), 1));
+        DevolverCarrito(userId, carrito);
+        CapturarPedido();
+        _addresses
+            .Setup(a => a.GetByIdAsync(direccionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Address { Id = direccionId, Latitud = 13.6929m, Longitud = -89.2182m });
+
+        var service = new OrderService(_uow.Object);
+        var respuesta = await service.CreateAsync(userId, new CreateOrderRequest
+        {
+            DireccionId = direccionId,
+            DireccionSnapshot = "casa, norte 56",
+            MetodoPago = "efectivo"
+        });
+
+        _pedidoGuardado.Should().NotBeNull();
+        _pedidoGuardado!.Latitud.Should().Be(13.6929m);
+        _pedidoGuardado.Longitud.Should().Be(-89.2182m);
+        respuesta.Latitud.Should().Be(13.6929m);
+        respuesta.Longitud.Should().Be(-89.2182m);
+    }
+
+    [Fact]
+    public async Task CreateAsync_SinDireccion_LasCoordenadasQuedanEnNull()
+    {
+        var userId = Guid.NewGuid();
+        var carrito = new Cart { Id = Guid.NewGuid(), UsuarioId = userId };
+        carrito.Items.Add(LineaDeCarrito(ProductoDobleCarne(), 1));
+        DevolverCarrito(userId, carrito);
+        CapturarPedido();
+
+        var service = new OrderService(_uow.Object);
+        await service.CreateAsync(userId, new CreateOrderRequest { MetodoPago = "efectivo" });
+
+        _pedidoGuardado.Should().NotBeNull();
+        _pedidoGuardado!.Latitud.Should().BeNull();
+        _pedidoGuardado.Longitud.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateAsync_ConDireccionInexistente_LasCoordenadasQuedanEnNull()
+    {
+        var userId = Guid.NewGuid();
+        var direccionId = Guid.NewGuid();
+        var carrito = new Cart { Id = Guid.NewGuid(), UsuarioId = userId };
+        carrito.Items.Add(LineaDeCarrito(ProductoDobleCarne(), 1));
+        DevolverCarrito(userId, carrito);
+        CapturarPedido();
+        _addresses
+            .Setup(a => a.GetByIdAsync(direccionId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Address?)null);
+
+        var service = new OrderService(_uow.Object);
+        await service.CreateAsync(userId, new CreateOrderRequest
+        {
+            DireccionId = direccionId,
+            DireccionSnapshot = "casa, norte 56",
+            MetodoPago = "efectivo"
+        });
+
+        _pedidoGuardado.Should().NotBeNull();
+        _pedidoGuardado!.Latitud.Should().BeNull();
+        _pedidoGuardado.Longitud.Should().BeNull();
     }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
@@ -9,6 +10,7 @@ import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../domain/address_entities.dart';
 import 'address_providers.dart';
+import 'select_location_map_screen.dart';
 
 class AddressFormScreen extends ConsumerWidget {
   const AddressFormScreen({super.key, this.addressId});
@@ -195,6 +197,40 @@ class _AddressFormState extends ConsumerState<_AddressForm> {
 
   static double? _parseCoordinate(String raw) => double.tryParse(raw.trim());
 
+  LatLng? _coordenadaActual() {
+    final latitud = _parseCoordinate(_latitudController.text);
+    final longitud = _parseCoordinate(_longitudController.text);
+    if (latitud == null || longitud == null) {
+      return null;
+    }
+    return LatLng(latitud, longitud);
+  }
+
+  /// Abre el selector de ubicación (07.5 §5) y aplica el resultado: las
+  /// coordenadas siempre; la calle y la ciudad solo cuando el geocoding
+  /// inverso devolvió una sugerencia. Número, referencia e indicaciones se
+  /// conservan intactos.
+  Future<void> _pickOnMap() async {
+    final elegida = await SelectLocationMapScreen.mostrar(
+      context,
+      inicial: _coordenadaActual(),
+    );
+    if (elegida == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _latitudController.text = elegida.ubicacion.latitude.toString();
+      _longitudController.text = elegida.ubicacion.longitude.toString();
+      final sugerencia = elegida.sugerencia;
+      if (sugerencia?.calle?.isNotEmpty ?? false) {
+        _calleController.text = sugerencia!.calle!;
+      }
+      if (sugerencia?.ciudad?.isNotEmpty ?? false) {
+        _ciudadController.text = sugerencia!.ciudad!;
+      }
+    });
+  }
+
   static String? _required(String? value, String message) =>
       value == null || value.trim().isEmpty ? message : null;
 
@@ -306,6 +342,12 @@ class _AddressFormState extends ConsumerState<_AddressForm> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              onPressed: form.loading ? null : _pickOnMap,
+              icon: const Icon(Icons.map_outlined),
+              label: const Text('Ubicar en el mapa'),
             ),
             const SizedBox(height: AppSpacing.sm),
             CheckboxListTile(

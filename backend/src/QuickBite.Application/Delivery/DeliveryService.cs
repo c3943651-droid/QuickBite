@@ -13,7 +13,7 @@ public sealed class DeliveryService : IDeliveryService
     public async Task<IReadOnlyList<OrderResponse>> AvailableAsync(Guid repartidorId, CancellationToken ct = default)
     {
         var orders = await _uow.Orders.GetOrdersAsync(null, null, OrderStatus.Listo, ct);
-        var avail = orders.Where(o => o.RepartidorId == null).Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn)).ToList();
+        var avail = orders.Where(o => o.RepartidorId == null).Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn, o.Latitud, o.Longitud)).ToList();
         return avail;
     }
     public async Task AcceptAsync(Guid repartidorId, Guid orderId, CancellationToken ct = default)
@@ -28,7 +28,7 @@ public sealed class DeliveryService : IDeliveryService
     public async Task<IReadOnlyList<OrderResponse>> ActiveAsync(Guid repartidorId, CancellationToken ct = default)
     {
         var orders = await _uow.Orders.GetOrdersAsync(null, repartidorId, OrderStatus.EnCamino, ct);
-        return orders.Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn)).ToList();
+        return orders.Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn, o.Latitud, o.Longitud)).ToList();
     }
     public async Task CompleteAsync(Guid repartidorId, Guid orderId, CancellationToken ct = default)
     {
@@ -40,7 +40,7 @@ public sealed class DeliveryService : IDeliveryService
     public async Task<IReadOnlyList<OrderResponse>> HistoryAsync(Guid repartidorId, CancellationToken ct = default)
     {
         var orders = await _uow.Orders.GetOrdersAsync(null, repartidorId, null, ct);
-        var hist = orders.Where(o => o.Estado == OrderStatus.Entregado || o.Estado == OrderStatus.Cancelado).Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn)).ToList();
+        var hist = orders.Where(o => o.Estado == OrderStatus.Entregado || o.Estado == OrderStatus.Cancelado).Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn, o.Latitud, o.Longitud)).ToList();
         return hist;
     }
     public async Task<DeliveryAvailabilityDto> SetAvailabilityAsync(Guid repartidorId, DeliveryPersonStatus estado, CancellationToken ct = default)

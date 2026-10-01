@@ -10,6 +10,8 @@ public class Order : BaseEntity
     public Guid? RepartidorId { get; set; }
     public Guid? DireccionId { get; set; }
     public string DireccionEntregaSnapshot { get; set; } = string.Empty;
+    public decimal? Latitud { get; set; }
+    public decimal? Longitud { get; set; }
     public OrderStatus Estado { get; set; } = OrderStatus.Pendiente;
     public PaymentMethodType MetodoPago { get; set; } = PaymentMethodType.Efectivo;
     public Guid? MetodoPagoId { get; set; }

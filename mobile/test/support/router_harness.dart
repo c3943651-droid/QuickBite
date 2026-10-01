@@ -6,6 +6,7 @@ import 'package:quickbite_mobile/src/core/config/app_config.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
 import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
 import 'package:quickbite_mobile/src/features/cart/presentation/cart_providers.dart';
+import 'package:quickbite_mobile/src/core/external/enlaces_externos.dart';
 import 'package:quickbite_mobile/src/features/delivery/domain/delivery_repository.dart';
 import 'package:quickbite_mobile/src/features/delivery/presentation/delivery_providers.dart';
 import 'package:quickbite_mobile/src/features/shell/app_router.dart';
@@ -17,13 +18,17 @@ import 'cart_fakes.dart';
 import 'delivery_fakes.dart';
 
 class FakeLocationPermissionService implements LocationPermissionService {
-  @override
-  Future<LocationPermissionStatus> checkStatus() async =>
-      LocationPermissionStatus.notDetermined;
+  FakeLocationPermissionService([
+    this.estado = LocationPermissionStatus.notDetermined,
+  ]);
+
+  final LocationPermissionStatus estado;
 
   @override
-  Future<LocationPermissionStatus> requestPermission() async =>
-      LocationPermissionStatus.notDetermined;
+  Future<LocationPermissionStatus> checkStatus() async => estado;
+
+  @override
+  Future<LocationPermissionStatus> requestPermission() async => estado;
 }
 
 const testConfig = AppConfig(
@@ -69,6 +74,8 @@ Future<GoRouter> pumpRouter(
   SessionExpiry expiry = SessionExpiry.none,
   DeliveryRepository? delivery,
   ThemeData? theme,
+  LocationPermissionStatus permiso = LocationPermissionStatus.notDetermined,
+  ExternalLauncher? launcher,
 }) async {
   tester.view.physicalSize = const Size(1080, 2400);
   tester.view.devicePixelRatio = 1;
@@ -87,10 +94,13 @@ Future<GoRouter> pumpRouter(
         appConfigProvider.overrideWithValue(testConfig),
         sessionProvider.overrideWith(() => _FixedSessionNotifier(session)),
         cartRepositoryProvider.overrideWithValue(FakeCartRepository()),
-        locationPermissionServiceProvider
-            .overrideWithValue(FakeLocationPermissionService()),
+        locationPermissionServiceProvider.overrideWithValue(
+          FakeLocationPermissionService(permiso),
+        ),
         if (delivery != null)
           deliveryRepositoryProvider.overrideWithValue(delivery),
+        if (launcher != null)
+          externalLauncherProvider.overrideWithValue(launcher),
       ],
       child: MaterialApp.router(routerConfig: router, theme: theme),
     ),
@@ -123,11 +133,15 @@ Future<GoRouter> pumpRepartidor(
   WidgetTester tester,
   FakeDeliveryRepository delivery, {
   String location = '/delivery/active',
+  LocationPermissionStatus permiso = LocationPermissionStatus.notDetermined,
+  ExternalLauncher? launcher,
 }) async {
   final router = await pumpRouter(
     tester,
     sessionFor('repartidor'),
     delivery: delivery,
+    permiso: permiso,
+    launcher: launcher,
   );
   if (location != router.routerDelegate.currentConfiguration.uri.path) {
     router.go(location);

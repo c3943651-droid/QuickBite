@@ -83,5 +83,7 @@ class DeliveryRepositoryImpl implements DeliveryRepository {
     estado: dto.estado,
     total: dto.total,
     creadoEn: dto.creadoEn,
+    latitud: dto.latitud,
+    longitud: dto.longitud,
   );
 }

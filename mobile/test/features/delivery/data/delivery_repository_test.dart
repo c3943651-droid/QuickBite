@@ -16,6 +16,8 @@ Map<String, dynamic> pedidoJson({
   String estado = 'listo',
   double total = 250.5,
   String? creadoEn = '2026-09-28T18:00:00Z',
+  double? latitud,
+  double? longitud,
 }) {
   return {
     'id': id,
@@ -23,6 +25,8 @@ Map<String, dynamic> pedidoJson({
     'estado': estado,
     'total': total,
     'creadoEn': ?creadoEn,
+    'latitud': ?latitud,
+    'longitud': ?longitud,
   };
 }
 
@@ -126,6 +130,26 @@ void main() {
       expect(activa, isNotNull);
       expect(activa!.id, 'o1');
       expect(activa.estadoPedido, EstadoPedido.enCamino);
+    });
+
+    test('expone las coordenadas de destino del pedido', () async {
+      http.on('GET', '/delivery/active', [
+        pedidoJson(estado: 'EnCamino', latitud: 13.75, longitud: -89.15),
+      ]);
+
+      final activa = await repository.entregaActiva();
+
+      expect(activa!.latitud, 13.75);
+      expect(activa.longitud, -89.15);
+    });
+
+    test('sin coordenadas en la respuesta quedan null', () async {
+      http.on('GET', '/delivery/active', [pedidoJson(estado: 'EnCamino')]);
+
+      final activa = await repository.entregaActiva();
+
+      expect(activa!.latitud, isNull);
+      expect(activa.longitud, isNull);
     });
 
     test('sin pedidos en camino la entrega activa es null', () async {

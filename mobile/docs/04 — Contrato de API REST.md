@@ -876,6 +876,8 @@ Cada item contiene: id, producto (id, nombre, precio, imagen_url), cantidad, obs
 | subtotal, costo_envio, total | numéricos |
 | metodo_pago | string |
 | direccion_entrega_snapshot | string |
+| latitud | numérica (10,7), nullable |
+| longitud | numérica (10,7), nullable |
 | creado_en, actualizado_en | fechas |
 | items | array con nombre_producto, precio_unitario, cantidad, observaciones, subtotal, opciones |
 | historial_estados | array con estado_anterior, estado_nuevo, creado_en, comentario |
@@ -1577,7 +1579,7 @@ Cada item contiene: id, producto (id, nombre, precio, imagen_url), cantidad, obs
 **Autenticación:** Requiere JWT.
 **Roles:** Repartidor.
 
-**Respuesta exitosa (200):** Pedido con detalles completos.
+**Respuesta exitosa (200):** Pedido con detalles completos, incluidos `latitud` y `longitud` del destino (nullable, copiados de la dirección al crear el pedido; ver 07.5).
 
 **Códigos de error:**
 

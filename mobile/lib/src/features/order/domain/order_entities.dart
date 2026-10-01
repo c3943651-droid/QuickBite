@@ -41,6 +41,8 @@ class Order extends Equatable {
     this.subtotal,
     this.costoEnvio,
     this.creadoEn,
+    this.latitud,
+    this.longitud,
   });
 
   /// `POST /orders` todavía no devuelve un tiempo estimado (la clave
@@ -58,6 +60,11 @@ class Order extends Equatable {
   final double? costoEnvio;
   final DateTime? creadoEn;
 
+  /// Coordenadas de destino copiadas de la dirección al crear el pedido
+  /// (07.5 §3.3); null cuando la dirección no las tenía.
+  final double? latitud;
+  final double? longitud;
+
   /// Estado interpretado: la API manda el texto y la app razona sobre el enum.
   EstadoPedido get estadoPedido => EstadoPedido.fromApi(estado);
 
@@ -73,6 +80,8 @@ class Order extends Equatable {
       subtotal: subtotal,
       costoEnvio: costoEnvio,
       creadoEn: creadoEn ?? this.creadoEn,
+      latitud: latitud,
+      longitud: longitud,
     );
   }
 

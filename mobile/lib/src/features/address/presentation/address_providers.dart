@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quickbite_mobile/src/core/error/app_exception.dart';
 import 'package:quickbite_mobile/src/features/address/data/address_remote_data_source.dart';
 import 'package:quickbite_mobile/src/features/address/data/address_repository_impl.dart';
+import 'package:quickbite_mobile/src/features/address/data/reverse_geocoding_service.dart';
 import 'package:quickbite_mobile/src/features/address/domain/address_entities.dart';
 import 'package:quickbite_mobile/src/features/address/domain/address_repository.dart';
 import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
@@ -12,6 +13,11 @@ final addressRepositoryProvider = Provider<AddressRepository>((ref) {
     AddressRemoteDataSource(ref.watch(apiClientProvider)),
   );
 });
+
+/// Geocodificación inversa del selector de ubicación (07.5 §3.3).
+final reverseGeocodingServiceProvider = Provider<ReverseGeocodingService>(
+  (ref) => ReverseGeocodingService(),
+);
 
 /// Lista de direcciones (07.1 SCR-PROF-06). Se invalida tras cada mutación
 /// para que el backend sea la única fuente de verdad: la regla de "solo una

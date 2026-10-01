@@ -34,6 +34,8 @@ class OrderRepositoryImpl implements OrderRepository {
         numeroPedido: dto.numeroPedido,
         estado: dto.estado,
         total: dto.total,
+        latitud: dto.latitud,
+        longitud: dto.longitud,
       ),
       direccionSnapshot: '',
       subtotal: dto.subtotal,
@@ -98,6 +100,8 @@ class OrderRepositoryImpl implements OrderRepository {
       subtotal: subtotal,
       costoEnvio: costoEnvio,
       creadoEn: dto.creadoEn,
+      latitud: dto.latitud,
+      longitud: dto.longitud,
     );
   }
 }

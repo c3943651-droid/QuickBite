@@ -84,7 +84,7 @@ public sealed class AdminOrderService : IAdminOrderService
         await _uow.Orders.UpdateStatusAsync(orderId, status, comentario, null, ct);
         await _uow.SaveChangesAsync(ct);
         var o = await _uow.Orders.GetByIdAsync(orderId, ct);
-        return new OrderResponse(o!.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn);
+        return new OrderResponse(o!.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn, o.Latitud, o.Longitud);
     }
     public async Task CancelAsync(Guid orderId, string motivo, CancellationToken ct = default)
     {
