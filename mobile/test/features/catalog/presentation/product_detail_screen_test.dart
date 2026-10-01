@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quickbite_mobile/src/core/error/app_exception.dart';
+import 'package:quickbite_mobile/src/core/theme/app_colors.dart';
+import 'package:quickbite_mobile/src/core/theme/app_theme.dart';
 import 'package:quickbite_mobile/src/features/cart/presentation/cart_providers.dart';
 import 'package:quickbite_mobile/src/features/catalog/domain/catalog_entities.dart';
 import 'package:quickbite_mobile/src/features/catalog/domain/catalog_repository.dart';
@@ -10,6 +12,7 @@ import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_provi
 import 'package:quickbite_mobile/src/features/catalog/presentation/product_detail_screen.dart';
 
 import '../../../support/cart_fakes.dart';
+import '../../../support/contrast.dart';
 
 class _DetalleRepository implements CatalogRepository {
   Product? product;
@@ -91,7 +94,11 @@ void main() {
     addTearDown(container.dispose);
   });
 
-  Future<void> pumpDetalle(WidgetTester tester, {String id = 'p1'}) async {
+  Future<void> pumpDetalle(
+    WidgetTester tester, {
+    String id = 'p1',
+    ThemeData? theme,
+  }) async {
     tester.view.physicalSize = const Size(1080, 3200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -119,7 +126,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(routerConfig: router, theme: theme),
       ),
     );
     await tester.pumpAndSettle();
@@ -326,5 +333,52 @@ void main() {
 
       expect(find.byType(CircularProgressIndicator), findsWidgets);
     });
+
+    testWidgets('la flecha de volver no invade la barra de estado', (
+      tester,
+    ) async {
+      // Con la barra de sistema presente (m notch o barra de estado de Android).
+      tester.view.padding = const FakeViewPadding(top: 96);
+      addTearDown(tester.view.resetPadding);
+
+      await pumpDetalle(tester, theme: AppTheme.light);
+
+      final boton = tester.getRect(find.byTooltip('Volver'));
+      expect(
+        boton.top,
+        greaterThanOrEqualTo(96),
+        reason: 'la flecha debe quedar por debajo de la barra de estado',
+      );
+    });
+
+    testWidgets(
+      'el número de unidades y los textos secundarios tienen contraste',
+      (tester) async {
+        await pumpDetalle(tester, theme: AppTheme.light);
+
+        // Con color explícito: sin él el texto cae en el estilo heredado y deja
+        // de respetar el modo oscuro y el alto contraste.
+        final cantidad = tester.widget<Text>(find.text('1'));
+        expect(cantidad.style?.color, isNotNull);
+        expect(
+          contraste(colorDe(cantidad.style), AppColors.surface),
+          greaterThan(4.5),
+        );
+
+        for (final etiqueta in ['Personaliza tu pedido', 'Ajustar cantidad']) {
+          final texto = tester.widget<Text>(find.text(etiqueta));
+          expect(
+            texto.style?.color,
+            isNotNull,
+            reason: '$etiqueta necesita color explícito',
+          );
+          expect(
+            contraste(colorDe(texto.style), AppColors.surface),
+            greaterThan(4.5),
+            reason: '$etiqueta no se lee sobre fondo claro',
+          );
+        }
+      },
+    );
   });
 }

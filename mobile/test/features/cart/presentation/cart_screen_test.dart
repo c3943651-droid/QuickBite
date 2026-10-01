@@ -1,4 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:quickbite_mobile/src/core/config/app_config.dart';
+import 'package:quickbite_mobile/src/core/theme/app_colors.dart';
 import 'package:quickbite_mobile/src/core/theme/app_radius.dart';
+import 'package:quickbite_mobile/src/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +14,7 @@ import 'package:quickbite_mobile/src/features/cart/presentation/cart_providers.d
 import 'package:quickbite_mobile/src/features/cart/presentation/cart_screen.dart';
 
 import '../../../support/cart_fakes.dart';
+import '../../../support/contrast.dart';
 
 CartItem _item({
   String id = 'i1',
@@ -48,6 +53,8 @@ void main() {
     WidgetTester tester, {
     Cart? cart,
     String initialLocation = '/cart',
+    ThemeData? theme,
+    String? apiBaseUrl,
   }) async {
     if (cart != null) {
       repository.current = cart;
@@ -72,10 +79,32 @@ void main() {
     );
     addTearDown(router.dispose);
 
+    // El override de `appConfigProvider` tiene que existir antes de leer el
+    // provider, así que en ese caso se arma un contenedor propio.
+    final contenedor = apiBaseUrl == null
+        ? container
+        : ProviderContainer(
+            overrides: [
+              cartRepositoryProvider.overrideWithValue(repository),
+              appConfigProvider.overrideWithValue(
+                AppConfig(
+                  apiBaseUrl: apiBaseUrl,
+                  legalBaseUrl: 'https://quickbite.mx/legal',
+                  supportEmail: 'soporte@quickbite.mx',
+                  connectTimeout: const Duration(seconds: 15),
+                  receiveTimeout: const Duration(seconds: 20),
+                ),
+              ),
+            ],
+          );
+    if (apiBaseUrl != null) {
+      addTearDown(contenedor.dispose);
+    }
+
     await tester.pumpWidget(
       UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp.router(routerConfig: router),
+        container: contenedor,
+        child: MaterialApp.router(routerConfig: router, theme: theme),
       ),
     );
     await tester.pumpAndSettle();
@@ -330,6 +359,77 @@ void main() {
       expect(
         find.text('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.'),
         findsOneWidget,
+      );
+    });
+
+    testWidgets('el número de unidades se lee con contraste sobre la tarjeta', (
+      tester,
+    ) async {
+      await pumpCart(
+        tester,
+        cart: Cart(id: 'cart-1', items: [_item(cantidad: 3)], total: 256),
+        theme: AppTheme.light,
+      );
+
+      final numero = tester.widget<Text>(find.text('3'));
+      final color = numero.style?.color;
+
+      expect(color, isNotNull, reason: 'el número necesita color explícito');
+      // La tarjeta es blanca: sin color explícito el estilo caía en el
+      // Typography por defecto de Material y casi no se veía.
+      expect(color, isNot(AppColors.surfaceMuted));
+      expect(contraste(color!, AppColors.surface), greaterThan(4.5));
+    });
+
+    testWidgets('la miniatura del item muestra la imagen del producto', (
+      tester,
+    ) async {
+      await pumpCart(
+        tester,
+        cart: Cart(
+          id: 'cart-1',
+          items: [_item(imagenUrl: 'https://cdn.test/pastor.jpg')],
+          total: 171,
+        ),
+      );
+
+      final imagen = tester.widget<CachedNetworkImage>(
+        find.byType(CachedNetworkImage),
+      );
+      expect(imagen.imageUrl, 'https://cdn.test/pastor.jpg');
+    });
+
+    testWidgets('sin imagenUrl el carrito muestra el placeholder', (
+      tester,
+    ) async {
+      await pumpCart(
+        tester,
+        cart: Cart(id: 'cart-1', items: [_item()], total: 171),
+      );
+
+      expect(find.byIcon(Icons.fastfood_outlined), findsOneWidget);
+    });
+
+    testWidgets('una imagen relativa del carrito se resuelve contra el API', (
+      tester,
+    ) async {
+      await pumpCart(
+        tester,
+        cart: Cart(
+          id: 'cart-1',
+          items: [_item(imagenUrl: '/uploads/productos/doble.jpg')],
+          total: 171,
+        ),
+        apiBaseUrl: 'https://quickbite-n1bk.onrender.com/api/v1',
+      );
+
+      final imagen = tester.widget<CachedNetworkImage>(
+        find.byType(CachedNetworkImage),
+      );
+      // Se pega al origen del API: `/api/v1` no es parte de la ruta del fichero.
+      expect(
+        imagen.imageUrl,
+        'https://quickbite-n1bk.onrender.com/uploads/productos/doble.jpg',
       );
     });
   });

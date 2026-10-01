@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/theme/app_theme.dart';
 
@@ -21,9 +22,11 @@ Future<void> pumpApp(
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(
-    MaterialApp(
-      theme: theme ?? AppTheme.light,
-      home: Scaffold(body: child),
+    ProviderScope(
+      child: MaterialApp(
+        theme: theme ?? AppTheme.light,
+        home: Scaffold(body: child),
+      ),
     ),
   );
 }
@@ -40,9 +43,11 @@ Future<void> pumpWithButton(
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(
-    MaterialApp(
-      theme: theme ?? AppTheme.light,
-      home: Scaffold(body: Center(child: child)),
+    ProviderScope(
+      child: MaterialApp(
+        theme: theme ?? AppTheme.light,
+        home: Scaffold(body: Center(child: child)),
+      ),
     ),
   );
 }

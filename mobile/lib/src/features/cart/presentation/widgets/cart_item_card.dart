@@ -1,9 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/utils/image_url.dart';
 import '../../domain/cart_entities.dart';
 import '../cart_providers.dart';
 
@@ -21,6 +24,7 @@ class CartItemCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(cartProvider.notifier);
     final tema = Theme.of(context);
+    final apiBaseUrl = ref.watch(appConfigProvider).apiBaseUrl;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -29,7 +33,10 @@ class CartItemCard extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Thumb(url: item.imagenUrl, nombre: item.nombre),
+            _Thumb(
+              url: resolverUrlImagen(item.imagenUrl, apiBaseUrl: apiBaseUrl),
+              nombre: item.nombre,
+            ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
@@ -134,7 +141,13 @@ class _QuantityStepper extends StatelessWidget {
             child: Text(
               '$cantidad',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleSmall,
+              // Color explícito: el número es la cifra que el usuario lee para
+              // saber cuántas unidades pidió, y sobre la tarjeta blanca se
+              // perdía con el estilo heredado.
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           IconButton(
@@ -155,6 +168,14 @@ class _Thumb extends StatelessWidget {
   final String? url;
   final String nombre;
 
+  /// Marcador de posición: mismo icono y tono que la tarjeta de catálogo, para
+  /// que el carrito no parezca un hueco cuando el producto no trae imagen.
+  Widget _placeholder() => Icon(
+    Icons.fastfood_outlined,
+    color: AppColors.inkMuted,
+    semanticLabel: nombre,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -165,23 +186,18 @@ class _Thumb extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.image),
       ),
       child: url == null || url!.isEmpty
-          ? Icon(
-              Icons.fastfood_outlined,
-              color: AppColors.inkMuted,
-              semanticLabel: nombre,
-            )
+          ? _placeholder()
           : ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.image),
-              child: Image.network(
-                url!,
+              child: CachedNetworkImage(
+                imageUrl: url!,
                 width: 56,
                 height: 56,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Icon(
-                  Icons.fastfood_outlined,
-                  color: AppColors.inkMuted,
-                  semanticLabel: nombre,
-                ),
+                // Mismo tratamiento que la tarjeta de catálogo: la imagen se
+                // cachea y, si falla, cae al icono en vez de romperse.
+                placeholder: (_, _) => _placeholder(),
+                errorWidget: (_, _, _) => _placeholder(),
               ),
             ),
     );

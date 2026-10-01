@@ -93,4 +93,55 @@ public class CartServiceAddItemTests
             c => c.AddItemAsync(carrito.Id, It.IsAny<CartItem>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
+    /// El carrito devuelve la imagen del producto para que el móvil pueda pintar
+    /// la miniatura; sin ella solo sale el icono genérico.
+    [Fact]
+    public async Task GetAsync_LineaConImagen_DevuelveLaImagenUrlDelProducto()
+    {
+        var userId = Guid.NewGuid();
+        var producto = ProductoDobleCarne();
+        producto.ImagenUrl = "https://cdn.quickbite.test/doble-carne.jpg";
+        var carrito = new Cart { Id = Guid.NewGuid(), UsuarioId = userId };
+        carrito.Items.Add(new CartItem
+        {
+            Id = Guid.NewGuid(),
+            CarritoId = carrito.Id,
+            ProductoId = producto.Id,
+            Cantidad = 2,
+            Producto = producto
+        });
+        PrepararProductoYCarrito(producto, carrito);
+
+        var service = new CartService(_uow.Object);
+        var respuesta = await service.GetAsync(userId);
+
+        respuesta.Items.Should().ContainSingle();
+        respuesta.Items[0].ImagenUrl.Should().Be("https://cdn.quickbite.test/doble-carne.jpg");
+    }
+
+    /// Un producto sin imagen no debe romper la respuesta: `null` y el móvil
+    /// muestra su marcador de posición.
+    [Fact]
+    public async Task GetAsync_ProductoSinImagen_DevuelveImagenUrlNull()
+    {
+        var userId = Guid.NewGuid();
+        var producto = ProductoDobleCarne();
+        producto.ImagenUrl = null;
+        var carrito = new Cart { Id = Guid.NewGuid(), UsuarioId = userId };
+        carrito.Items.Add(new CartItem
+        {
+            Id = Guid.NewGuid(),
+            CarritoId = carrito.Id,
+            ProductoId = producto.Id,
+            Cantidad = 1,
+            Producto = producto
+        });
+        PrepararProductoYCarrito(producto, carrito);
+
+        var service = new CartService(_uow.Object);
+        var respuesta = await service.GetAsync(userId);
+
+        respuesta.Items[0].ImagenUrl.Should().BeNull();
+    }
 }

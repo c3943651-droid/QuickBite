@@ -134,15 +134,32 @@ abstract final class AppTheme {
     );
   }
 
+  /// Estilos del tema.
+  ///
+  /// Se definen **todos** los que usa la app a propósito: un estilo sin
+  /// definir aquí no falla, pero Flutter lo sustituye por el `Typography` por
+  /// defecto de Material, cuyo color ignora el modo oscuro y el de alto
+  /// contraste. Pasó con `headlineSmall`, `titleSmall` y `bodySmall`: el
+  /// selector de cantidad y los textos secundarios del detalle de producto se
+  /// quedaban casi invisibles.
   static TextTheme _textTheme(Color primary, Color secondary) {
     return TextTheme(
       displayLarge: AppTextStyles.display.copyWith(color: primary),
       headlineLarge: AppTextStyles.headline1.copyWith(color: primary),
       headlineMedium: AppTextStyles.headline2.copyWith(color: primary),
+      headlineSmall: AppTextStyles.headline2.copyWith(
+        fontSize: 24,
+        color: primary,
+      ),
       titleLarge: AppTextStyles.title.copyWith(color: primary),
       titleMedium: AppTextStyles.title.copyWith(fontSize: 16, color: primary),
+      titleSmall: AppTextStyles.title.copyWith(fontSize: 14, color: primary),
       bodyLarge: AppTextStyles.bodyLarge.copyWith(color: primary),
       bodyMedium: AppTextStyles.bodyMedium.copyWith(color: secondary),
+      bodySmall: AppTextStyles.bodyMedium.copyWith(
+        fontSize: 12,
+        color: secondary,
+      ),
       labelLarge: AppTextStyles.label.copyWith(fontSize: 16, color: primary),
       labelMedium: AppTextStyles.label.copyWith(color: secondary),
       labelSmall: AppTextStyles.caption.copyWith(color: secondary),
