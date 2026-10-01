@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QuickBite.Domain.Enums;
@@ -12,9 +13,11 @@ using QuickBite.Infrastructure.Persistence;
 namespace QuickBite.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(QuickBiteDbContext))]
-    partial class QuickBiteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261001014411_AddOrderCoordinates")]
+    partial class AddOrderCoordinates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

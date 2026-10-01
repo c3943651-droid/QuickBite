@@ -28,5 +28,13 @@ public sealed class UpdateAddressRequestValidator : AbstractValidator<UpdateAddr
             .NotEmpty().WithMessage("La ciudad no puede estar vacía.")
             .MaximumLength(100).WithMessage("La ciudad no puede superar los 100 caracteres.")
             .When(x => x.Ciudad is not null);
+
+        RuleFor(x => x.Latitud)
+            .InclusiveBetween(-90m, 90m).WithMessage("La latitud debe estar entre -90 y 90.")
+            .When(x => x.Latitud is not null);
+
+        RuleFor(x => x.Longitud)
+            .InclusiveBetween(-180m, 180m).WithMessage("La longitud debe estar entre -180 y 180.")
+            .When(x => x.Longitud is not null);
     }
 }

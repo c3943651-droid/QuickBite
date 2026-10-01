@@ -13,7 +13,10 @@ public sealed class OrderService : IOrderService
     {
         var cart = await _uow.Carts.GetActiveByUserIdAsync(userId, ct) ?? throw new BusinessRuleException("Carrito vacio");
         if (!cart.Items.Any()) throw new BusinessRuleException("Carrito vacio");
-        var order = new Order { ClienteId = userId, DireccionId = req.DireccionId, DireccionEntregaSnapshot = req.DireccionSnapshot ?? "", MetodoPago = ParseMetodoPago(req.MetodoPago), NumeroPedido = $"QB-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}", Estado = OrderStatus.Pendiente };
+        var direccion = req.DireccionId is { } direccionId
+            ? await _uow.Addresses.GetByIdAsync(direccionId, ct)
+            : null;
+        var order = new Order { ClienteId = userId, DireccionId = req.DireccionId, DireccionEntregaSnapshot = req.DireccionSnapshot ?? "", Latitud = direccion?.Latitud, Longitud = direccion?.Longitud, MetodoPago = ParseMetodoPago(req.MetodoPago), NumeroPedido = $"QB-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}", Estado = OrderStatus.Pendiente };
         foreach (var grupo in cart.Items.GroupBy(ci => ci.ProductoId))
         {
             var unitPrice = grupo.First().Producto?.Precio ?? 0m;
@@ -47,18 +50,18 @@ public sealed class OrderService : IOrderService
         await _uow.Orders.AddAsync(order, ct);
         await _uow.Carts.ClearCartAsync(cart.Id, ct);
         await _uow.SaveChangesAsync(ct);
-        return new OrderResponse(order.Id, order.NumeroPedido, order.Estado.ToString(), order.Total, order.CreadoEn);
+        return new OrderResponse(order.Id, order.NumeroPedido, order.Estado.ToString(), order.Total, order.CreadoEn, order.Latitud, order.Longitud);
     }
     public async Task<IReadOnlyList<OrderResponse>> ListAsync(Guid userId, CancellationToken ct = default)
     {
         var orders = await _uow.Orders.GetOrdersAsync(userId, null, null, ct);
-        return orders.Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn)).ToList();
+        return orders.Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn, o.Latitud, o.Longitud)).ToList();
     }
     public async Task<OrderDetailResponse> GetAsync(Guid userId, Guid orderId, CancellationToken ct = default)
     {
         var o = await _uow.Orders.GetByIdAsync(orderId, ct) ?? throw new NotFoundException("Pedido", orderId);
         if (o.ClienteId != userId) throw new ForbiddenException();
-        return new OrderDetailResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Subtotal, o.CostoEnvio, o.Total, o.Items.Select(i => i.Producto?.Nombre ?? "").ToList());
+        return new OrderDetailResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Subtotal, o.CostoEnvio, o.Total, o.Items.Select(i => i.Producto?.Nombre ?? "").ToList(), o.Latitud, o.Longitud);
     }
     public async Task<OrderStatusResponse> GetStatusAsync(Guid userId, Guid orderId, CancellationToken ct = default)
     {

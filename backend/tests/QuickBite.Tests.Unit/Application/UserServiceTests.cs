@@ -125,6 +125,33 @@ public class UserServiceTests
     }
 
     [Fact]
+    public async Task UpdateAddressAsync_ConCoordenadasNulas_LasCoordenadasPreviasSeConservan()
+    {
+        var userId = Guid.NewGuid();
+        var address = new Address { Id = Guid.NewGuid(), UsuarioId = userId, Calle = "X", Ciudad = "Y", Latitud = 13.6929m, Longitud = -89.2182m };
+        _addresses.Setup(a => a.GetByIdAsync(address.Id, It.IsAny<CancellationToken>())).ReturnsAsync(address);
+
+        var response = await CreateService().UpdateAddressAsync(userId, address.Id, new UpdateAddressRequest { Calle = "Otra Calle" });
+
+        response.Latitud.Should().Be(13.6929m);
+        response.Longitud.Should().Be(-89.2182m);
+        address.Calle.Should().Be("Otra Calle");
+    }
+
+    [Fact]
+    public async Task UpdateAddressAsync_ConCoordenadas_ActualizaLosValores()
+    {
+        var userId = Guid.NewGuid();
+        var address = new Address { Id = Guid.NewGuid(), UsuarioId = userId, Calle = "X", Ciudad = "Y", Latitud = 13.6929m, Longitud = -89.2182m };
+        _addresses.Setup(a => a.GetByIdAsync(address.Id, It.IsAny<CancellationToken>())).ReturnsAsync(address);
+
+        var response = await CreateService().UpdateAddressAsync(userId, address.Id, new UpdateAddressRequest { Latitud = 13.7000m, Longitud = -89.2100m });
+
+        response.Latitud.Should().Be(13.7000m);
+        response.Longitud.Should().Be(-89.2100m);
+    }
+
+    [Fact]
     public async Task DeleteAddressAsync_Propia_EliminaYGuarda()
     {
         var userId = Guid.NewGuid();

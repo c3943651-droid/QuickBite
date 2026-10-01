@@ -23,6 +23,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.Subtotal).HasPrecision(10, 2);
         builder.Property(o => o.CostoEnvio).HasPrecision(10, 2);
         builder.Property(o => o.Total).HasPrecision(10, 2);
+        builder.Property(o => o.Latitud).HasPrecision(10, 7);
+        builder.Property(o => o.Longitud).HasPrecision(10, 7);
 
         builder.HasIndex(o => o.NumeroPedido).IsUnique().HasDatabaseName("uq_pedidos_numero");
         builder.HasIndex(o => o.ClienteId).HasDatabaseName("idx_pedidos_cliente");
