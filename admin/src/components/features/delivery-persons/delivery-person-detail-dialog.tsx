@@ -24,7 +24,7 @@ import {
   useDeliveryPersonHistory,
 } from "@/lib/api/admin/delivery-persons"
 import type { DeliveryPersonListItem } from "@/lib/api/admin/orders"
-import { formatCurrency, formatDate, formatDateTime } from "@/lib/format"
+import { formatCurrency, formatDate, formatDateTime, initials } from "@/lib/format"
 
 export interface DeliveryPersonDetailDialogProps {
   repartidor: DeliveryPersonListItem | null
@@ -210,14 +210,4 @@ export function DeliveryPersonDetailDialog({
       </DialogContent>
     </Dialog>
   )
-}
-
-function initials(nombre: string): string {
-  return nombre
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
 }

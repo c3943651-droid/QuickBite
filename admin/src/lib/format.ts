@@ -33,3 +33,13 @@ export function formatShortDay(value: string): string {
   const date = new Date(`${value}T00:00:00`)
   return new Intl.DateTimeFormat("es-MX", { day: "2-digit", month: "2-digit" }).format(date)
 }
+
+export function initials(nombre: string | null | undefined): string {
+  return (nombre ?? "")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+}

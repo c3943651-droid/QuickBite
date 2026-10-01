@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatCurrency, formatDate, formatDateTime, formatShortDay } from "../format"
+import { formatCurrency, formatDate, formatDateTime, formatShortDay, initials } from "../format"
 
 describe("formatCurrency", () => {
   it("formatea montos en pesos mexicanos", () => {
@@ -29,5 +29,18 @@ describe("formatDateTime", () => {
 describe("formatShortDay", () => {
   it("formatea una fecha ISO a dd/mm", () => {
     expect(formatShortDay("2026-09-17")).toBe("17/09")
+  })
+})
+
+describe("initials", () => {
+  it("toma la primera letra de los dos primeros nombres", () => {
+    expect(initials("Carlos Pérez")).toBe("CP")
+    expect(initials("María de la Cruz")).toBe("MD")
+  })
+
+  it("no revienta con valores nulos, indefinidos o vacíos", () => {
+    expect(initials(null)).toBe("")
+    expect(initials(undefined)).toBe("")
+    expect(initials("   ")).toBe("")
   })
 })

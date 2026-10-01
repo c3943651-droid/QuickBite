@@ -6,6 +6,7 @@ import { z } from "zod"
 import { Bike } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
@@ -42,6 +43,7 @@ import {
   type DeliveryPersonStatusValue,
 } from "@/lib/api/admin/delivery-persons"
 import { getApiErrorMessage } from "@/lib/api/error"
+import { initials } from "@/lib/format"
 
 const deliveryPersonFormSchema = z.object({
   usuarioId: z.string({ error: "Selecciona un usuario" }).min(1, "Selecciona un usuario"),
@@ -137,8 +139,7 @@ export function DeliveryPersonFormDialog({
             <div className="grid gap-4 sm:grid-cols-2">
               {isEditing ? (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Repartidor</FormLabel>
-                <FormControl>
+                  <Label>Repartidor</Label>
                   <div className="flex min-w-0 items-center gap-3 rounded-md border p-3">
                     <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
                       {initials(repartidor.nombre)}
@@ -151,9 +152,8 @@ export function DeliveryPersonFormDialog({
                       {deliveryPersonStatusLabel(repartidor.estadoDisponibilidad)}
                     </p>
                   </div>
-                </FormControl>
-              </FormItem>
-            ) : (
+                </FormItem>
+              ) : (
               <FormField
                 control={form.control}
                 name="usuarioId"
@@ -285,14 +285,4 @@ export function DeliveryPersonFormDialog({
 
 function isDeliveryPersonStatus(value: string): value is DeliveryPersonStatusValue {
   return value === "disponible" || value === "ocupado" || value === "inactivo"
-}
-
-function initials(nombre: string): string {
-  return nombre
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
 }
