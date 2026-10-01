@@ -27,6 +27,10 @@ class ActiveDeliveryScreen extends ConsumerWidget {
   /// A dónde va el repartidor cuando ya no hay nada en curso.
   static const destinoSinEntrega = '/delivery/available';
 
+  /// Pantalla de la entrega en curso. La lista de disponibles la usa para saltar
+  /// aquí en cuanto le asignan un pedido.
+  static const destinoConEntrega = '/delivery/active';
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final entrega = ref.watch(entregaActivaProvider);
@@ -118,13 +122,25 @@ class _ContenidoState extends ConsumerState<_Contenido> {
     final destino = latitud != null && longitud != null
         ? LatLng(latitud, longitud)
         : null;
+    final repartidor = ref.watch(posicionRepartidorProvider).value;
+    final cliente = widget.pedido.cliente?.trim();
+    final direccion = widget.pedido.direccion?.trim();
+    final telefono = widget.pedido.telefono?.trim();
+    final items = widget.pedido.items;
+    final posicionRepartidor = repartidor == null
+        ? null
+        : LatLng(repartidor.latitud, repartidor.longitud);
 
     return Column(
       children: [
         // Mitad superior: Mapa
         Expanded(
           flex: 4,
-          child: _Mapa(zona: permisos, destino: destino),
+          child: _Mapa(
+            zona: permisos,
+            destino: destino,
+            repartidor: posicionRepartidor,
+          ),
         ),
         // Mitad inferior: Detalles
         Expanded(
@@ -140,7 +156,11 @@ class _ContenidoState extends ConsumerState<_Contenido> {
                 const SizedBox(height: AppSpacing.xs),
                 Row(
                   children: [
-                    const Icon(Icons.schedule, size: 16, color: AppColors.ink),
+                    Icon(
+                      Icons.schedule,
+                      size: 16,
+                      color: tema.colorScheme.onSurface,
+                    ),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
                       'Llevas $minutos min en esta entrega',
@@ -150,9 +170,40 @@ class _ContenidoState extends ConsumerState<_Contenido> {
                 ),
               ],
               const SizedBox(height: AppSpacing.lg),
+              if (cliente != null) ...[
+                _Dato(
+                  icon: Icons.person_outline,
+                  titulo: 'Cliente',
+                  valor: cliente,
+                ),
+                if (telefono != null) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  _BotonLlamar(telefono: telefono),
+                ],
+              ],
+              if (direccion != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                _Dato(
+                  icon: Icons.place_outlined,
+                  titulo: 'Dirección',
+                  valor: direccion,
+                ),
+              ],
+              if (items.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                Text('Qué llevar', style: tema.textTheme.titleSmall),
+                const SizedBox(height: AppSpacing.xs),
+                ...items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Text('• $item', style: tema.textTheme.bodyMedium),
+                  ),
+                ),
+              ],
+              const SizedBox(height: AppSpacing.md),
               _Dato(
                 icon: Icons.payments_outlined,
-                titulo: 'Total',
+                titulo: 'Total a cobrar',
                 valor: CurrencyFormatter.format(widget.pedido.total),
               ),
               if (destino != null) ...[
@@ -184,10 +235,13 @@ class _ContenidoState extends ConsumerState<_Contenido> {
 /// Mapa superior de la entrega activa: el destino solo se dibuja si el pedido
 /// trae coordenadas; sin ellas se ofrece un aviso textual (07.5 §5).
 class _Mapa extends ConsumerWidget {
-  const _Mapa({required this.zona, required this.destino});
+  const _Mapa({required this.zona, required this.destino, this.repartidor});
 
   final AsyncValue<LocationPermissionStatus> zona;
   final LatLng? destino;
+
+  /// Posición del repartidor; `null` si el GPS no está disponible.
+  final LatLng? repartidor;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -243,6 +297,7 @@ class _Mapa extends ConsumerWidget {
           routePolyline: const [],
           originTitle: 'QuickBite',
           destinationTitle: 'Cliente',
+          riderLocation: repartidor,
         );
       },
     );
@@ -312,6 +367,30 @@ class _BotonesApertura extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Marca al cliente por teléfono.
+///
+/// Va por [externalLauncherProvider] como la apertura de mapas: las pruebas
+/// sustituyen ese launcher y no dependen de que haya una app de llamadas.
+class _BotonLlamar extends ConsumerWidget {
+  const _BotonLlamar({required this.telefono});
+
+  final String telefono;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: OutlinedButton.icon(
+        onPressed: () => ref
+            .read(externalLauncherProvider)
+            .abrir(Uri(scheme: 'tel', path: telefono)),
+        icon: const Icon(Icons.call_outlined, size: 18),
+        label: const Text('Llamar al cliente'),
+      ),
     );
   }
 }

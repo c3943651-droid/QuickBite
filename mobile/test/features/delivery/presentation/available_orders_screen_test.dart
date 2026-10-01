@@ -11,24 +11,21 @@ import 'package:quickbite_mobile/src/features/delivery/presentation/delivery_pro
 import 'package:quickbite_mobile/src/features/order/domain/order_entities.dart';
 
 import '../../../support/delivery_fakes.dart';
+import '../../../support/router_harness.dart';
 
 void main() {
   late FakeDeliveryRepository delivery;
 
   setUp(() => delivery = FakeDeliveryRepository());
 
+  /// Monta la pantalla como en producción: bajo el router de la app.
+  ///
+  /// La pantalla navega a la entrega activa cuando le asignan un pedido, así que
+  /// necesita un `GoRouter` real; con un `MaterialApp` pelado esa ruta nunca se
+  /// dá y el test no reflejaría lo que ve el repartidor.
   Future<void> pump(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [deliveryRepositoryProvider.overrideWithValue(delivery)],
-        child: const MaterialApp(home: AvailableOrdersScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await pumpRepartidor(tester, delivery, location: '/delivery/available');
+    await settle(tester);
   }
 
   PedidoEntrega pedido({
@@ -148,6 +145,35 @@ void main() {
       expect(delivery.consultasDisponibles, greaterThan(consultasAntes));
     });
 
+    testWidgets('el tick también revalida la entrega activa', (tester) async {
+      // Es el reflejo del pedido asignado: si el admin te asigna uno mientras
+      // estás en la lista, este tick es lo que hace que la pantalla activa lo
+      // muestre. Sin él, el repartidor se queda viendo la lista con un pedido
+      // suyo en el servidor.
+      await pump(tester);
+      final consultasAntes = delivery.consultasActivas;
+
+      await tester.pump(const Duration(seconds: 30));
+      await tester.pumpAndSettle();
+
+      expect(delivery.consultasActivas, greaterThan(consultasAntes));
+    });
+
+    testWidgets('aceptar un pedido consulta la entrega activa al instante', (
+      tester,
+    ) async {
+      delivery.disponibles = [pedido()];
+      await pump(tester);
+      final consultasAntes = delivery.consultasActivas;
+
+      await tester.tap(find.text('Aceptar entrega'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Aceptar').last);
+      await tester.pumpAndSettle();
+
+      expect(delivery.consultasActivas, greaterThan(consultasAntes));
+    });
+
     testWidgets('salir de la pantalla detiene el polling', (tester) async {
       await pump(tester);
       final consultasTrasEntrar = delivery.consultasDisponibles;
@@ -199,19 +225,28 @@ void main() {
       expect(delivery.aceptados, isEmpty);
     });
 
-    testWidgets('confirmar acepta el pedido y lo quita de la lista', (
-      tester,
-    ) async {
+    testWidgets('aceptar el pedido abre la entrega activa', (tester) async {
+      // Aceptar ya no deja al repartidor en la lista: la app lo pasa a la
+      // pantalla de entrega, que es lo que quiere ver de inmediato
+      // (07.1 SCR-DEL-03).
       delivery.disponibles = [pedido(id: 'a1', numero: 'QB-1001')];
 
-      await pump(tester);
+      final router = await pumpRouter(
+        tester,
+        sessionFor('repartidor'),
+        delivery: delivery,
+      );
+      await settle(tester);
+
       await tester.tap(find.text('Aceptar entrega').first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Aceptar'));
       await tester.pumpAndSettle();
+      await settle(tester);
 
       expect(delivery.aceptados, ['a1']);
-      expect(find.text('QB-1001'), findsNothing);
+      expect(locationOf(router), '/delivery/active');
+      expect(find.text('Marcar como entregado'), findsOneWidget);
     });
 
     testWidgets('cancelar la confirmación no llama a la API', (tester) async {

@@ -27,6 +27,7 @@ class DeliveryMap extends StatefulWidget {
     this.originTitle,
     this.destinationTitle,
     this.onMapCreated,
+    this.riderLocation,
   });
 
   /// Coordenadas de origen (ej. posición actual del repartidor / restaurante).
@@ -49,12 +50,19 @@ class DeliveryMap extends StatefulWidget {
   /// está ligado al mapa.
   final void Function(MapController)? onMapCreated;
 
+  /// Posición actual del repartidor. `null` cuando no hay GPS o no se pidió
+  /// permiso: el mapa se dibuja igual, solo que sin su marcador.
+  final LatLng? riderLocation;
+
   @override
   State<DeliveryMap> createState() => _DeliveryMapState();
 }
 
 class _DeliveryMapState extends State<DeliveryMap> {
   late final MapController _mapa;
+
+  /// Posición del repartidor o `null` si todavía no se conoce.
+  LatLng? get posicion => widget.riderLocation;
 
   @override
   void initState() {
@@ -67,14 +75,45 @@ class _DeliveryMapState extends State<DeliveryMap> {
     });
   }
 
-  List<Marker> _marcadores() => [
-    _marcador(widget.origin, widget.originTitle, const Color(0xFF03A9F4)),
-    _marcador(
-      widget.destination,
-      widget.destinationTitle,
-      const Color(0xFF00BCD4),
-    ),
-  ];
+  List<Marker> _marcadores() {
+    // El repartidor va el último para que su marcador quede por encima: es el
+    // que tiene que verse moverse sobre su propia ruta.
+    final propia = posicion;
+    return [
+      _marcador(widget.origin, widget.originTitle, const Color(0xFF03A9F4)),
+      _marcador(
+        widget.destination,
+        widget.destinationTitle,
+        const Color(0xFF00BCD4),
+      ),
+      if (propia != null)
+        Marker(
+          point: propia,
+          width: 28,
+          height: 28,
+          child: const DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(4),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.delivery_dining,
+                  size: 14,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+    ];
+  }
 
   Marker _marcador(LatLng punto, String? titulo, Color color) => Marker(
     point: punto,

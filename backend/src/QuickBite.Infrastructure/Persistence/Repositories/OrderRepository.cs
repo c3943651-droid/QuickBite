@@ -71,6 +71,36 @@ public class OrderRepository : IOrderRepository
             .ToListAsync(cancellationToken);
     }
 
+    /// Igual que [GetOrdersAsync] pero con lo que el repartidor necesita para
+    /// trabajar el pedido: cliente (nombre y teléfono), dirección e ítems. Se
+    /// deja aparte a propósito para no cargar joins en el listado del cliente,
+    /// que no los usa.
+    public async Task<IReadOnlyList<Order>> GetDeliveryOrdersAsync(Guid? deliveryPersonId = null, OrderStatus? status = null, CancellationToken cancellationToken = default)
+    {
+        var query = _db.Pedidos
+            .AsNoTracking()
+            .Include(p => p.Cliente)
+            .Include(p => p.Direccion)
+            .Include(p => p.Items)
+                .ThenInclude(i => i.Producto)
+            .AsSplitQuery()
+            .AsQueryable();
+
+        if (deliveryPersonId.HasValue)
+        {
+            query = query.Where(p => p.RepartidorId == deliveryPersonId.Value);
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(p => p.Estado == status.Value);
+        }
+
+        return await query
+            .OrderByDescending(p => p.CreadoEn)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<(IReadOnlyList<Order> Items, int TotalCount)> GetOrdersForAdminAsync(string? search = null, Guid? repartidorId = null, OrderStatus? status = null, DateTime? fechaDesde = null, DateTime? fechaHasta = null, int page = 1, int limit = 10, CancellationToken cancellationToken = default)
     {
         IQueryable<Order> query = _db.Pedidos

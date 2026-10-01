@@ -13,6 +13,7 @@ import '../../../core/widgets/polling_indicator.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/state_views.dart';
 import '../domain/pedido_entrega.dart';
+import 'active_delivery_screen.dart';
 import 'delivery_providers.dart';
 
 /// Pedidos listos para tomar (07.1 SCR-DEL-01).
@@ -84,6 +85,21 @@ class _AvailableOrdersScreenState extends ConsumerState<AvailableOrdersScreen>
 
   @override
   Widget build(BuildContext context) {
+    // El repartidor tiene que cambiar de estado en cuanto le asignan un pedido,
+    // sin que él tenga que refrescar. `invalidate` sobre un provider autoDispose
+    // sin escuchas no consulta nada: lo que dispara la petición es que esta
+    // pantalla lo escuche. Con esta escucha, el tick del polling (o el
+    // `aceptar`) revalidan la entrega y, si aparece, se navega a ella
+    // (07.1 SCR-DEL-03).
+    ref.listen<AsyncValue<PedidoEntrega?>>(entregaActivaProvider, (
+      anterior,
+      actual,
+    ) {
+      final pedido = actual.value;
+      if (pedido != null && mounted) {
+        context.go(ActiveDeliveryScreen.destinoConEntrega);
+      }
+    });
     final state = ref.watch(pedidosDisponiblesProvider);
 
     return Scaffold(
@@ -203,8 +219,12 @@ class _TarjetaPedido extends StatelessWidget {
                 if (minutos != null)
                   Text(
                     '$minutos min',
+                    // El color sale del tema para que en modo oscuro no quede
+                    // tinta negra sobre fondo oscuro.
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: minutos >= 20 ? AppColors.error : AppColors.ink,
+                      color: minutos >= 20
+                          ? theme.colorScheme.error
+                          : theme.colorScheme.onSurface,
                     ),
                   ),
               ],
@@ -246,7 +266,11 @@ class _AvisoPausa extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.cloud_off, size: 16, color: AppColors.ink),
+          Icon(
+            Icons.cloud_off,
+            size: 16,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(

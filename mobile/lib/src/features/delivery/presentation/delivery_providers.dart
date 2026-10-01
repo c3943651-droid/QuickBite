@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/error/app_exception.dart';
+
+import 'package:geolocator/geolocator.dart';
+
 import '../../../core/polling/polling_controller.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../data/delivery_remote_data_source.dart';
@@ -143,6 +146,17 @@ class PedidosDisponiblesNotifier extends Notifier<PedidosDisponiblesState> {
     state = state.copyWith(pollingActivo: _polling.isRunning);
   }
 
+  /// Revalida si hay una entrega en curso.
+  ///
+  /// El mismo tick que repone la lista de disponibles es el que detecta que el
+  /// admin te asignó un pedido: sin esto, quien está en "disponibles" se queda
+  /// viendo la lista aunque ya tenga algo que entregar (07.1 SCR-DEL-03).
+  void _revalidarEntregaActiva() {
+    if (ref.mounted) {
+      ref.invalidate(entregaActivaProvider);
+    }
+  }
+
   /// 07.1 SCR-DEL-01 — "Refrescar" fuerza consulta inmediata sin tocar el reloj.
   Future<void> refrescar() => _cargar();
 
@@ -174,6 +188,9 @@ class PedidosDisponiblesNotifier extends Notifier<PedidosDisponiblesState> {
             .where((p) => p.id != pedidoId)
             .toList(growable: false),
       );
+      // Aceptar es el camino normal a "tengo entrega": la pantalla activa tiene
+      // que Pickup al momento, sin esperar al siguiente tick.
+      _revalidarEntregaActiva();
       return true;
     } on Object catch (error) {
       if (ref.mounted) {
@@ -220,6 +237,7 @@ class PedidosDisponiblesNotifier extends Notifier<PedidosDisponiblesState> {
         pollingActivo: _polling.isRunning,
         limpiarError: true,
       );
+      _revalidarEntregaActiva();
       return true;
     } on Object catch (error) {
       _fallo(error, consulta: true);
@@ -409,12 +427,31 @@ final locationPermissionServiceProvider = Provider<LocationPermissionService>(
   (ref) => LocationPermissionService(),
 );
 
+/// Posición actual del repartidor para el marcador del mapa.
+///
+/// Se pide una sola vez y se refresca a mano (tras una entrega o al volver a la
+/// pantalla): el mapa no la necesita en tiempo real y un stream permanente
+/// would keep el GPS encendido todo el día.
+final posicionRepartidorProvider =
+    FutureProvider.autoDispose<({double latitud, double longitud})?>((
+      ref,
+    ) async {
+      try {
+        final posicion = await Geolocator.getCurrentPosition();
+        return (latitud: posicion.latitude, longitud: posicion.longitude);
+      } on Object {
+        // Sin permiso o sin GPS el mapa se dibuja igual, solo que sin el
+        // marcador propio: es degradable, no un error de la pantalla.
+        return null;
+      }
+    }, retry: (retryCount, error) => null);
+
 /// Estado reactivo del permiso de ubicación.
 /// Se usa para saber si dibujar el mapa, pedir permisos o mostrar un error.
-final locationPermissionProvider = AsyncNotifierProvider<
-  LocationPermissionNotifier,
-  LocationPermissionStatus
->(LocationPermissionNotifier.new);
+final locationPermissionProvider =
+    AsyncNotifierProvider<LocationPermissionNotifier, LocationPermissionStatus>(
+      LocationPermissionNotifier.new,
+    );
 
 class LocationPermissionNotifier
     extends AsyncNotifier<LocationPermissionStatus> {

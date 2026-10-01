@@ -10,11 +10,10 @@ public sealed class DeliveryService : IDeliveryService
 {
     private readonly IUnitOfWork _uow;
     public DeliveryService(IUnitOfWork uow) { _uow = uow; }
-    public async Task<IReadOnlyList<OrderResponse>> AvailableAsync(Guid repartidorId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<DeliveryOrderResponse>> AvailableAsync(Guid repartidorId, CancellationToken ct = default)
     {
-        var orders = await _uow.Orders.GetOrdersAsync(null, null, OrderStatus.Listo, ct);
-        var avail = orders.Where(o => o.RepartidorId == null).Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn, o.Latitud, o.Longitud)).ToList();
-        return avail;
+        var orders = await _uow.Orders.GetDeliveryOrdersAsync(null, OrderStatus.Listo, ct);
+        return orders.Where(o => o.RepartidorId == null).Select(ToResponse).ToList();
     }
     public async Task AcceptAsync(Guid repartidorId, Guid orderId, CancellationToken ct = default)
     {
@@ -25,10 +24,10 @@ public sealed class DeliveryService : IDeliveryService
         await _uow.Orders.UpdateStatusAsync(orderId, OrderStatus.EnCamino, null, repartidorId, ct);
         await _uow.SaveChangesAsync(ct);
     }
-    public async Task<IReadOnlyList<OrderResponse>> ActiveAsync(Guid repartidorId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<DeliveryOrderResponse>> ActiveAsync(Guid repartidorId, CancellationToken ct = default)
     {
-        var orders = await _uow.Orders.GetOrdersAsync(null, repartidorId, OrderStatus.EnCamino, ct);
-        return orders.Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn, o.Latitud, o.Longitud)).ToList();
+        var orders = await _uow.Orders.GetDeliveryOrdersAsync(repartidorId, OrderStatus.EnCamino, ct);
+        return orders.Select(ToResponse).ToList();
     }
     public async Task CompleteAsync(Guid repartidorId, Guid orderId, CancellationToken ct = default)
     {
@@ -37,11 +36,42 @@ public sealed class DeliveryService : IDeliveryService
         await _uow.Orders.UpdateStatusAsync(orderId, OrderStatus.Entregado, null, repartidorId, ct);
         await _uow.SaveChangesAsync(ct);
     }
-    public async Task<IReadOnlyList<OrderResponse>> HistoryAsync(Guid repartidorId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<DeliveryOrderResponse>> HistoryAsync(Guid repartidorId, CancellationToken ct = default)
     {
-        var orders = await _uow.Orders.GetOrdersAsync(null, repartidorId, null, ct);
-        var hist = orders.Where(o => o.Estado == OrderStatus.Entregado || o.Estado == OrderStatus.Cancelado).Select(o => new OrderResponse(o.Id, o.NumeroPedido, o.Estado.ToString(), o.Total, o.CreadoEn, o.Latitud, o.Longitud)).ToList();
-        return hist;
+        var orders = await _uow.Orders.GetDeliveryOrdersAsync(repartidorId, null, ct);
+        return orders
+            .Where(o => o.Estado == OrderStatus.Entregado || o.Estado == OrderStatus.Cancelado)
+            .Select(ToResponse)
+            .ToList();
+    }
+
+    /// Proyecta al DTO del repartidor. La dirección prefiere el snapshot que se
+    /// guardó al crear el pedido (es lo que el cliente confirmó) y cae a la
+    /// dirección viva si el snapshot viniera vacío.
+    private static DeliveryOrderResponse ToResponse(Domain.Entities.Order o) => new(
+        o.Id,
+        o.NumeroPedido,
+        o.Estado.ToString(),
+        o.Subtotal,
+        o.CostoEnvio,
+        o.Total,
+        o.Items.Select(i => i.Producto?.Nombre ?? "").Where(n => !string.IsNullOrEmpty(n)).ToList(),
+        o.Latitud,
+        o.Longitud,
+        o.CreadoEn,
+        o.Cliente?.Nombre,
+        string.IsNullOrWhiteSpace(o.DireccionEntregaSnapshot) ? DireccionDe(o) : o.DireccionEntregaSnapshot,
+        o.Cliente?.Telefono);
+
+    private static string? DireccionDe(Domain.Entities.Order o)
+    {
+        var d = o.Direccion;
+        if (d is null) return null;
+        var calle = string.IsNullOrWhiteSpace(d.Calle) ? null : $"{d.Calle} {d.Numero}".Trim();
+        var partes = new[] { calle, d.Ciudad }
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .ToArray();
+        return partes.Length == 0 ? null : string.Join(", ", partes);
     }
     public async Task<DeliveryAvailabilityDto> SetAvailabilityAsync(Guid repartidorId, DeliveryPersonStatus estado, CancellationToken ct = default)
     {
