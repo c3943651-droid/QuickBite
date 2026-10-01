@@ -16,6 +16,8 @@ class PedidoEntrega extends Equatable {
     required this.estado,
     required this.total,
     this.creadoEn,
+    this.latitud,
+    this.longitud,
   });
 
   final String id;
@@ -23,6 +25,11 @@ class PedidoEntrega extends Equatable {
   final String estado;
   final double total;
   final DateTime? creadoEn;
+
+  /// Coordenadas de destino copiadas de la dirección al crear el pedido
+  /// (07.5 §3.3); null cuando la dirección no las tenía.
+  final double? latitud;
+  final double? longitud;
 
   EstadoPedido get estadoPedido => EstadoPedido.fromApi(estado);
 
@@ -39,5 +46,13 @@ class PedidoEntrega extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, numeroPedido, estado, total, creadoEn];
+  List<Object?> get props => [
+    id,
+    numeroPedido,
+    estado,
+    total,
+    creadoEn,
+    latitud,
+    longitud,
+  ];
 }

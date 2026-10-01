@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/location_urls.dart';
+import '../../../core/external/enlaces_externos.dart';
 import '../../../core/polling/polling_controller.dart';
 import '../../../core/widgets/app_bottom_sheet.dart';
 import '../../../core/widgets/app_snackbar.dart';
@@ -14,7 +16,9 @@ import '../../../core/widgets/state_views.dart';
 import '../../../core/widgets/status_timeline.dart';
 import '../../delivery/presentation/widgets/delivery_map.dart';
 import '../domain/order_entities.dart';
+
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'estado_pedido_ui.dart';
 import 'order_tracking_providers.dart';
 
@@ -139,22 +143,19 @@ class _Body extends ConsumerWidget {
           _Aviso(texto: tracking.error!, clave: 'aviso-inline'),
           const SizedBox(height: AppSpacing.md),
         ],
-        
-        // Mapa solo si va en camino
-        if (tracking.estado == EstadoPedido.enCamino) ...[
+
+        // Mapa solo si va en camino y el pedido tiene coordenadas reales
+        if (tracking.estado == EstadoPedido.enCamino &&
+            pedido.latitud != null &&
+            pedido.longitud != null) ...[
           SizedBox(
             height: 200,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppSpacing.md),
-              // TODO: Usar coordenadas reales de la API cuando el endpoint las exponga
-              child: const DeliveryMap(
-                origin: LatLng(13.6929, -89.2182), // QuickBite Centro
-                destination: LatLng(13.7000, -89.2100), // Cliente
-                routePolyline: [
-                  LatLng(13.6929, -89.2182),
-                  LatLng(13.6950, -89.2150),
-                  LatLng(13.7000, -89.2100),
-                ],
+              child: DeliveryMap(
+                origin: const LatLng(13.6929, -89.2182), // QuickBite Centro
+                destination: LatLng(pedido.latitud!, pedido.longitud!),
+                routePolyline: const [],
                 originTitle: 'QuickBite',
                 destinationTitle: 'Tu ubicación',
               ),
@@ -179,6 +180,16 @@ class _Body extends ConsumerWidget {
             child: _Dato(
               icon: Icons.place_outlined,
               texto: pedido.direccionEntrega,
+            ),
+          ),
+        ],
+        if (pedido.latitud != null && pedido.longitud != null) ...[
+          const SizedBox(height: AppSpacing.lg),
+          _Seccion(
+            titulo: 'Abrir ubicación',
+            child: _BotonesApertura(
+              latitud: pedido.latitud!,
+              longitud: pedido.longitud!,
             ),
           ),
         ],
@@ -403,6 +414,45 @@ class _Dato extends StatelessWidget {
         Icon(icon, size: 18, color: AppColors.inkMuted),
         const SizedBox(width: AppSpacing.sm),
         Expanded(child: Text(texto, style: theme.textTheme.bodyMedium)),
+      ],
+    );
+  }
+}
+
+/// Abre la ubicación de entrega en una app externa de navegación (07.5 §5).
+class _BotonesApertura extends ConsumerWidget {
+  const _BotonesApertura({required this.latitud, required this.longitud});
+
+  final double latitud;
+  final double longitud;
+
+  Future<void> _abrir(BuildContext context, WidgetRef ref, Uri uri) async {
+    final ok = await ref.read(externalLauncherProvider).abrir(uri);
+    if (!ok && context.mounted) {
+      AppSnackbar.showError(context, 'No se pudo abrir la aplicación.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () =>
+                _abrir(context, ref, googleMapsUri(latitud, longitud)),
+            icon: const Icon(Icons.map_outlined, size: 18),
+            label: const Text('Google Maps'),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => _abrir(context, ref, wazeUri(latitud, longitud)),
+            icon: const Icon(Icons.directions_car_outlined, size: 18),
+            label: const Text('Waze'),
+          ),
+        ),
       ],
     );
   }

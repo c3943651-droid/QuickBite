@@ -13,6 +13,8 @@ class PedidoEntregaDto {
     required this.estado,
     required this.total,
     this.creadoEn,
+    this.latitud,
+    this.longitud,
   });
 
   factory PedidoEntregaDto.fromJson(Map<String, dynamic> json) =>
@@ -24,6 +26,8 @@ class PedidoEntregaDto {
   final String estado;
   final double total;
   final DateTime? creadoEn;
+  final double? latitud;
+  final double? longitud;
 }
 
 /// Réplica de `DeliveryPersonStatsDto` (`GET /delivery/stats`).

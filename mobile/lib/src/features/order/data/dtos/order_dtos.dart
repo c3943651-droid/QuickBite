@@ -27,6 +27,8 @@ class OrderDto {
     required this.estado,
     required this.total,
     this.creadoEn,
+    this.latitud,
+    this.longitud,
   });
 
   factory OrderDto.fromJson(Map<String, dynamic> json) =>
@@ -38,6 +40,8 @@ class OrderDto {
   final String estado;
   final double total;
   final DateTime? creadoEn;
+  final double? latitud;
+  final double? longitud;
 }
 
 /// `GET /orders/{id}` devuelve los items como una lista de nombres sueltos y
@@ -52,6 +56,8 @@ class OrderDetailDto {
     required this.costoEnvio,
     required this.total,
     this.items = const [],
+    this.latitud,
+    this.longitud,
   });
 
   factory OrderDetailDto.fromJson(Map<String, dynamic> json) =>
@@ -64,6 +70,8 @@ class OrderDetailDto {
   final double costoEnvio;
   final double total;
   final List<String> items;
+  final double? latitud;
+  final double? longitud;
 }
 
 @JsonSerializable(createToJson: false)

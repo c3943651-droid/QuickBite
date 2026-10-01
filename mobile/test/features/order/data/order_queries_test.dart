@@ -32,6 +32,8 @@ void main() {
           'estado': 'EnCamino',
           'total': 171.0,
           'creadoEn': '2026-09-27T15:04:00Z',
+          'latitud': 13.75,
+          'longitud': -89.15,
         },
       ]);
 
@@ -43,6 +45,8 @@ void main() {
       expect(pedidos.single.estadoPedido, EstadoPedido.enCamino);
       expect(pedidos.single.total, 171.0);
       expect(pedidos.single.creadoEn, isNotNull);
+      expect(pedidos.single.latitud, 13.75);
+      expect(pedidos.single.longitud, -89.15);
     });
 
     test('el filtro de estado se aplica en el cliente', () async {
@@ -96,6 +100,44 @@ void main() {
         repository.getStatus(_ordenId),
         throwsA(isA<NotFoundException>()),
       );
+    });
+  });
+
+  group('getOrder', () {
+    test('expone las coordenadas de destino del pedido', () async {
+      http.on('GET', '/orders/$_ordenId', {
+        'id': _ordenId,
+        'numeroPedido': 'QB-20260927-AB12CD',
+        'estado': 'EnCamino',
+        'subtotal': 150.0,
+        'costoEnvio': 21.0,
+        'total': 171.0,
+        'items': ['Tacos al pastor'],
+        'latitud': 13.75,
+        'longitud': -89.15,
+      });
+
+      final pedido = await repository.getOrder(_ordenId);
+
+      expect(pedido.latitud, 13.75);
+      expect(pedido.longitud, -89.15);
+    });
+
+    test('sin coordenadas en la respuesta quedan null', () async {
+      http.on('GET', '/orders/$_ordenId', {
+        'id': _ordenId,
+        'numeroPedido': 'QB-20260927-AB12CD',
+        'estado': 'Preparando',
+        'subtotal': 150.0,
+        'costoEnvio': 21.0,
+        'total': 171.0,
+        'items': const <String>[],
+      });
+
+      final pedido = await repository.getOrder(_ordenId);
+
+      expect(pedido.latitud, isNull);
+      expect(pedido.longitud, isNull);
     });
   });
 

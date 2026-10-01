@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../../core/external/enlaces_externos.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/location_urls.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/confirm_dialog.dart';
 import '../../../core/widgets/primary_button.dart';
@@ -111,61 +113,18 @@ class _ContenidoState extends ConsumerState<_Contenido> {
     final permisos = ref.watch(locationPermissionProvider);
     final tema = Theme.of(context);
     final minutos = widget.pedido.minutosDesdeCreacion(DateTime.now());
+    final latitud = widget.pedido.latitud;
+    final longitud = widget.pedido.longitud;
+    final destino = latitud != null && longitud != null
+        ? LatLng(latitud, longitud)
+        : null;
 
     return Column(
       children: [
         // Mitad superior: Mapa
         Expanded(
           flex: 4,
-          child: permisos.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text(mensaje(e))),
-            data: (status) {
-              if (status == LocationPermissionStatus.whenInUse ||
-                  status == LocationPermissionStatus.always) {
-                // TODO: Usar coordenadas reales de la API cuando GET /delivery las exponga (04 §11.1)
-                return const DeliveryMap(
-                  origin: LatLng(13.6929, -89.2182), // QuickBite Centro
-                  destination: LatLng(13.7000, -89.2100), // Cliente
-                  routePolyline: [
-                    LatLng(13.6929, -89.2182),
-                    LatLng(13.6950, -89.2150),
-                    LatLng(13.7000, -89.2100),
-                  ],
-                  originTitle: 'QuickBite',
-                  destinationTitle: 'Cliente',
-                );
-              }
-
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.location_off,
-                          size: 48, color: AppColors.inkSoft),
-                      const SizedBox(height: AppSpacing.md),
-                      Text(
-                        'Necesitamos tu ubicación para mostrar la ruta.',
-                        textAlign: TextAlign.center,
-                        style: tema.textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      PrimaryButton(
-                        label: 'Dar permiso',
-                        onPressed: () {
-                          ref
-                              .read(locationPermissionProvider.notifier)
-                              .requestPermission();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
+          child: _Mapa(zona: permisos, destino: destino),
         ),
         // Mitad inferior: Detalles
         Expanded(
@@ -196,6 +155,13 @@ class _ContenidoState extends ConsumerState<_Contenido> {
                 titulo: 'Total',
                 valor: CurrencyFormatter.format(widget.pedido.total),
               ),
+              if (destino != null) ...[
+                const SizedBox(height: AppSpacing.lg),
+                _BotonesApertura(
+                  latitud: destino.latitude,
+                  longitud: destino.longitude,
+                ),
+              ],
             ],
           ),
         ),
@@ -208,6 +174,141 @@ class _ContenidoState extends ConsumerState<_Contenido> {
               isLoading: acciones.completando,
               onPressed: _completar,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Mapa superior de la entrega activa: el destino solo se dibuja si el pedido
+/// trae coordenadas; sin ellas se ofrece un aviso textual (07.5 §5).
+class _Mapa extends ConsumerWidget {
+  const _Mapa({required this.zona, required this.destino});
+
+  final AsyncValue<LocationPermissionStatus> zona;
+  final LatLng? destino;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return zona.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text(mensaje(e))),
+      data: (status) {
+        final permisosOk =
+            status == LocationPermissionStatus.whenInUse ||
+            status == LocationPermissionStatus.always;
+        final puntoDestino = destino;
+        if (puntoDestino == null) {
+          return _AvisoMapa(
+            texto: 'Este pedido no tiene coordenadas para mostrar en el mapa.',
+            icono: Icons.place_outlined,
+          );
+        }
+        if (!permisosOk) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.location_off,
+                    size: 48,
+                    color: AppColors.inkSoft,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Necesitamos tu ubicación para mostrar la ruta.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  PrimaryButton(
+                    label: 'Dar permiso',
+                    onPressed: () {
+                      ref
+                          .read(locationPermissionProvider.notifier)
+                          .requestPermission();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return DeliveryMap(
+          origin: const LatLng(13.6929, -89.2182), // QuickBite Centro
+          destination: puntoDestino,
+          routePolyline: const [],
+          originTitle: 'QuickBite',
+          destinationTitle: 'Cliente',
+        );
+      },
+    );
+  }
+}
+
+class _AvisoMapa extends StatelessWidget {
+  const _AvisoMapa({required this.texto, required this.icono});
+
+  final String texto;
+  final IconData icono;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icono, size: 48, color: AppColors.inkSoft),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              texto,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Abre la ubicación de entrega en una app externa de navegación (07.5 §5).
+class _BotonesApertura extends ConsumerWidget {
+  const _BotonesApertura({required this.latitud, required this.longitud});
+
+  final double latitud;
+  final double longitud;
+
+  Future<void> _abrir(BuildContext context, WidgetRef ref, Uri uri) async {
+    final ok = await ref.read(externalLauncherProvider).abrir(uri);
+    if (!ok && context.mounted) {
+      AppSnackbar.showError(context, 'No se pudo abrir la aplicación.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () =>
+                _abrir(context, ref, googleMapsUri(latitud, longitud)),
+            icon: const Icon(Icons.map_outlined, size: 18),
+            label: const Text('Google Maps'),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => _abrir(context, ref, wazeUri(latitud, longitud)),
+            icon: const Icon(Icons.directions_car_outlined, size: 18),
+            label: const Text('Waze'),
           ),
         ),
       ],

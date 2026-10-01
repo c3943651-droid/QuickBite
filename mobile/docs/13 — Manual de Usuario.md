@@ -186,6 +186,7 @@ Las decisiones canónicas (polling, pagos simulados, historial de búsquedas loc
    - Línea de tiempo con los estados: pendiente, confirmado, preparando, listo, en camino, entregado.
    - Timestamps de cada cambio.
    - Detalles del pedido y dirección.
+   - Mapa con la ubicación de entrega y botones "Google Maps" y "Waze" para abrirla en la app de navegación (si el pedido tiene coordenadas; ver 07.5).
    - Tiempo estimado de entrega.
 3. La pantalla se actualiza automáticamente cada 10 segundos (ver 05#D-01).
 4. Si el pedido está en estado "pendiente" o "confirmado", aparece el botón "Cancelar pedido".
@@ -237,6 +238,7 @@ Las decisiones canónicas (polling, pagos simulados, historial de búsquedas loc
 1. En el perfil, tocar "Mis direcciones".
 2. Ver la lista de direcciones guardadas.
 3. Agregar, editar, eliminar o marcar una dirección como predeterminada.
+4. Al crear o editar una dirección, tocar "Ubicar en el mapa" para fijar la ubicación exacta en un mapa con pin; el botón de GPS centra en tu posición actual. La dirección se puede seguir editando a mano después.
 
 #### 3.7.4. Notificaciones
 
@@ -566,13 +568,15 @@ Las decisiones canónicas (polling, pagos simulados, historial de búsquedas loc
 
 1. En la pestaña "Entrega activa", se muestra el pedido actual.
 2. Se incluye:
+   - Mapa superior con la ubicación de entrega (si el pedido tiene coordenadas) y botones "Google Maps" y "Waze" para navegar hasta ella; si no tiene coordenadas, se muestra un aviso textual.
    - Dirección completa con referencia.
    - Botón "Llamar al cliente".
    - Lista de productos y observaciones.
    - Total.
-3. Realizar la entrega física.
+3. Si el mapa pide permiso de ubicación, tocar "Dar permiso" para activarlo.
+4. Realizar la entrega física.
 
-**Nota:** No hay integración con mapas en v1.0. Se muestra solo la dirección textual con referencia.
+**Nota:** La ruta en el mapa se muestra como destino fijo; la navegación se abre en Google Maps o Waze (ver 07.5).
 
 ---
 

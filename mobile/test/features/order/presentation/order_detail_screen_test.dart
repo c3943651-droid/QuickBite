@@ -4,16 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickbite_mobile/src/core/error/app_exception.dart';
+import 'package:quickbite_mobile/src/core/external/enlaces_externos.dart';
+import 'package:quickbite_mobile/src/core/utils/location_urls.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_entities.dart';
 import 'package:quickbite_mobile/src/features/auth/domain/auth_repository.dart';
 import 'package:quickbite_mobile/src/features/auth/presentation/auth_providers.dart';
 import 'package:quickbite_mobile/src/features/catalog/presentation/catalog_providers.dart';
+import 'package:quickbite_mobile/src/features/delivery/presentation/widgets/delivery_map.dart';
 import 'package:quickbite_mobile/src/features/order/domain/order_entities.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:quickbite_mobile/src/features/order/presentation/checkout_providers.dart';
 import 'package:quickbite_mobile/src/features/order/presentation/order_tracking_providers.dart';
 import 'package:quickbite_mobile/src/features/shell/app_router.dart';
 
 import '../../../support/catalog_fakes.dart';
+import '../../../support/fake_launcher.dart';
 import '../../../support/fake_token_storage.dart';
 import '../../../support/order_fakes.dart';
 
@@ -39,6 +44,19 @@ const _enCamino = Order(
   ],
   subtotal: 150,
   costoEnvio: 21,
+);
+
+const _enCaminoConCoords = Order(
+  id: 'o3',
+  numeroPedido: 'QB-20260927-CC34EF',
+  estado: 'EnCamino',
+  total: 171,
+  direccionEntrega: 'Av. Reforma 222, Int 3, Casa, CDMX',
+  items: [OrderItem(nombre: 'Tacos al pastor', cantidad: 2)],
+  subtotal: 150,
+  costoEnvio: 21,
+  latitud: 13.75,
+  longitud: -89.15,
 );
 
 const _pendiente = Order(
@@ -78,6 +96,7 @@ void main() {
     WidgetTester tester, {
     Duration intervalo = const Duration(seconds: 10),
     String ordenId = 'o1',
+    FakeExternalLauncher? launcher,
   }) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
@@ -90,6 +109,8 @@ void main() {
         tokenStorageProvider.overrideWithValue(InMemoryTokenStorage()),
         catalogRepositoryProvider.overrideWithValue(FakeCatalogRepository()),
         intervaloPollingProvider.overrideWithValue(intervalo),
+        if (launcher != null)
+          externalLauncherProvider.overrideWithValue(launcher),
       ],
     );
     addTearDown(container.dispose);
@@ -307,6 +328,77 @@ void main() {
       await avanzar(tester, const Duration(milliseconds: 200));
 
       expect(find.text('Cancelar pedido'), findsNothing);
+    });
+  });
+
+  group('coordenadas y botones de apertura (07.5)', () {
+    testWidgets(
+      'con estado en camino y coordenadas muestra el destino real sin polyline',
+      (tester) async {
+        orders.pedidos = [_enCaminoConCoords];
+        await pumpDetalle(tester, ordenId: 'o3');
+
+        final mapa = tester.widget<DeliveryMap>(find.byType(DeliveryMap));
+        expect(mapa.destination, const LatLng(13.75, -89.15));
+        expect(mapa.routePolyline, isEmpty);
+        expect(mapa.origin, const LatLng(13.6929, -89.2182));
+      },
+    );
+
+    testWidgets('sin coordenadas oculta el mapa del detalle', (tester) async {
+      orders.pedidos = [_enCamino];
+      await pumpDetalle(tester, ordenId: 'o1');
+
+      expect(find.byType(DeliveryMap), findsNothing);
+    });
+
+    testWidgets('ofrece Google Maps y Waze cuando hay coordenadas', (
+      tester,
+    ) async {
+      final launcher = FakeExternalLauncher();
+      orders.pedidos = [_enCaminoConCoords];
+      await pumpDetalle(tester, ordenId: 'o3', launcher: launcher);
+
+      expect(find.text('Google Maps'), findsOneWidget);
+      expect(find.text('Waze'), findsOneWidget);
+    });
+
+    testWidgets('el botón de Google Maps abre la ubicación del pedido', (
+      tester,
+    ) async {
+      final launcher = FakeExternalLauncher();
+      orders.pedidos = [_enCaminoConCoords];
+      await pumpDetalle(tester, ordenId: 'o3', launcher: launcher);
+
+      await tester.tap(find.text('Google Maps'));
+      await tester.pump();
+
+      expect(launcher.uris, [googleMapsUri(13.75, -89.15)]);
+    });
+
+    testWidgets('el botón de Waze abre la ubicación del pedido', (
+      tester,
+    ) async {
+      final launcher = FakeExternalLauncher();
+      orders.pedidos = [_enCaminoConCoords];
+      await pumpDetalle(tester, ordenId: 'o3', launcher: launcher);
+
+      await tester.tap(find.text('Waze'));
+      await tester.pump();
+
+      expect(launcher.uris, [wazeUri(13.75, -89.15)]);
+    });
+
+    testWidgets('sin coordenadas no ofrece los botones de apertura', (
+      tester,
+    ) async {
+      final launcher = FakeExternalLauncher();
+      orders.pedidos = [_enCamino];
+      await pumpDetalle(tester, launcher: launcher);
+
+      expect(find.text('Google Maps'), findsNothing);
+      expect(find.text('Waze'), findsNothing);
+      expect(launcher.uris, isEmpty);
     });
   });
 }

@@ -30,6 +30,8 @@ OrderDto _$OrderDtoFromJson(Map<String, dynamic> json) => OrderDto(
   creadoEn: json['creadoEn'] == null
       ? null
       : DateTime.parse(json['creadoEn'] as String),
+  latitud: (json['latitud'] as num?)?.toDouble(),
+  longitud: (json['longitud'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$OrderDtoToJson(OrderDto instance) => <String, dynamic>{
@@ -38,6 +40,8 @@ Map<String, dynamic> _$OrderDtoToJson(OrderDto instance) => <String, dynamic>{
   'estado': instance.estado,
   'total': instance.total,
   'creadoEn': instance.creadoEn?.toIso8601String(),
+  'latitud': instance.latitud,
+  'longitud': instance.longitud,
 };
 
 OrderDetailDto _$OrderDetailDtoFromJson(Map<String, dynamic> json) =>
@@ -51,6 +55,8 @@ OrderDetailDto _$OrderDetailDtoFromJson(Map<String, dynamic> json) =>
       items:
           (json['items'] as List<dynamic>?)?.map((e) => e as String).toList() ??
           const [],
+      latitud: (json['latitud'] as num?)?.toDouble(),
+      longitud: (json['longitud'] as num?)?.toDouble(),
     );
 
 OrderStatusDto _$OrderStatusDtoFromJson(Map<String, dynamic> json) =>

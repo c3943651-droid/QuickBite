@@ -319,6 +319,8 @@ Tabla central del sistema.
 | repartidor_id | UUID | FK repartidores, ON DELETE SET NULL | Repartidor asignado |
 | direccion_id | UUID | FK direcciones, ON DELETE SET NULL | Dirección original |
 | direccion_entrega_snapshot | TEXT | NOT NULL | Copia textual de la dirección |
+| latitud | NUMERIC(10,7) | NULL | Latitud del destino (copia de la dirección al crear) |
+| longitud | NUMERIC(10,7) | NULL | Longitud del destino (copia de la dirección al crear) |
 | estado | estado_pedido | NOT NULL, default pendiente | Estado actual |
 | metodo_pago | metodo_pago | NOT NULL | Método elegido |
 | metodo_pago_id | UUID | FK metodos_pago | Referencia al catálogo |

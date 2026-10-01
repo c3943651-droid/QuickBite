@@ -15,6 +15,8 @@ PedidoEntregaDto _$PedidoEntregaDtoFromJson(Map<String, dynamic> json) =>
       creadoEn: json['creadoEn'] == null
           ? null
           : DateTime.parse(json['creadoEn'] as String),
+      latitud: (json['latitud'] as num?)?.toDouble(),
+      longitud: (json['longitud'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$PedidoEntregaDtoToJson(PedidoEntregaDto instance) =>
@@ -24,6 +26,8 @@ Map<String, dynamic> _$PedidoEntregaDtoToJson(PedidoEntregaDto instance) =>
       'estado': instance.estado,
       'total': instance.total,
       'creadoEn': instance.creadoEn?.toIso8601String(),
+      'latitud': instance.latitud,
+      'longitud': instance.longitud,
     };
 
 EstadisticasRepartidorDto _$EstadisticasRepartidorDtoFromJson(
